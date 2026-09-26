@@ -18,7 +18,6 @@ const transactions = [
   { initials: 'DL', name: 'Dewi Lestari', email: 'dewi@mail.com', item: 'Paket Bisnis', date: 'Kemarin, 14:07', amount: 'Rp 2.400.000', status: 'Selesai' }
 ]
 
-const periods = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
 </script>
 
 <template>
@@ -77,19 +76,7 @@ const periods = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
         <section class="mt-6 grid gap-5 xl:grid-cols-[1.65fr_1fr]">
           <UCard class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]" :ui="{ body: 'p-5 sm:p-6' }">
             <div class="flex items-start justify-between"><div><h2 class="text-sm font-semibold">Pendapatan</h2><p class="mt-1 text-xs text-gray-500">Performa selama 7 hari terakhir</p></div><span class="inline-flex items-center gap-1.5 text-xs text-gray-500"><span class="size-2 rounded-full bg-emerald-500" /> Minggu ini</span></div>
-            <div class="mt-7 flex h-48">
-              <div class="flex flex-col justify-between pb-5 pr-3 text-[10px] text-gray-400"><span>Rp 8 jt</span><span>Rp 6 jt</span><span>Rp 4 jt</span><span>Rp 2 jt</span><span>Rp 0</span></div>
-              <div class="relative flex-1">
-                <div class="absolute inset-0 flex flex-col justify-between pb-5"><div class="border-t border-dashed border-gray-200 dark:border-gray-800" v-for="line in 5" :key="line" /></div>
-                <svg viewBox="0 0 700 180" preserveAspectRatio="none" class="absolute inset-0 h-[calc(100%-20px)] w-full overflow-visible" role="img" aria-label="Grafik pendapatan naik sepanjang minggu">
-                  <defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#10b981" stop-opacity=".2" /><stop offset="100%" stop-color="#10b981" stop-opacity="0" /></linearGradient></defs>
-                  <path d="M0 132 C45 120 55 99 100 108 S155 128 200 91 S255 79 300 95 S355 112 400 66 S455 72 500 51 S555 75 600 39 S655 40 700 18 V180 H0Z" fill="url(#area)" />
-                  <path d="M0 132 C45 120 55 99 100 108 S155 128 200 91 S255 79 300 95 S355 112 400 66 S455 72 500 51 S555 75 600 39 S655 40 700 18" fill="none" stroke="#10b981" stroke-width="3" vector-effect="non-scaling-stroke" />
-                  <circle cx="700" cy="18" r="5" fill="#10b981" stroke="white" stroke-width="3" vector-effect="non-scaling-stroke" />
-                </svg>
-                <div class="absolute inset-x-0 bottom-0 flex justify-between text-[10px] text-gray-400"><span v-for="day in periods" :key="day">{{ day }}</span></div>
-              </div>
-            </div>
+            <RevenueChart class="mt-7" />
           </UCard>
 
           <UCard class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]" :ui="{ body: 'p-5 sm:p-6' }">
