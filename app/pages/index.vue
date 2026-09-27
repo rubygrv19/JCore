@@ -15,8 +15,14 @@ const menuGroups = [
     children: [
       { label: 'VPS', href: '#vps' },
       { label: 'Timeshit', href: '#timeshit' },
-      { label: 'Code Review', href: '#code-review' }
+      { label: 'Code Review', href: '#code-review' },
+      { label: 'Quota Track', href: '#quota-track' }
     ]
+  },
+  {
+    label: 'Settings',
+    icon: 'i-lucide-settings',
+    children: []
   }
 ]
 
@@ -57,15 +63,16 @@ const transactions = [
           <button
             type="button"
             class="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-            :aria-expanded="expandedGroups.has(group.label)"
-            :aria-controls="`menu-${group.label.toLowerCase()}`"
-            @click="toggleGroup(group.label)"
+            :class="activeMenu === group.label ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : ''"
+            :aria-expanded="group.children.length ? expandedGroups.has(group.label) : undefined"
+            :aria-controls="group.children.length ? `menu-${group.label.toLowerCase()}` : undefined"
+            @click="group.children.length ? toggleGroup(group.label) : activeMenu = group.label"
           >
             <UIcon :name="group.icon" class="size-[18px]" />
             <span class="flex-1">{{ group.label }}</span>
-            <UIcon name="i-lucide-chevron-down" class="size-4 text-gray-400 transition-transform" :class="expandedGroups.has(group.label) ? 'rotate-180' : ''" />
+            <UIcon v-if="group.children.length" name="i-lucide-chevron-down" class="size-4 text-gray-400 transition-transform" :class="expandedGroups.has(group.label) ? 'rotate-180' : ''" />
           </button>
-          <Transition name="submenu">
+          <Transition v-if="group.children.length" name="submenu">
             <div v-show="expandedGroups.has(group.label)" :id="`menu-${group.label.toLowerCase()}`" class="submenu-content ml-5 space-y-0.5 border-l border-gray-200 pl-3 dark:border-gray-700">
               <a
                 v-for="child in group.children"
