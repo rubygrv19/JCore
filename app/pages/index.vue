@@ -44,10 +44,14 @@ const serviceModes = reactive<Record<string, string>>(Object.fromEntries(service
 const serviceModeDraft = ref('')
 const shutdownConfirmed = ref(false)
 const serviceModeOptions = [
-  { value: 'coming-soon', label: 'Coming Soon', description: 'Tandai layanan sebagai belum tersedia.', icon: 'i-lucide-sparkles' },
-  { value: 'maintenance', label: 'Maintenance', description: 'Tandai layanan sedang dalam pemeliharaan.', icon: 'i-lucide-wrench' },
-  { value: 'shutdown', label: 'Shutdown', description: 'Tandai layanan sebagai tidak aktif.', icon: 'i-lucide-power' }
+  { value: 'coming-soon', label: 'Coming Soon', description: 'Tandai layanan sebagai belum tersedia.', icon: 'i-lucide-sparkles', color: 'info' as const },
+  { value: 'maintenance', label: 'Maintenance', description: 'Tandai layanan sedang dalam pemeliharaan.', icon: 'i-lucide-wrench', color: 'warning' as const },
+  { value: 'shutdown', label: 'Shutdown', description: 'Tandai layanan sebagai tidak aktif.', icon: 'i-lucide-power', color: 'error' as const }
 ]
+const serviceCards = computed(() => services.map(service => ({
+  ...service,
+  mode: serviceModeOptions.find(mode => mode.value === serviceModes[service.label])
+})))
 
 function openConfig(service: string) {
   selectedService.value = service
@@ -161,14 +165,20 @@ const transactions = [
         </div>
         <section aria-label="Konfigurasi services" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <button
-            v-for="service in services"
+            v-for="service in serviceCards"
             :key="service.label"
             type="button"
             class="cursor-pointer rounded-xl border border-gray-200/80 bg-white p-5 text-left shadow-none transition hover:border-emerald-300 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:border-gray-800 dark:bg-[#151719] dark:hover:border-emerald-700"
             @click="openConfig(service.label)"
           >
-            <span class="mb-5 grid size-10 place-items-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-              <UIcon :name="service.icon" class="size-5" />
+            <span class="mb-5 flex items-start justify-between gap-3">
+              <span class="grid size-10 place-items-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                <UIcon :name="service.icon" class="size-5" />
+              </span>
+              <UBadge v-if="service.mode" :color="service.mode.color" variant="subtle" size="sm" class="rounded-full">
+                <UIcon :name="service.mode.icon" class="mr-1 size-3.5" />{{ service.mode.label }}
+              </UBadge>
+              <UBadge v-else color="neutral" variant="subtle" size="sm" class="rounded-full">Belum diatur</UBadge>
             </span>
             <span class="block text-sm font-semibold">{{ service.label }}</span>
             <span class="mt-1 block text-xs text-gray-500">Konfigurasi layanan</span>
