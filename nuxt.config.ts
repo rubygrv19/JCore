@@ -4,7 +4,9 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/ui',
     '@nuxt/fonts',
-    '@nuxt/icon'
+    '@nuxt/icon',
+    '@nuxt/image',
+    '@pinia/nuxt'
   ],
 
   devtools: {

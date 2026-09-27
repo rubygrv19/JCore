@@ -12,6 +12,7 @@
 ## Stack and state
 
 - Use the existing Nuxt 4 project with Nuxt UI, Nuxt Fonts, Nuxt Icon, and Nuxt Image. Preserve pnpm and its lockfile.
+- The dashboard is deployed as a static site to `.output/public`. Keep builds compatible with static generation; ask before introducing server routes or changing the hosting model.
 - Use Inter as the global font through Nuxt Fonts.
 - Use Nuxt UI components for standard interactive controls and UI primitives. Keep native semantic elements for document structure and navigation.
 - Do not recreate primitives already provided by Nuxt UI. A focused app component is allowed only when it integrates a capability Nuxt UI does not provide, such as the existing Chart.js chart wrapper. Keep such components small and use Nuxt UI for their surrounding controls.

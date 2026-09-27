@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useServicesStore } from '~/stores/services'
+import { normalizeBaseUrl } from '~/utils/service-clients'
+import type { ServiceKey, ServiceMode } from '~/types/services'
+
 const menuGroups = [
   {
     label: 'Dashboard',
@@ -24,37 +28,40 @@ const menuGroups = [
 
 const expandedGroups = ref(new Set(['Services']))
 const activeMenu = ref('Dashboard')
-const services = [
-  { label: 'VPS', icon: 'i-lucide-server' },
-  { label: 'Timeshit', icon: 'i-lucide-clock-3' },
-  { label: 'Code Review', icon: 'i-lucide-git-pull-request' },
-  { label: 'Quota Tracker', icon: 'i-lucide-chart-no-axes-column-increasing' }
+const servicesStore = useServicesStore()
+const services: Array<{ key: ServiceKey, label: string, icon: string }> = [
+  { key: 'vps', label: 'VPS', icon: 'i-lucide-server' },
+  { key: 'timeshit', label: 'Timeshit', icon: 'i-lucide-clock-3' },
+  { key: 'code-review', label: 'Code Review', icon: 'i-lucide-git-pull-request' },
+  { key: 'quota-tracker', label: 'Quota Tracker', icon: 'i-lucide-chart-no-axes-column-increasing' }
 ]
-const selectedService = ref('')
+const selectedServiceKey = ref<ServiceKey>()
+const selectedService = computed(() => services.find(service => service.key === selectedServiceKey.value)?.label ?? '')
 const configModalOpen = ref(false)
 const connectionAccordion = ref<string | undefined>('connection')
 const dangerZoneAccordion = ref<string | undefined>()
-const baseUrls = reactive<Record<string, string>>(Object.fromEntries(services.map(service => [service.label, ''])))
 const baseUrlDraft = ref('')
-const serviceModes = reactive<Record<string, string>>(Object.fromEntries(services.map(service => [service.label, ''])))
-const serviceModeDraft = ref('')
+const baseUrlError = ref('')
+const serviceModeDraft = ref<ServiceMode>('')
 const shutdownConfirmed = ref(false)
-const serviceModeOptions = [
+const serviceModeOptions: Array<{ value: Exclude<ServiceMode, ''>, label: string, description: string, icon: string, color: 'info' | 'warning' | 'error' }> = [
   { value: 'coming-soon', label: 'Coming Soon', description: 'Tandai layanan sebagai belum tersedia.', icon: 'i-lucide-sparkles', color: 'info' as const },
   { value: 'maintenance', label: 'Maintenance', description: 'Tandai layanan sedang dalam pemeliharaan.', icon: 'i-lucide-wrench', color: 'warning' as const },
   { value: 'shutdown', label: 'Shutdown', description: 'Tandai layanan sebagai tidak aktif.', icon: 'i-lucide-power', color: 'error' as const }
 ]
 const serviceCards = computed(() => services.map(service => ({
   ...service,
-  mode: serviceModeOptions.find(mode => mode.value === serviceModes[service.label])
+  mode: serviceModeOptions.find(mode => mode.value === servicesStore.configs[service.key].mode)
 })))
 const activeService = computed(() => services.find(service => service.label === activeMenu.value))
 const activeServiceHref = computed(() => menuGroups.flatMap(group => group.children).find(child => child.label === activeMenu.value)?.href)
 
-function openConfig(service: string) {
-  selectedService.value = service
-  baseUrlDraft.value = baseUrls[service] ?? ''
-  serviceModeDraft.value = serviceModes[service] ?? ''
+function openConfig(serviceKey: ServiceKey) {
+  const config = servicesStore.configs[serviceKey]
+  selectedServiceKey.value = serviceKey
+  baseUrlDraft.value = config.baseUrl
+  baseUrlError.value = ''
+  serviceModeDraft.value = config.mode
   shutdownConfirmed.value = false
   connectionAccordion.value = 'connection'
   dangerZoneAccordion.value = undefined
@@ -62,8 +69,20 @@ function openConfig(service: string) {
 }
 
 function saveConfig() {
-  baseUrls[selectedService.value] = baseUrlDraft.value.trim()
-  serviceModes[selectedService.value] = serviceModeDraft.value
+  if (!selectedServiceKey.value) return
+
+  let baseUrl: string
+  try {
+    baseUrl = normalizeBaseUrl(baseUrlDraft.value)
+  } catch {
+    baseUrlError.value = 'Masukkan URL yang diawali http:// atau https://.'
+    return
+  }
+
+  servicesStore.saveConfig(selectedServiceKey.value, {
+    baseUrl,
+    mode: serviceModeDraft.value
+  })
   configModalOpen.value = false
 }
 
@@ -102,19 +121,33 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => window.removeEventListener('hashchange', syncPageFromHash))
-
 </script>
 
 <template>
   <div class="min-h-screen bg-[#f7f8fa] text-gray-900 dark:bg-[#101214] dark:text-white">
     <aside class="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-gray-200/80 bg-white px-5 py-6 dark:border-gray-800 dark:bg-[#151719] lg:flex">
-      <a href="#dashboard" class="mb-10 flex items-center gap-3 px-2" @click="activeMenu = 'Dashboard'">
-        <span class="grid size-9 place-items-center rounded-xl bg-emerald-500 text-white"><UIcon name="i-lucide-panels-top-left" class="size-5" /></span>
+      <a
+        href="#dashboard"
+        class="mb-10 flex cursor-pointer items-center gap-3 px-2"
+        @click="activeMenu = 'Dashboard'"
+      >
+        <span class="grid size-9 place-items-center rounded-xl bg-emerald-500 text-white"><UIcon
+          name="i-lucide-panels-top-left"
+          class="size-5"
+        /></span>
         <span class="text-[15px] font-semibold tracking-tight">ruang<span class="text-emerald-600">kerja</span></span>
       </a>
-      <p class="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[.16em] text-gray-400">Menu</p>
-      <nav aria-label="Menu utama" class="space-y-1">
-        <div v-for="group in menuGroups" :key="group.label">
+      <p class="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[.16em] text-gray-400">
+        Menu
+      </p>
+      <nav
+        aria-label="Menu utama"
+        class="space-y-1"
+      >
+        <div
+          v-for="group in menuGroups"
+          :key="group.label"
+        >
           <button
             type="button"
             class="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
@@ -123,12 +156,27 @@ onBeforeUnmount(() => window.removeEventListener('hashchange', syncPageFromHash)
             :aria-controls="group.children.length ? `menu-${group.label.toLowerCase()}` : undefined"
             @click="group.children.length ? toggleGroup(group.label) : selectMenu(group.label)"
           >
-            <UIcon :name="group.icon" class="size-[18px]" />
+            <UIcon
+              :name="group.icon"
+              class="size-[18px]"
+            />
             <span class="flex-1">{{ group.label }}</span>
-            <UIcon v-if="group.children.length" name="i-lucide-chevron-down" class="size-4 text-gray-400 transition-transform" :class="expandedGroups.has(group.label) ? 'rotate-180' : ''" />
+            <UIcon
+              v-if="group.children.length"
+              name="i-lucide-chevron-down"
+              class="size-4 text-gray-400 transition-transform"
+              :class="expandedGroups.has(group.label) ? 'rotate-180' : ''"
+            />
           </button>
-          <Transition v-if="group.children.length" name="submenu">
-            <div v-show="expandedGroups.has(group.label)" :id="`menu-${group.label.toLowerCase()}`" class="submenu-content ml-5 space-y-0.5 border-l border-gray-200 pl-3 dark:border-gray-700">
+          <Transition
+            v-if="group.children.length"
+            name="submenu"
+          >
+            <div
+              v-show="expandedGroups.has(group.label)"
+              :id="`menu-${group.label.toLowerCase()}`"
+              class="submenu-content ml-5 space-y-0.5 border-l border-gray-200 pl-3 dark:border-gray-700"
+            >
               <a
                 v-for="child in group.children"
                 :key="child.label"
@@ -145,95 +193,225 @@ onBeforeUnmount(() => window.removeEventListener('hashchange', syncPageFromHash)
         </div>
       </nav>
       <div class="mt-auto rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
-        <div class="mb-2 flex items-center gap-2 text-xs font-semibold"><UIcon name="i-lucide-sparkles" class="size-4 text-emerald-600" /> Ruang kerja demo</div>
-        <p class="text-xs leading-5 text-gray-500 dark:text-gray-400">Angka pada halaman ini adalah data contoh.</p>
+        <div class="mb-2 flex items-center gap-2 text-xs font-semibold">
+          <UIcon
+            name="i-lucide-sparkles"
+            class="size-4 text-emerald-600"
+          /> Ruang kerja demo
+        </div>
+        <p class="text-xs leading-5 text-gray-500 dark:text-gray-400">
+          Angka pada halaman ini adalah data contoh.
+        </p>
       </div>
       <div class="mt-5 flex items-center gap-3 px-1">
-        <UAvatar text="AR" size="sm" class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white" />
-        <div class="min-w-0 flex-1"><p class="truncate text-xs font-semibold">Alya Rahma</p><p class="truncate text-[11px] text-gray-500">Pemilik akun</p></div>
-        <UIcon name="i-lucide-chevrons-up-down" class="size-4 text-gray-400" />
+        <UAvatar
+          text="AR"
+          size="sm"
+          class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white"
+        />
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-xs font-semibold">
+            Alya Rahma
+          </p><p class="truncate text-[11px] text-gray-500">
+            Pemilik akun
+          </p>
+        </div>
+        <UIcon
+          name="i-lucide-chevrons-up-down"
+          class="size-4 text-gray-400"
+        />
       </div>
     </aside>
 
-    <main id="dashboard" class="lg:pl-64">
+    <main
+      id="dashboard"
+      class="lg:pl-64"
+    >
       <header class="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200/80 bg-white/90 px-5 backdrop-blur-md dark:border-gray-800 dark:bg-[#151719]/90 sm:px-8">
-        <a href="#dashboard" class="flex items-center gap-2.5 lg:hidden" @click="activeMenu = 'Dashboard'">
-          <span class="grid size-8 place-items-center rounded-lg bg-emerald-500 text-white"><UIcon name="i-lucide-panels-top-left" class="size-4" /></span>
+        <a
+          href="#dashboard"
+          class="flex cursor-pointer items-center gap-2.5 lg:hidden"
+          @click="activeMenu = 'Dashboard'"
+        >
+          <span class="grid size-8 place-items-center rounded-lg bg-emerald-500 text-white"><UIcon
+            name="i-lucide-panels-top-left"
+            class="size-4"
+          /></span>
           <span class="text-sm font-semibold">ruang<span class="text-emerald-600">kerja</span></span>
         </a>
-        <div class="hidden text-sm text-gray-500 lg:block">Workspace <span class="mx-2 text-gray-300">/</span><span class="font-medium text-gray-900 dark:text-white">{{ activeMenu }}</span></div>
+        <div class="hidden text-sm text-gray-500 lg:block">
+          Workspace <span class="mx-2 text-gray-300">/</span><span class="font-medium text-gray-900 dark:text-white">{{ activeMenu }}</span>
+        </div>
         <div class="ml-auto flex items-center gap-2">
-          <UIcon name="i-lucide-search" class="mx-2 size-[18px] text-gray-400" aria-hidden="true" />
-          <UIcon name="i-lucide-bell" class="mx-2 size-[18px] text-gray-400" aria-hidden="true" />
-          <UColorModeButton color="neutral" variant="ghost" />
-          <UAvatar text="AR" size="xs" class="ml-1 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white lg:hidden" />
+          <UIcon
+            name="i-lucide-search"
+            class="mx-2 size-[18px] text-gray-400"
+            aria-hidden="true"
+          />
+          <UIcon
+            name="i-lucide-bell"
+            class="mx-2 size-[18px] text-gray-400"
+            aria-hidden="true"
+          />
+          <UColorModeButton
+            color="neutral"
+            variant="ghost"
+            class="cursor-pointer"
+          />
+          <UAvatar
+            text="AR"
+            size="xs"
+            class="ml-1 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white lg:hidden"
+          />
         </div>
       </header>
 
-      <div v-if="activeMenu === 'Settings'" id="settings" class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
+      <div
+        v-if="activeMenu === 'Settings'"
+        id="settings"
+        class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10"
+      >
         <div class="mb-8">
-          <h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">Settings</h1>
-          <p class="mt-1 text-sm text-gray-500">Konfigurasi layanan.</p>
+          <h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">
+            Settings
+          </h1>
+          <p class="mt-1 text-sm text-gray-500">
+            Konfigurasi layanan.
+          </p>
         </div>
-        <section aria-label="Konfigurasi services" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <section
+          aria-label="Konfigurasi services"
+          class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+        >
           <button
             v-for="service in serviceCards"
             :key="service.label"
             type="button"
             class="cursor-pointer rounded-xl border border-gray-200/80 bg-white p-5 text-left shadow-none transition hover:border-emerald-300 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:border-gray-800 dark:bg-[#151719] dark:hover:border-emerald-700"
-            @click="openConfig(service.label)"
+            @click="openConfig(service.key)"
           >
             <span class="mb-5 flex items-start justify-between gap-3">
               <span class="grid size-10 place-items-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                <UIcon :name="service.icon" class="size-5" />
+                <UIcon
+                  :name="service.icon"
+                  class="size-5"
+                />
               </span>
-              <UBadge v-if="service.mode" :color="service.mode.color" variant="subtle" size="sm" class="rounded-full">
-                <UIcon :name="service.mode.icon" class="mr-1 size-3.5" />{{ service.mode.label }}
+              <UBadge
+                v-if="service.mode"
+                :color="service.mode.color"
+                variant="subtle"
+                size="sm"
+                class="rounded-full"
+              >
+                <UIcon
+                  :name="service.mode.icon"
+                  class="mr-1 size-3.5"
+                />{{ service.mode.label }}
               </UBadge>
-              <UBadge v-else color="neutral" variant="subtle" size="sm" class="rounded-full">Belum diatur</UBadge>
+              <UBadge
+                v-else
+                color="neutral"
+                variant="subtle"
+                size="sm"
+                class="rounded-full"
+              >Belum diatur</UBadge>
             </span>
             <span class="block text-sm font-semibold">{{ service.label }}</span>
             <span class="mt-1 block text-xs text-gray-500">Konfigurasi layanan</span>
-            <span class="mt-5 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">Atur konfigurasi<UIcon name="i-lucide-arrow-up-right" class="size-3.5" /></span>
+            <span class="mt-5 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">Atur konfigurasi<UIcon
+              name="i-lucide-arrow-up-right"
+              class="size-3.5"
+            /></span>
           </button>
         </section>
       </div>
 
-      <div v-else-if="activeService" :id="activeServiceHref?.slice(1)" class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
+      <div
+        v-else-if="activeService"
+        :id="activeServiceHref?.slice(1)"
+        class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10"
+      >
         <div class="mb-8">
-          <h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">{{ activeService.label }}</h1>
-          <p class="mt-1 text-sm text-gray-500">Halaman layanan.</p>
+          <h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">
+            {{ activeService.label }}
+          </h1>
+          <p class="mt-1 text-sm text-gray-500">
+            Halaman layanan.
+          </p>
         </div>
-        <UCard class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]" :ui="{ body: 'p-8 sm:p-12' }">
+        <UCard
+          class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]"
+          :ui="{ body: 'p-8 sm:p-12' }"
+        >
           <div class="flex min-h-64 flex-col items-center justify-center text-center">
             <span class="mb-5 grid size-12 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-              <UIcon :name="activeService.icon" class="size-6" />
+              <UIcon
+                :name="activeService.icon"
+                class="size-6"
+              />
             </span>
-            <UBadge color="info" variant="subtle" class="rounded-full">Coming Soon</UBadge>
-            <h2 class="mt-4 text-lg font-semibold tracking-tight">{{ activeService.label }} sedang disiapkan</h2>
-            <p class="mt-2 max-w-sm text-sm leading-6 text-gray-500">Konten untuk layanan ini akan tersedia segera.</p>
+            <UBadge
+              color="info"
+              variant="subtle"
+              class="rounded-full"
+            >
+              Coming Soon
+            </UBadge>
+            <h2 class="mt-4 text-lg font-semibold tracking-tight">
+              {{ activeService.label }} sedang disiapkan
+            </h2>
+            <p class="mt-2 max-w-sm text-sm leading-6 text-gray-500">
+              Konten untuk layanan ini akan tersedia segera.
+            </p>
           </div>
         </UCard>
       </div>
 
-      <div v-else class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
+      <div
+        v-else
+        class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10"
+      >
         <div class="mb-8">
-          <h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">Dashboard</h1>
-          <p class="mt-1 text-sm text-gray-500">Ringkasan workspace.</p>
+          <h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">
+            Dashboard
+          </h1>
+          <p class="mt-1 text-sm text-gray-500">
+            Ringkasan workspace.
+          </p>
         </div>
-        <UCard class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]" :ui="{ body: 'p-8 sm:p-12' }">
+        <UCard
+          class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]"
+          :ui="{ body: 'p-8 sm:p-12' }"
+        >
           <div class="flex min-h-64 flex-col items-center justify-center text-center">
             <span class="mb-5 grid size-12 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-              <UIcon name="i-lucide-layout-dashboard" class="size-6" />
+              <UIcon
+                name="i-lucide-layout-dashboard"
+                class="size-6"
+              />
             </span>
-            <UBadge color="info" variant="subtle" class="rounded-full">Coming Soon</UBadge>
-            <h2 class="mt-4 text-lg font-semibold tracking-tight">Dashboard sedang disiapkan</h2>
-            <p class="mt-2 max-w-sm text-sm leading-6 text-gray-500">Konten Dashboard akan tersedia segera.</p>
+            <UBadge
+              color="info"
+              variant="subtle"
+              class="rounded-full"
+            >
+              Coming Soon
+            </UBadge>
+            <h2 class="mt-4 text-lg font-semibold tracking-tight">
+              Dashboard sedang disiapkan
+            </h2>
+            <p class="mt-2 max-w-sm text-sm leading-6 text-gray-500">
+              Konten Dashboard akan tersedia segera.
+            </p>
           </div>
         </UCard>
       </div>
 
-      <UModal v-model:open="configModalOpen" :title="selectedService">
+      <UModal
+        v-model:open="configModalOpen"
+        :title="selectedService"
+      >
         <template #body>
           <div class="space-y-3">
             <UAccordion
@@ -244,8 +422,19 @@ onBeforeUnmount(() => window.removeEventListener('hashchange', syncPageFromHash)
               :ui="{ item: 'border-0', trigger: 'cursor-pointer px-4 py-3.5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50', content: 'px-4', body: 'pb-4 pt-1' }"
             >
               <template #body>
-                <UFormField label="Base URL" description="Alamat dasar API untuk layanan ini." class="w-full">
-                  <UInput v-model="baseUrlDraft" type="url" placeholder="https://api.example.com" class="mt-2 w-full" />
+                <UFormField
+                  label="Base URL"
+                  :error="baseUrlError || undefined"
+                  description="Alamat dasar API untuk layanan ini."
+                  class="w-full"
+                >
+                  <UInput
+                    v-model="baseUrlDraft"
+                    type="url"
+                    placeholder="https://api.example.com"
+                    class="mt-2 w-full"
+                    @update:model-value="baseUrlError = ''"
+                  />
                 </UFormField>
               </template>
             </UAccordion>
@@ -259,27 +448,48 @@ onBeforeUnmount(() => window.removeEventListener('hashchange', syncPageFromHash)
             >
               <template #body>
                 <div class="space-y-3">
-                  <p class="text-xs leading-5 text-red-800/80 dark:text-red-200/80">Pilih mode tampilan layanan. Perubahan ini hanya tersimpan sementara dan belum mengubah layanan.</p>
+                  <p class="text-xs leading-5 text-red-800/80 dark:text-red-200/80">
+                    Pilih mode tampilan layanan. Pengaturan ini masih dummy dan belum mengubah layanan.
+                  </p>
                   <fieldset class="space-y-2">
-                    <legend class="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-200">Service mode</legend>
+                    <legend class="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-200">
+                      Service mode
+                    </legend>
                     <label
                       v-for="mode in serviceModeOptions"
                       :key="mode.value"
                       class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition"
                       :class="serviceModeDraft === mode.value ? 'border-red-300 bg-white ring-1 ring-red-300 dark:border-red-800 dark:bg-red-950/30 dark:ring-red-800' : 'border-gray-200 bg-white/80 hover:border-red-200 dark:border-red-900/50 dark:bg-[#151719]/70 dark:hover:border-red-800'"
                     >
-                      <input v-model="serviceModeDraft" type="radio" name="service-mode" :value="mode.value" class="mt-0.5 size-4 shrink-0 accent-red-600" @change="shutdownConfirmed = false">
+                      <input
+                        v-model="serviceModeDraft"
+                        type="radio"
+                        name="service-mode"
+                        :value="mode.value"
+                        class="mt-0.5 size-4 shrink-0 accent-red-600"
+                        @change="shutdownConfirmed = false"
+                      >
                       <span class="min-w-0 flex-1">
                         <span class="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-100">
-                          <UIcon :name="mode.icon" class="size-4 text-red-600 dark:text-red-400" />
+                          <UIcon
+                            :name="mode.icon"
+                            class="size-4 text-red-600 dark:text-red-400"
+                          />
                           {{ mode.label }}
                         </span>
                         <span class="mt-1 block text-xs leading-5 text-gray-500 dark:text-gray-400">{{ mode.description }}</span>
                       </span>
                     </label>
                   </fieldset>
-                  <label v-if="serviceModeDraft === 'shutdown'" class="flex cursor-pointer items-start gap-2.5 rounded-lg border border-red-300 bg-red-100/70 p-3 text-xs leading-5 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
-                    <input v-model="shutdownConfirmed" type="checkbox" class="mt-0.5 size-4 shrink-0 accent-red-600">
+                  <label
+                    v-if="serviceModeDraft === 'shutdown'"
+                    class="flex cursor-pointer items-start gap-2.5 rounded-lg border border-red-300 bg-red-100/70 p-3 text-xs leading-5 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
+                  >
+                    <input
+                      v-model="shutdownConfirmed"
+                      type="checkbox"
+                      class="mt-0.5 size-4 shrink-0 accent-red-600"
+                    >
                     <span>Saya paham mode ini akan menandai layanan sebagai tidak aktif.</span>
                   </label>
                 </div>
@@ -289,10 +499,25 @@ onBeforeUnmount(() => window.removeEventListener('hashchange', syncPageFromHash)
         </template>
         <template #footer>
           <div class="flex w-full items-center justify-between gap-4">
-            <p class="text-xs text-gray-400">Tersimpan sementara di halaman ini</p>
+            <p class="text-xs text-gray-400">
+              Dummy untuk development; belum tersimpan ke backend
+            </p>
             <div class="flex shrink-0 items-center gap-2">
-              <UButton label="Cancel" color="neutral" variant="ghost" @click="cancelConfig" />
-              <UButton label="Save" :color="serviceModeDraft === 'shutdown' ? 'error' : 'success'" icon="i-lucide-check" :disabled="serviceModeDraft === 'shutdown' && !shutdownConfirmed" @click="saveConfig" />
+              <UButton
+                label="Cancel"
+                color="neutral"
+                variant="ghost"
+                class="cursor-pointer"
+                @click="cancelConfig"
+              />
+              <UButton
+                label="Save"
+                :color="serviceModeDraft === 'shutdown' ? 'error' : 'success'"
+                icon="i-lucide-check"
+                :class="serviceModeDraft === 'shutdown' && !shutdownConfirmed ? 'cursor-not-allowed' : 'cursor-pointer'"
+                :disabled="serviceModeDraft === 'shutdown' && !shutdownConfirmed"
+                @click="saveConfig"
+              />
             </div>
           </div>
         </template>

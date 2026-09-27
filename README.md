@@ -14,7 +14,7 @@ Buka alamat lokal yang ditampilkan Nuxt.
 ## Perintah
 
 - `pnpm dev` — jalankan server pengembangan
-- `pnpm build` — buat build produksi
+- `pnpm build` — buat output statis produksi di `.output/public`
 - `pnpm preview` — pratinjau build produksi
 - `pnpm typecheck` — periksa tipe TypeScript
 - `pnpm lint` — jalankan ESLint
