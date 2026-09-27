@@ -402,7 +402,7 @@ function formatRate(value: number | null | undefined): string {
               {{ statusMeta(latest.storage.status).label }}
             </UBadge>
           </div>
-          <div class="overflow-x-auto">
+          <div class="mt-4 overflow-x-auto">
             <table class="w-full min-w-[520px] text-left text-xs">
               <thead class="border-y border-gray-100 text-[10px] uppercase tracking-wide text-gray-400 dark:border-gray-800">
                 <tr>
@@ -469,7 +469,7 @@ function formatRate(value: number | null | undefined): string {
               {{ statusMeta(latest.network.status).label }}
             </UBadge>
           </div>
-          <div class="overflow-x-auto">
+          <div class="mt-4 overflow-x-auto">
             <table class="w-full min-w-[470px] text-left text-xs">
               <thead class="border-y border-gray-100 text-[10px] uppercase tracking-wide text-gray-400 dark:border-gray-800">
                 <tr>
