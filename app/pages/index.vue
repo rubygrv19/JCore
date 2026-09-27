@@ -36,10 +36,17 @@ const services = [
 ]
 const selectedService = ref('')
 const configModalOpen = ref(false)
+const connectionOpen = ref(true)
+const baseUrls = reactive<Record<string, string>>(Object.fromEntries(services.map(service => [service.label, ''])))
 
 function openConfig(service: string) {
   selectedService.value = service
+  connectionOpen.value = true
   configModalOpen.value = true
+}
+
+function saveConfig() {
+  configModalOpen.value = false
 }
 
 function toggleGroup(label: string) {
@@ -201,7 +208,27 @@ const transactions = [
 
       <UModal v-model:open="configModalOpen" :title="selectedService">
         <template #body>
-          <p class="py-4 text-center text-sm font-medium text-gray-600 dark:text-gray-300">Coming Soon</p>
+          <UCollapsible v-model:open="connectionOpen" class="rounded-lg border border-gray-200 dark:border-gray-800">
+            <template #default="{ open }">
+              <button type="button" class="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-left text-sm font-medium" :aria-expanded="open">
+                <span>Connection</span>
+                <UIcon name="i-lucide-chevron-down" class="size-4 text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''" />
+              </button>
+            </template>
+            <template #content>
+              <div class="px-4 pb-4">
+                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">
+                  Base URL
+                  <UInput v-model="baseUrls[selectedService]" type="url" placeholder="https://api.example.com" class="mt-2" />
+                </label>
+              </div>
+            </template>
+          </UCollapsible>
+        </template>
+        <template #footer>
+          <div class="flex justify-end">
+            <UButton label="Save" @click="saveConfig" />
+          </div>
         </template>
       </UModal>
     </main>
