@@ -36,16 +36,23 @@ const services = [
 ]
 const selectedService = ref('')
 const configModalOpen = ref(false)
-const connectionOpen = ref(true)
+const connectionAccordion = ref<string | undefined>('connection')
 const baseUrls = reactive<Record<string, string>>(Object.fromEntries(services.map(service => [service.label, ''])))
+const baseUrlDraft = ref('')
 
 function openConfig(service: string) {
   selectedService.value = service
-  connectionOpen.value = true
+  baseUrlDraft.value = baseUrls[service] ?? ''
+  connectionAccordion.value = 'connection'
   configModalOpen.value = true
 }
 
 function saveConfig() {
+  baseUrls[selectedService.value] = baseUrlDraft.value.trim()
+  configModalOpen.value = false
+}
+
+function cancelConfig() {
   configModalOpen.value = false
 }
 
@@ -208,26 +215,27 @@ const transactions = [
 
       <UModal v-model:open="configModalOpen" :title="selectedService">
         <template #body>
-          <UCollapsible v-model:open="connectionOpen" class="rounded-lg border border-gray-200 dark:border-gray-800">
-            <template #default="{ open }">
-              <button type="button" class="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-left text-sm font-medium" :aria-expanded="open">
-                <span>Connection</span>
-                <UIcon name="i-lucide-chevron-down" class="size-4 text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''" />
-              </button>
+          <UAccordion
+            v-model="connectionAccordion"
+            :items="[{ label: 'Connection', value: 'connection', icon: 'i-lucide-plug-zap' }]"
+            type="single"
+            class="overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800"
+            :ui="{ item: 'border-0', trigger: 'cursor-pointer px-4 py-3.5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50', content: 'px-4', body: 'pb-4 pt-1' }"
+          >
+            <template #body>
+              <UFormField label="Base URL" description="Alamat dasar API untuk layanan ini." class="w-full">
+                <UInput v-model="baseUrlDraft" type="url" placeholder="https://api.example.com" class="mt-2 w-full" />
+              </UFormField>
             </template>
-            <template #content>
-              <div class="px-4 pb-4">
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">
-                  Base URL
-                  <UInput v-model="baseUrls[selectedService]" type="url" placeholder="https://api.example.com" class="mt-2" />
-                </label>
-              </div>
-            </template>
-          </UCollapsible>
+          </UAccordion>
         </template>
         <template #footer>
-          <div class="flex justify-end">
-            <UButton label="Save" @click="saveConfig" />
+          <div class="flex w-full items-center justify-between gap-4">
+            <p class="text-xs text-gray-400">Tersimpan sementara di halaman ini</p>
+            <div class="flex shrink-0 items-center gap-2">
+              <UButton label="Cancel" color="neutral" variant="ghost" @click="cancelConfig" />
+              <UButton label="Save" color="success" icon="i-lucide-check" @click="saveConfig" />
+            </div>
           </div>
         </template>
       </UModal>
