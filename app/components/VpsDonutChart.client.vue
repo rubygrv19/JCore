@@ -48,7 +48,7 @@ const options: ChartOptions<'doughnut'> = {
   <div
     role="img"
     :aria-label="chartLabel"
-    class="relative size-36 shrink-0 sm:size-40"
+    class="relative size-40 shrink-0 sm:size-44"
   >
     <Doughnut
       :data="chartData"
