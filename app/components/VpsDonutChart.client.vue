@@ -11,6 +11,9 @@ const props = defineProps<{
   chartLabel: string
 }>()
 
+const colorMode = useColorMode()
+const isDark = computed(() => colorMode.value === 'dark')
+
 const chartData = computed<ChartData<'doughnut'>>(() => {
   const hasData = props.segments.some(segment => segment.value > 0)
   const segments = hasData
@@ -28,7 +31,7 @@ const chartData = computed<ChartData<'doughnut'>>(() => {
   }
 })
 
-const options: ChartOptions<'doughnut'> = {
+const options = computed<ChartOptions<'doughnut'>>(() => ({
   responsive: true,
   maintainAspectRatio: true,
   cutout: '76%',
@@ -36,12 +39,18 @@ const options: ChartOptions<'doughnut'> = {
   plugins: {
     legend: { display: false },
     tooltip: {
+      backgroundColor: isDark.value ? '#202326' : '#ffffff',
+      titleColor: isDark.value ? '#f9fafb' : '#111827',
+      bodyColor: isDark.value ? '#d1d5db' : '#374151',
+      borderColor: isDark.value ? 'rgba(255, 255, 255, 0.08)' : 'rgba(17, 24, 39, 0.08)',
+      borderWidth: 1,
+      padding: 10,
       callbacks: {
         label: context => ` ${context.label}: ${context.formattedValue}`
       }
     }
   }
-}
+}))
 </script>
 
 <template>
