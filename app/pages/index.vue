@@ -54,7 +54,7 @@ const transactions = [
         <div v-for="group in menuGroups" :key="group.label">
           <button
             type="button"
-            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+            class="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
             :aria-expanded="expandedGroups.has(group.label)"
             :aria-controls="`menu-${group.label.toLowerCase()}`"
             @click="toggleGroup(group.label)"
@@ -63,18 +63,20 @@ const transactions = [
             <span class="flex-1">{{ group.label }}</span>
             <UIcon name="i-lucide-chevron-down" class="size-4 text-gray-400 transition-transform" :class="expandedGroups.has(group.label) ? 'rotate-180' : ''" />
           </button>
-          <div v-show="expandedGroups.has(group.label)" :id="`menu-${group.label.toLowerCase()}`" class="ml-5 space-y-0.5 border-l border-gray-200 pl-3 dark:border-gray-700">
-            <a
-              v-for="child in group.children"
-              :key="child.label"
-              :href="child.href"
-              class="block rounded-md px-3 py-2 text-[13px] transition"
-              :class="activeMenu === child.label ? 'bg-emerald-50 font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'"
-              @click="activeMenu = child.label"
-            >
-              {{ child.label }}
-            </a>
-          </div>
+          <Transition name="submenu">
+            <div v-show="expandedGroups.has(group.label)" :id="`menu-${group.label.toLowerCase()}`" class="submenu-content ml-5 space-y-0.5 border-l border-gray-200 pl-3 dark:border-gray-700">
+              <a
+                v-for="child in group.children"
+                :key="child.label"
+                :href="child.href"
+                class="block cursor-pointer rounded-md px-3 py-2 text-[13px] transition"
+                :class="activeMenu === child.label ? 'bg-emerald-50 font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'"
+                @click="activeMenu = child.label"
+              >
+                {{ child.label }}
+              </a>
+            </div>
+          </Transition>
         </div>
       </nav>
       <div class="mt-auto rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
@@ -154,3 +156,32 @@ const transactions = [
     </main>
   </div>
 </template>
+
+<style scoped>
+.submenu-enter-active,
+.submenu-leave-active {
+  overflow: hidden;
+  transition: max-height 200ms ease, opacity 200ms ease, transform 200ms ease;
+}
+
+.submenu-enter-from,
+.submenu-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.submenu-enter-to,
+.submenu-leave-from {
+  max-height: 12rem;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submenu-enter-active,
+  .submenu-leave-active {
+    transition-duration: 1ms;
+  }
+}
+</style>
