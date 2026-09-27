@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Chart as ChartJS, CategoryScale, Filler, Legend, LinearScale, LineElement, PointElement, Tooltip } from 'chart.js'
+import { Chart as ChartJS, CategoryScale, Filler, Legend, LinearScale, LineElement, PointElement, Tooltip, type TooltipItem } from 'chart.js'
 import { Line } from 'vue-chartjs'
 
 ChartJS.register(CategoryScale, Filler, Legend, LinearScale, LineElement, PointElement, Tooltip)
@@ -45,7 +45,10 @@ const options = computed(() => {
         borderWidth: 1,
         padding: 10,
         callbacks: {
-          label: (context: { parsed: { y: number } }) => `Rp ${context.parsed.y.toLocaleString('id-ID')} jt`
+          label: (context: TooltipItem<'line'>) => {
+            const value = context.parsed.y
+            return value === null ? 'Rp —' : `Rp ${value.toLocaleString('id-ID')} jt`
+          }
         }
       }
     },
