@@ -37,18 +37,31 @@ const services = [
 const selectedService = ref('')
 const configModalOpen = ref(false)
 const connectionAccordion = ref<string | undefined>('connection')
+const dangerZoneAccordion = ref<string | undefined>()
 const baseUrls = reactive<Record<string, string>>(Object.fromEntries(services.map(service => [service.label, ''])))
 const baseUrlDraft = ref('')
+const serviceModes = reactive<Record<string, string>>(Object.fromEntries(services.map(service => [service.label, ''])))
+const serviceModeDraft = ref('')
+const shutdownConfirmed = ref(false)
+const serviceModeOptions = [
+  { value: 'coming-soon', label: 'Coming Soon', description: 'Tandai layanan sebagai belum tersedia.', icon: 'i-lucide-sparkles' },
+  { value: 'maintenance', label: 'Maintenance', description: 'Tandai layanan sedang dalam pemeliharaan.', icon: 'i-lucide-wrench' },
+  { value: 'shutdown', label: 'Shutdown', description: 'Tandai layanan sebagai tidak aktif.', icon: 'i-lucide-power' }
+]
 
 function openConfig(service: string) {
   selectedService.value = service
   baseUrlDraft.value = baseUrls[service] ?? ''
+  serviceModeDraft.value = serviceModes[service] ?? ''
+  shutdownConfirmed.value = false
   connectionAccordion.value = 'connection'
+  dangerZoneAccordion.value = undefined
   configModalOpen.value = true
 }
 
 function saveConfig() {
   baseUrls[selectedService.value] = baseUrlDraft.value.trim()
+  serviceModes[selectedService.value] = serviceModeDraft.value
   configModalOpen.value = false
 }
 
@@ -215,26 +228,64 @@ const transactions = [
 
       <UModal v-model:open="configModalOpen" :title="selectedService">
         <template #body>
-          <UAccordion
-            v-model="connectionAccordion"
-            :items="[{ label: 'Connection', value: 'connection', icon: 'i-lucide-plug-zap' }]"
-            type="single"
-            class="overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800"
-            :ui="{ item: 'border-0', trigger: 'cursor-pointer px-4 py-3.5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50', content: 'px-4', body: 'pb-4 pt-1' }"
-          >
-            <template #body>
-              <UFormField label="Base URL" description="Alamat dasar API untuk layanan ini." class="w-full">
-                <UInput v-model="baseUrlDraft" type="url" placeholder="https://api.example.com" class="mt-2 w-full" />
-              </UFormField>
-            </template>
-          </UAccordion>
+          <div class="space-y-3">
+            <UAccordion
+              v-model="connectionAccordion"
+              :items="[{ label: 'Connection', value: 'connection', icon: 'i-lucide-plug-zap' }]"
+              type="single"
+              class="overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800"
+              :ui="{ item: 'border-0', trigger: 'cursor-pointer px-4 py-3.5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50', content: 'px-4', body: 'pb-4 pt-1' }"
+            >
+              <template #body>
+                <UFormField label="Base URL" description="Alamat dasar API untuk layanan ini." class="w-full">
+                  <UInput v-model="baseUrlDraft" type="url" placeholder="https://api.example.com" class="mt-2 w-full" />
+                </UFormField>
+              </template>
+            </UAccordion>
+
+            <UAccordion
+              v-model="dangerZoneAccordion"
+              :items="[{ label: 'Danger Zone', value: 'danger-zone', icon: 'i-lucide-triangle-alert' }]"
+              type="single"
+              class="overflow-hidden rounded-xl border border-red-200 bg-red-50/40 dark:border-red-900/60 dark:bg-red-950/15"
+              :ui="{ item: 'border-0', trigger: 'cursor-pointer px-4 py-3.5 text-sm font-semibold text-red-700 hover:bg-red-100/60 dark:text-red-300 dark:hover:bg-red-950/50', leadingIcon: 'text-red-600 dark:text-red-400', label: 'text-red-700 dark:text-red-300', content: 'px-4', body: 'pb-4 pt-1' }"
+            >
+              <template #body>
+                <div class="space-y-3">
+                  <p class="text-xs leading-5 text-red-800/80 dark:text-red-200/80">Pilih mode tampilan layanan. Perubahan ini hanya tersimpan sementara dan belum mengubah layanan.</p>
+                  <fieldset class="space-y-2">
+                    <legend class="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-200">Service mode</legend>
+                    <label
+                      v-for="mode in serviceModeOptions"
+                      :key="mode.value"
+                      class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition"
+                      :class="serviceModeDraft === mode.value ? 'border-red-300 bg-white ring-1 ring-red-300 dark:border-red-800 dark:bg-red-950/30 dark:ring-red-800' : 'border-gray-200 bg-white/80 hover:border-red-200 dark:border-red-900/50 dark:bg-[#151719]/70 dark:hover:border-red-800'"
+                    >
+                      <input v-model="serviceModeDraft" type="radio" name="service-mode" :value="mode.value" class="mt-0.5 size-4 shrink-0 accent-red-600" @change="shutdownConfirmed = false">
+                      <span class="min-w-0 flex-1">
+                        <span class="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-100">
+                          <UIcon :name="mode.icon" class="size-4 text-red-600 dark:text-red-400" />
+                          {{ mode.label }}
+                        </span>
+                        <span class="mt-1 block text-xs leading-5 text-gray-500 dark:text-gray-400">{{ mode.description }}</span>
+                      </span>
+                    </label>
+                  </fieldset>
+                  <label v-if="serviceModeDraft === 'shutdown'" class="flex cursor-pointer items-start gap-2.5 rounded-lg border border-red-300 bg-red-100/70 p-3 text-xs leading-5 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
+                    <input v-model="shutdownConfirmed" type="checkbox" class="mt-0.5 size-4 shrink-0 accent-red-600">
+                    <span>Saya paham mode ini akan menandai layanan sebagai tidak aktif.</span>
+                  </label>
+                </div>
+              </template>
+            </UAccordion>
+          </div>
         </template>
         <template #footer>
           <div class="flex w-full items-center justify-between gap-4">
             <p class="text-xs text-gray-400">Tersimpan sementara di halaman ini</p>
             <div class="flex shrink-0 items-center gap-2">
               <UButton label="Cancel" color="neutral" variant="ghost" @click="cancelConfig" />
-              <UButton label="Save" color="success" icon="i-lucide-check" @click="saveConfig" />
+              <UButton label="Save" :color="serviceModeDraft === 'shutdown' ? 'error' : 'success'" icon="i-lucide-check" :disabled="serviceModeDraft === 'shutdown' && !shutdownConfirmed" @click="saveConfig" />
             </div>
           </div>
         </template>
