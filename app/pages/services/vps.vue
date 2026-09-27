@@ -542,7 +542,7 @@ function formatRate(value: number | null | undefined): string {
           </div>
           <div
             v-if="serviceItems.length"
-            class="border-t border-gray-100 dark:border-gray-800"
+            class="mt-4 border-t border-gray-100 dark:border-gray-800"
           >
             <UAccordion
               :items="serviceItems"
@@ -630,7 +630,7 @@ function formatRate(value: number | null | undefined): string {
           </div>
           <p
             v-else
-            class="border-t border-gray-100 py-8 text-center text-xs text-gray-500 dark:border-gray-800"
+            class="mt-4 border-t border-gray-100 py-8 text-center text-xs text-gray-500 dark:border-gray-800"
           >
             Belum ada unit systemd yang dipantau.
           </p>
