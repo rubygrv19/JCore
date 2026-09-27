@@ -56,14 +56,10 @@ const overviewCards = computed(() => {
   const cpu = latest.value.cpu
   const memory = latest.value.memory
   const storage = primaryFilesystem.value
-  const services = latest.value.services
   const iface = networkInterface.value
   const cpuUsed = clampPercent(cpu.usagePercent)
   const memoryUsed = clampPercent(memoryUsedPercent.value)
   const diskUsed = clampPercent(storageUsedPercent.value)
-  const active = services.active ?? 0
-  const failed = services.failed ?? 0
-  const other = Math.max(0, services.units.length - active - failed)
   const rx = iface?.rxBytesPerSecond ?? null
   const tx = iface?.txBytesPerSecond ?? null
 
@@ -81,8 +77,12 @@ const overviewCards = computed(() => {
             { label: 'Tersedia', value: Math.max(0, 100 - cpuUsed), color: '#e5e7eb' }
           ],
       details: [
-        { label: 'Load', value: `${cpu.loadAverage['1m'] ?? '—'} / ${cpu.loadAverage['5m'] ?? '—'} / ${cpu.loadAverage['15m'] ?? '—'}` }
+        { label: 'Digunakan', value: percent(cpu.usagePercent), color: statusMeta(cpu.status).hex },
+        { label: 'Tersedia', value: cpu.usagePercent === null ? '—' : percent(100 - cpuUsed), color: '#e5e7eb' }
       ],
+      total: { label: 'CPU cores', value: dashboard.value.host.cpuCores === null ? '—' : `${dashboard.value.host.cpuCores} cores` },
+      footerRows: [{ label: 'Load average · 1 / 5 / 15m', value: `${cpu.loadAverage['1m'] ?? '—'} / ${cpu.loadAverage['5m'] ?? '—'} / ${cpu.loadAverage['15m'] ?? '—'}` }],
+      meter: null,
       footnote: `Peringatan ${dashboard.value.thresholds.cpu.warningPercent}% · kritis ${dashboard.value.thresholds.cpu.criticalPercent}%`
     },
     {
@@ -98,9 +98,12 @@ const overviewCards = computed(() => {
             { label: 'Tersedia', value: Math.max(0, 100 - memoryUsed), color: '#e5e7eb' }
           ],
       details: [
-        { label: 'Tersedia', value: `${formatBytes(memory.availableBytes)} / ${formatBytes(memory.totalBytes)}` },
-        { label: 'Swap terpakai', value: percent(swapUsedPercent.value) }
+        { label: 'Digunakan', value: formatBytes(memory.totalBytes === null || memory.availableBytes === null ? null : memory.totalBytes - memory.availableBytes), color: statusMeta(memory.status).hex },
+        { label: 'Tersedia', value: formatBytes(memory.availableBytes), color: '#e5e7eb' }
       ],
+      total: { label: 'Total memory', value: formatBytes(memory.totalBytes) },
+      footerRows: [{ label: 'Swap terpakai', value: `${formatBytes(memory.swapUsedBytes)} / ${formatBytes(memory.swapTotalBytes)} · ${percent(swapUsedPercent.value)}` }],
+      meter: swapUsedPercent.value,
       footnote: `Peringatan <${dashboard.value.thresholds.memoryAvailable.warningBelowPercent}% tersedia · kritis <${dashboard.value.thresholds.memoryAvailable.criticalBelowPercent}%`
     },
     {
@@ -116,29 +119,13 @@ const overviewCards = computed(() => {
             { label: 'Tersedia', value: Math.max(0, 100 - diskUsed), color: '#e5e7eb' }
           ],
       details: [
-        { label: `${storage?.mountPoint ?? 'Mount'} · terpakai`, value: `${formatBytes(storage?.usedBytes ?? null)} / ${formatBytes(storage?.totalBytes ?? null)}` },
-        { label: 'Inode terpakai', value: percent(storage?.inodeUsedPercent ?? null) }
+        { label: 'Digunakan', value: formatBytes(storage?.usedBytes ?? null), color: statusMeta(latest.value.storage.status).hex },
+        { label: 'Tersedia', value: formatBytes(storage?.totalBytes == null || storage.usedBytes === null ? null : storage.totalBytes - storage.usedBytes), color: '#e5e7eb' }
       ],
-      footnote: `Peringatan ${dashboard.value.thresholds.storageUsed.warningPercent}% · kritis ${dashboard.value.thresholds.storageUsed.criticalPercent}%`
-    },
-    {
-      title: 'Services',
-      status: services.status,
-      centerValue: `${services.active ?? '—'} / ${services.units.length}`,
-      centerLabel: 'aktif',
-      chartLabel: `${services.active ?? '—'} dari ${services.units.length} services aktif`,
-      segments: services.active === null || services.failed === null
-        ? []
-        : [
-            { label: 'Aktif', value: active, color: '#10b981' },
-            { label: 'Gagal', value: failed, color: '#ef4444' },
-            { label: 'Lainnya', value: other, color: '#9ca3af' }
-          ],
-      details: [
-        { label: 'Aktif', value: String(services.active ?? '—') },
-        { label: 'Gagal', value: String(services.failed ?? '—') }
-      ],
-      footnote: `${services.units.length} unit systemd dipantau`
+      total: { label: `Total · ${storage?.mountPoint ?? '—'}`, value: formatBytes(storage?.totalBytes ?? null) },
+      footerRows: [{ label: 'Inode terpakai', value: percent(storage?.inodeUsedPercent ?? null) }],
+      meter: storage?.inodeUsedPercent ?? null,
+      footnote: `Kapasitas: peringatan ${dashboard.value.thresholds.storageUsed.warningPercent}% · kritis ${dashboard.value.thresholds.storageUsed.criticalPercent}%`
     },
     {
       title: 'Network',
@@ -153,10 +140,16 @@ const overviewCards = computed(() => {
             { label: 'Keluar · TX', value: tx, color: '#8b5cf6' }
           ],
       details: [
-        { label: 'Masuk · RX', value: formatRate(iface?.rxBytesPerSecond) },
-        { label: 'Keluar · TX', value: formatRate(iface?.txBytesPerSecond) }
+        { label: 'Masuk · RX', value: formatRate(iface?.rxBytesPerSecond), color: '#0ea5e9' },
+        { label: 'Keluar · TX', value: formatRate(iface?.txBytesPerSecond), color: '#8b5cf6' }
       ],
-      footnote: `${iface?.name ?? 'Interface tidak tersedia'} · rasio traffic, kapasitas belum diketahui`
+      total: { label: 'Interface', value: iface?.name ?? '—' },
+      footerRows: [
+        { label: 'Errors · RX / TX', value: `${iface?.rxErrorsPerSecond ?? '—'} / ${iface?.txErrorsPerSecond ?? '—'} per detik` },
+        { label: 'Drops · RX / TX', value: `${iface?.rxDropsPerSecond ?? '—'} / ${iface?.txDropsPerSecond ?? '—'} per detik` }
+      ],
+      meter: null,
+      footnote: 'Donut menunjukkan rasio traffic. Kapasitas bandwidth belum ditentukan.'
     }
   ]
 })
@@ -314,14 +307,14 @@ function formatRate(value: number | null | undefined): string {
 
       <section
         aria-label="Ringkasan resource"
-        class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5"
+        class="grid gap-4 xl:grid-cols-2"
       >
         <UCard
           v-for="card in overviewCards"
           :key="card.title"
           class="h-full rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
         >
-          <div class="flex min-h-[276px] flex-col">
+          <div class="flex h-full flex-col">
             <div class="flex items-center justify-between gap-2">
               <span class="text-sm font-semibold">{{ card.title }}</span><UBadge
                 :color="statusMeta(card.status).color"
@@ -331,27 +324,64 @@ function formatRate(value: number | null | undefined): string {
                 {{ statusMeta(card.status).label }}
               </UBadge>
             </div>
-            <div class="mt-4 flex min-h-28 items-center justify-center">
+            <div class="mt-6 grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-4 sm:gap-6">
               <VpsDonutChart
                 :segments="card.segments"
                 :center-value="card.centerValue"
                 :center-label="card.centerLabel"
                 :chart-label="card.chartLabel"
               />
+              <dl class="min-w-0 space-y-3 text-xs sm:text-sm">
+                <div
+                  v-for="detail in card.details"
+                  :key="detail.label"
+                  class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1"
+                >
+                  <dt class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <span
+                      class="size-2 shrink-0 rounded-full"
+                      :style="{ backgroundColor: detail.color }"
+                      aria-hidden="true"
+                    />
+                    {{ detail.label }}
+                  </dt>
+                  <dd class="ml-auto font-medium text-gray-800 tabular-nums dark:text-gray-200">
+                    {{ detail.value }}
+                  </dd>
+                </div>
+                <div class="flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 pt-3 dark:border-gray-800">
+                  <dt class="text-[10px] tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                    {{ card.total.label }}
+                  </dt>
+                  <dd class="ml-auto font-medium text-gray-800 tabular-nums dark:text-gray-200">
+                    {{ card.total.value }}
+                  </dd>
+                </div>
+              </dl>
             </div>
-            <div class="mt-4 space-y-2.5">
-              <div
-                v-for="detail in card.details"
-                :key="detail.label"
-                class="flex items-start justify-between gap-3 text-xs"
-              >
-                <span class="min-w-0 text-gray-500 dark:text-gray-400">{{ detail.label }}</span>
-                <span class="shrink-0 text-right font-medium text-gray-800 dark:text-gray-200">{{ detail.value }}</span>
+            <div class="mt-6 flex flex-1 flex-col border-t border-gray-200 pt-4 dark:border-gray-800">
+              <div class="space-y-2">
+                <div
+                  v-for="row in card.footerRows"
+                  :key="row.label"
+                  class="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs"
+                >
+                  <span class="text-gray-500 dark:text-gray-400">{{ row.label }}</span>
+                  <span class="ml-auto font-medium text-gray-800 tabular-nums dark:text-gray-200">{{ row.value }}</span>
+                </div>
               </div>
+              <UProgress
+                v-if="card.meter !== null"
+                :model-value="card.meter"
+                :color="statusMeta(card.status).color"
+                :aria-label="card.footerRows[0]?.label"
+                size="xs"
+                class="mt-3"
+              />
+              <p class="mt-auto pt-3 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                {{ card.footnote }}
+              </p>
             </div>
-            <p class="mt-auto pt-3 text-[10px] leading-4 text-gray-500 dark:text-gray-400">
-              {{ card.footnote }}
-            </p>
           </div>
         </UCard>
       </section>
