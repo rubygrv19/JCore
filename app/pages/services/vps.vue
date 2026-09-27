@@ -242,7 +242,6 @@ function formatRate(value: number | null | undefined): string {
     <UCard
       v-if="!dashboard && !error"
       class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-      :ui="{ body: 'p-6' }"
     >
       <div class="flex items-center gap-3 text-sm text-gray-500">
         <UIcon
@@ -254,7 +253,6 @@ function formatRate(value: number | null | undefined): string {
     <UCard
       v-else-if="error"
       class="rounded-xl border-red-200 shadow-none dark:border-red-900"
-      :ui="{ body: 'p-6' }"
     >
       <div class="flex items-start gap-3">
         <UIcon
@@ -305,7 +303,6 @@ function formatRate(value: number | null | undefined): string {
           v-for="card in overviewCards"
           :key="card.title"
           class="h-full rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-4 sm:p-5' }"
         >
           <div class="flex min-h-[276px] flex-col">
             <div class="flex items-center justify-between gap-2">
@@ -366,7 +363,6 @@ function formatRate(value: number | null | undefined): string {
             v-for="chart in charts"
             :key="chart.title"
             class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-            :ui="{ body: 'p-4 sm:p-5' }"
           >
             <div class="mb-3">
               <h3 class="text-sm font-semibold">
@@ -391,9 +387,8 @@ function formatRate(value: number | null | undefined): string {
       >
         <UCard
           class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-0' }"
         >
-          <div class="flex items-start justify-between gap-3 px-5 py-4">
+          <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-sm font-semibold">
                 Filesystem
@@ -411,13 +406,13 @@ function formatRate(value: number | null | undefined): string {
             <table class="w-full min-w-[520px] text-left text-xs">
               <thead class="border-y border-gray-100 text-[10px] uppercase tracking-wide text-gray-400 dark:border-gray-800">
                 <tr>
-                  <th class="px-5 py-3 font-medium">
+                  <th class="px-3 py-3 font-medium">
                     Mount
                   </th><th class="px-3 py-3 font-medium">
                     Filesystem
                   </th><th class="px-3 py-3 font-medium">
                     Terpakai
-                  </th><th class="px-5 py-3 text-right font-medium">
+                  </th><th class="px-3 py-3 text-right font-medium">
                     Inode
                   </th>
                 </tr>
@@ -427,7 +422,7 @@ function formatRate(value: number | null | undefined): string {
                   :key="filesystem.mountPoint"
                   class="border-b border-gray-100 last:border-0 dark:border-gray-800"
                 >
-                  <td class="px-5 py-3 font-medium">
+                  <td class="px-3 py-3 font-medium">
                     {{ filesystem.mountPoint }}
                   </td><td class="px-3 py-3 text-gray-500">
                     {{ filesystem.fileSystem }}
@@ -441,13 +436,13 @@ function formatRate(value: number | null | undefined): string {
                         {{ statusMeta(filesystem.status).label }}
                       </UBadge>
                     </div><span class="mt-1 block text-[10px] text-gray-500">{{ formatBytes(filesystem.usedBytes) }} / {{ formatBytes(filesystem.totalBytes) }}</span>
-                  </td><td class="px-5 py-3 text-right text-gray-500">
+                  </td><td class="px-3 py-3 text-right text-gray-500">
                     {{ percent(filesystem.inodeUsedPercent) }}
                   </td>
                 </tr><tr v-if="!latest.storage.filesystems.length">
                   <td
                     colspan="4"
-                    class="px-5 py-8 text-center text-gray-500"
+                    class="px-3 py-8 text-center text-gray-500"
                   >
                     Data filesystem belum tersedia.
                   </td>
@@ -459,9 +454,8 @@ function formatRate(value: number | null | undefined): string {
 
         <UCard
           class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-0' }"
         >
-          <div class="flex items-start justify-between gap-3 px-5 py-4">
+          <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-sm font-semibold">
                 Network interfaces
@@ -479,13 +473,13 @@ function formatRate(value: number | null | undefined): string {
             <table class="w-full min-w-[470px] text-left text-xs">
               <thead class="border-y border-gray-100 text-[10px] uppercase tracking-wide text-gray-400 dark:border-gray-800">
                 <tr>
-                  <th class="px-5 py-3 font-medium">
+                  <th class="px-3 py-3 font-medium">
                     Interface
                   </th><th class="px-3 py-3 font-medium">
                     RX / TX
                   </th><th class="px-3 py-3 font-medium">
                     Errors
-                  </th><th class="px-5 py-3 text-right font-medium">
+                  </th><th class="px-3 py-3 text-right font-medium">
                     Drops
                   </th>
                 </tr>
@@ -495,7 +489,7 @@ function formatRate(value: number | null | undefined): string {
                   :key="iface.name"
                   class="border-b border-gray-100 last:border-0 dark:border-gray-800"
                 >
-                  <td class="px-5 py-3 font-medium">
+                  <td class="px-3 py-3 font-medium">
                     {{ iface.name }}<UBadge
                       :color="statusMeta(iface.status).color"
                       variant="subtle"
@@ -508,13 +502,13 @@ function formatRate(value: number | null | undefined): string {
                     ↓ {{ formatRate(iface.rxBytesPerSecond) }}<br>↑ {{ formatRate(iface.txBytesPerSecond) }}
                   </td><td class="px-3 py-3 text-gray-500">
                     {{ iface.rxErrorsPerSecond ?? '—' }} / {{ iface.txErrorsPerSecond ?? '—' }}
-                  </td><td class="px-5 py-3 text-right text-gray-500">
+                  </td><td class="px-3 py-3 text-right text-gray-500">
                     {{ iface.rxDropsPerSecond ?? '—' }} / {{ iface.txDropsPerSecond ?? '—' }}
                   </td>
                 </tr><tr v-if="!latest.network.interfaces.length">
                   <td
                     colspan="4"
-                    class="px-5 py-8 text-center text-gray-500"
+                    class="px-3 py-8 text-center text-gray-500"
                   >
                     Data interface belum tersedia.
                   </td>
@@ -522,7 +516,7 @@ function formatRate(value: number | null | undefined): string {
               </tbody>
             </table>
           </div>
-          <p class="px-5 py-3 text-[11px] text-gray-500">
+          <p class="py-3 text-[11px] text-gray-500">
             Status kapasitas memerlukan batas bandwidth dari provider.
           </p>
         </UCard>
@@ -531,9 +525,8 @@ function formatRate(value: number | null | undefined): string {
       <section class="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <UCard
           class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-0' }"
         >
-          <div class="flex items-start justify-between gap-3 px-5 py-4">
+          <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-sm font-semibold">
                 Services · systemd
@@ -558,11 +551,11 @@ function formatRate(value: number | null | undefined): string {
                 root: '',
                 item: 'border-b border-gray-100 last:border-0 dark:border-gray-800',
                 header: '',
-                trigger: 'w-full cursor-pointer px-5 py-3.5 text-left transition-colors hover:bg-gray-50/80 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary dark:hover:bg-gray-900/50',
+                trigger: 'w-full cursor-pointer py-3.5 text-left transition-colors hover:bg-gray-50/80 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary dark:hover:bg-gray-900/50',
                 label: 'w-full',
                 trailingIcon: 'size-4 text-gray-400 transition-transform duration-200',
                 content: '',
-                body: 'border-t border-gray-100 bg-gray-50/60 px-5 py-4 dark:border-gray-800 dark:bg-gray-900/30'
+                body: 'border-t border-gray-100 bg-gray-50/60 py-4 dark:border-gray-800 dark:bg-gray-900/30'
               }"
             >
               <template #default="{ item }">
@@ -637,14 +630,13 @@ function formatRate(value: number | null | undefined): string {
           </div>
           <p
             v-else
-            class="border-t border-gray-100 px-5 py-8 text-center text-xs text-gray-500 dark:border-gray-800"
+            class="border-t border-gray-100 py-8 text-center text-xs text-gray-500 dark:border-gray-800"
           >
             Belum ada unit systemd yang dipantau.
           </p>
         </UCard>
         <UCard
           class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-5' }"
         >
           <div class="flex items-start gap-3">
             <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"><UIcon
