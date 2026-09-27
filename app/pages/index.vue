@@ -52,6 +52,8 @@ const serviceCards = computed(() => services.map(service => ({
   ...service,
   mode: serviceModeOptions.find(mode => mode.value === serviceModes[service.label])
 })))
+const activeService = computed(() => services.find(service => service.label === activeMenu.value))
+const activeServiceHref = computed(() => menuGroups.flatMap(group => group.children).find(child => child.label === activeMenu.value)?.href)
 
 function openConfig(service: string) {
   selectedService.value = service
@@ -77,6 +79,28 @@ function toggleGroup(label: string) {
   if (expandedGroups.value.has(label)) expandedGroups.value.delete(label)
   else expandedGroups.value.add(label)
 }
+
+function openSettings() {
+  activeMenu.value = 'Settings'
+  window.location.hash = 'settings'
+}
+
+function syncPageFromHash() {
+  if (window.location.hash === '#settings') {
+    activeMenu.value = 'Settings'
+    return
+  }
+
+  const menuItem = menuGroups.flatMap(group => group.children).find(child => child.href === window.location.hash)
+  if (menuItem) activeMenu.value = menuItem.label
+}
+
+onMounted(() => {
+  syncPageFromHash()
+  window.addEventListener('hashchange', syncPageFromHash)
+})
+
+onBeforeUnmount(() => window.removeEventListener('hashchange', syncPageFromHash))
 
 const metrics = [
   { label: 'Total pendapatan', value: 'Rp 48,2 jt', change: '+12,8%', icon: 'i-lucide-wallet', tone: 'green' },
@@ -110,7 +134,7 @@ const transactions = [
             :class="activeMenu === group.label ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : ''"
             :aria-expanded="group.children.length ? expandedGroups.has(group.label) : undefined"
             :aria-controls="group.children.length ? `menu-${group.label.toLowerCase()}` : undefined"
-            @click="group.children.length ? toggleGroup(group.label) : activeMenu = group.label"
+            @click="group.children.length ? toggleGroup(group.label) : openSettings()"
           >
             <UIcon :name="group.icon" class="size-[18px]" />
             <span class="flex-1">{{ group.label }}</span>
@@ -124,6 +148,7 @@ const transactions = [
                 :href="child.href"
                 class="block cursor-pointer rounded-md px-3 py-2 text-[13px] transition"
                 :class="activeMenu === child.label ? 'bg-emerald-50 font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'"
+                :aria-current="activeMenu === child.label ? 'page' : undefined"
                 @click="activeMenu = child.label"
               >
                 {{ child.label }}
@@ -149,7 +174,7 @@ const transactions = [
           <span class="grid size-8 place-items-center rounded-lg bg-emerald-500 text-white"><UIcon name="i-lucide-panels-top-left" class="size-4" /></span>
           <span class="text-sm font-semibold">ruang<span class="text-emerald-600">kerja</span></span>
         </a>
-        <div class="hidden text-sm text-gray-500 lg:block">Workspace <span class="mx-2 text-gray-300">/</span><span class="font-medium text-gray-900 dark:text-white">{{ activeMenu === 'Settings' ? 'Settings' : 'Ringkasan' }}</span></div>
+        <div class="hidden text-sm text-gray-500 lg:block">Workspace <span class="mx-2 text-gray-300">/</span><span class="font-medium text-gray-900 dark:text-white">{{ activeMenu }}</span></div>
         <div class="ml-auto flex items-center gap-2">
           <UIcon name="i-lucide-search" class="mx-2 size-[18px] text-gray-400" aria-hidden="true" />
           <UIcon name="i-lucide-bell" class="mx-2 size-[18px] text-gray-400" aria-hidden="true" />
@@ -158,7 +183,7 @@ const transactions = [
         </div>
       </header>
 
-      <div v-if="activeMenu === 'Settings'" class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
+      <div v-if="activeMenu === 'Settings'" id="settings" class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
         <div class="mb-8">
           <h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">Settings</h1>
           <p class="mt-1 text-sm text-gray-500">Konfigurasi layanan.</p>
@@ -185,6 +210,23 @@ const transactions = [
             <span class="mt-5 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">Atur konfigurasi<UIcon name="i-lucide-arrow-up-right" class="size-3.5" /></span>
           </button>
         </section>
+      </div>
+
+      <div v-else-if="activeService" :id="activeServiceHref?.slice(1)" class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
+        <div class="mb-8">
+          <h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">{{ activeService.label }}</h1>
+          <p class="mt-1 text-sm text-gray-500">Halaman layanan.</p>
+        </div>
+        <UCard class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]" :ui="{ body: 'p-8 sm:p-12' }">
+          <div class="flex min-h-64 flex-col items-center justify-center text-center">
+            <span class="mb-5 grid size-12 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <UIcon :name="activeService.icon" class="size-6" />
+            </span>
+            <UBadge color="info" variant="subtle" class="rounded-full">Coming Soon</UBadge>
+            <h2 class="mt-4 text-lg font-semibold tracking-tight">{{ activeService.label }} sedang disiapkan</h2>
+            <p class="mt-2 max-w-sm text-sm leading-6 text-gray-500">Konten untuk layanan ini akan tersedia segera.</p>
+          </div>
+        </UCard>
       </div>
 
       <div v-else class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
