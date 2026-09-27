@@ -25,6 +25,8 @@ Memory availability should follow the host's available-memory metric, not simply
 
 Network throughput alone does not indicate a problem. Until an interface capacity or another network policy is configured, its status is `unknown`; still return RX/TX rates and error/drop rates when available. A unit's status must compare `actualState` with `expectedState`, so an intentionally inactive unit is not automatically unhealthy.
 
+Each `current.services.units[]` item includes `description`, `ports` (`port` plus `tcp`/`udp` protocol), `pid`, `uptimeSeconds`, `path`, and `commandLine`. Fields that the collector cannot determine are `null`; an empty `ports` array means no port was detected. The command line can contain sensitive arguments, so the collector must redact secrets before returning it.
+
 ## Mock versus live
 
-Every value in the bundled JSON is illustrative and marked `dataMode: "mock"`. The UI must keep that label visible. For real graphs, the backend must retain and return timestamped samples; a current snapshot alone is not enough.
+Every value in the bundled JSON, including service descriptions, ports, process IDs, paths, and command lines, is illustrative and marked `dataMode: "mock"`. The UI must keep that label visible. For real graphs, the backend must retain and return timestamped samples; a current snapshot alone is not enough.

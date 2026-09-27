@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatBytes, formatUptime, percent, VPS_STATUS_META } from '../../app/utils/vps-status'
+import { formatBytes, formatServicePorts, formatUptime, percent, VPS_STATUS_META } from '../../app/utils/vps-status'
 
 describe('VPS dashboard formatting and state labels', () => {
   it('uses consistent semantic colors and labels for each health state', () => {
@@ -17,5 +17,10 @@ describe('VPS dashboard formatting and state labels', () => {
     expect(percent(84.4)).toBe('84%')
     expect(formatUptime(null)).toBe('—')
     expect(formatUptime(604800)).toBe('7 hari 0 jam')
+  })
+
+  it('formats the service ports shown in the systemd detail accordion', () => {
+    expect(formatServicePorts([{ port: 80, protocol: 'tcp' }, { port: 53, protocol: 'udp' }])).toBe('TCP 80, UDP 53')
+    expect(formatServicePorts([])).toBe('Tidak ada port terdeteksi')
   })
 })

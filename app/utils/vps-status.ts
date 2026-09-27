@@ -26,3 +26,8 @@ export function formatUptime(seconds: number | null): string {
   const hours = Math.floor((seconds % 86_400) / 3_600)
   return days ? `${days} hari ${hours} jam` : `${hours} jam`
 }
+
+export function formatServicePorts(ports: Array<{ port: number, protocol: 'tcp' | 'udp' }>): string {
+  if (!ports.length) return 'Tidak ada port terdeteksi'
+  return ports.map(({ port, protocol }) => `${protocol.toUpperCase()} ${port}`).join(', ')
+}

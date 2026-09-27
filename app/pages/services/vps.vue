@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { VpsStatus } from '~/types/vps'
-import { formatBytes, formatUptime, percent, VPS_STATUS_META } from '~/utils/vps-status'
+import { formatBytes, formatServicePorts, formatUptime, percent, VPS_STATUS_META } from '~/utils/vps-status'
 import { useVpsDashboard } from '~/utils/vps-client'
 
 useSeoMeta({ title: 'VPS' })
@@ -10,7 +10,10 @@ const dashboard = computed(() => data.value)
 const latest = computed(() => dashboard.value?.current)
 const points = computed(() => dashboard.value?.history.samples ?? [])
 const chartLabels = computed(() => points.value.map(point => new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).format(new Date(point.timestamp))))
-const statusMeta = (value: VpsStatus) => VPS_STATUS_META[value]
+const statusMeta = (value: VpsStatus) => ({
+  ...VPS_STATUS_META[value],
+  hex: value === 'healthy' ? '#10b981' : value === 'warning' ? '#f59e0b' : value === 'critical' ? '#ef4444' : '#9ca3af'
+})
 const memoryUsedPercent = computed(() => {
   const memory = latest.value?.memory
   if (!memory?.totalBytes || memory.availableBytes === null) return null
@@ -27,7 +30,119 @@ const storageUsedPercent = computed(() => {
   return (primaryFilesystem.value.usedBytes / primaryFilesystem.value.totalBytes) * 100
 })
 const networkInterface = computed(() => latest.value?.network.interfaces[0])
+const serviceItems = computed(() => (latest.value?.services.units ?? []).map(unit => ({ ...unit, label: unit.name, value: unit.name })))
 const sampleCount = computed(() => points.value.length)
+const clampPercent = (value: number | null) => value === null ? 0 : Math.min(100, Math.max(0, value))
+const overviewCards = computed(() => {
+  if (!latest.value || !dashboard.value) return []
+
+  const cpu = latest.value.cpu
+  const memory = latest.value.memory
+  const storage = primaryFilesystem.value
+  const services = latest.value.services
+  const iface = networkInterface.value
+  const cpuUsed = clampPercent(cpu.usagePercent)
+  const memoryUsed = clampPercent(memoryUsedPercent.value)
+  const diskUsed = clampPercent(storageUsedPercent.value)
+  const active = services.active ?? 0
+  const failed = services.failed ?? 0
+  const other = Math.max(0, services.units.length - active - failed)
+  const rx = iface?.rxBytesPerSecond ?? null
+  const tx = iface?.txBytesPerSecond ?? null
+
+  return [
+    {
+      title: 'CPU',
+      status: cpu.status,
+      centerValue: percent(cpu.usagePercent),
+      centerLabel: 'digunakan',
+      chartLabel: `Komposisi penggunaan CPU ${percent(cpu.usagePercent)}`,
+      segments: cpu.usagePercent === null
+        ? []
+        : [
+            { label: 'Digunakan', value: cpuUsed, color: statusMeta(cpu.status).hex },
+            { label: 'Tersedia', value: Math.max(0, 100 - cpuUsed), color: '#e5e7eb' }
+          ],
+      details: [
+        { label: 'Load', value: `${cpu.loadAverage['1m'] ?? '—'} / ${cpu.loadAverage['5m'] ?? '—'} / ${cpu.loadAverage['15m'] ?? '—'}` }
+      ],
+      footnote: `Peringatan ${dashboard.value.thresholds.cpu.warningPercent}% · kritis ${dashboard.value.thresholds.cpu.criticalPercent}%`
+    },
+    {
+      title: 'Memory',
+      status: memory.status,
+      centerValue: percent(memoryUsedPercent.value),
+      centerLabel: 'digunakan',
+      chartLabel: `Komposisi memory terpakai ${percent(memoryUsedPercent.value)}`,
+      segments: memoryUsedPercent.value === null
+        ? []
+        : [
+            { label: 'Digunakan', value: memoryUsed, color: statusMeta(memory.status).hex },
+            { label: 'Tersedia', value: Math.max(0, 100 - memoryUsed), color: '#e5e7eb' }
+          ],
+      details: [
+        { label: 'Tersedia', value: `${formatBytes(memory.availableBytes)} / ${formatBytes(memory.totalBytes)}` },
+        { label: 'Swap terpakai', value: percent(swapUsedPercent.value) }
+      ],
+      footnote: `Peringatan <${dashboard.value.thresholds.memoryAvailable.warningBelowPercent}% tersedia · kritis <${dashboard.value.thresholds.memoryAvailable.criticalBelowPercent}%`
+    },
+    {
+      title: 'Storage',
+      status: latest.value.storage.status,
+      centerValue: percent(storageUsedPercent.value),
+      centerLabel: 'digunakan',
+      chartLabel: `Komposisi storage terpakai ${percent(storageUsedPercent.value)}`,
+      segments: storageUsedPercent.value === null
+        ? []
+        : [
+            { label: 'Digunakan', value: diskUsed, color: statusMeta(latest.value.storage.status).hex },
+            { label: 'Tersedia', value: Math.max(0, 100 - diskUsed), color: '#e5e7eb' }
+          ],
+      details: [
+        { label: `${storage?.mountPoint ?? 'Mount'} · terpakai`, value: `${formatBytes(storage?.usedBytes ?? null)} / ${formatBytes(storage?.totalBytes ?? null)}` },
+        { label: 'Inode terpakai', value: percent(storage?.inodeUsedPercent ?? null) }
+      ],
+      footnote: `Peringatan ${dashboard.value.thresholds.storageUsed.warningPercent}% · kritis ${dashboard.value.thresholds.storageUsed.criticalPercent}%`
+    },
+    {
+      title: 'Services',
+      status: services.status,
+      centerValue: `${services.active ?? '—'} / ${services.units.length}`,
+      centerLabel: 'aktif',
+      chartLabel: `${services.active ?? '—'} dari ${services.units.length} services aktif`,
+      segments: services.active === null || services.failed === null
+        ? []
+        : [
+            { label: 'Aktif', value: active, color: '#10b981' },
+            { label: 'Gagal', value: failed, color: '#ef4444' },
+            { label: 'Lainnya', value: other, color: '#9ca3af' }
+          ],
+      details: [
+        { label: 'Aktif', value: String(services.active ?? '—') },
+        { label: 'Gagal', value: String(services.failed ?? '—') }
+      ],
+      footnote: `${services.units.length} unit systemd dipantau`
+    },
+    {
+      title: 'Network',
+      status: latest.value.network.status,
+      centerValue: rx === null || tx === null ? '—' : formatRate(rx + tx),
+      centerLabel: 'RX + TX',
+      chartLabel: `Komposisi traffic masuk dan keluar pada ${iface?.name ?? 'interface'}`,
+      segments: rx === null || tx === null
+        ? []
+        : [
+            { label: 'Masuk · RX', value: rx, color: '#0ea5e9' },
+            { label: 'Keluar · TX', value: tx, color: '#8b5cf6' }
+          ],
+      details: [
+        { label: 'Masuk · RX', value: formatRate(iface?.rxBytesPerSecond) },
+        { label: 'Keluar · TX', value: formatRate(iface?.txBytesPerSecond) }
+      ],
+      footnote: `${iface?.name ?? 'Interface tidak tersedia'} · rasio traffic, kapasitas belum diketahui`
+    }
+  ]
+})
 const charts = computed(() => [
   {
     title: 'CPU',
@@ -75,7 +190,7 @@ function formatRate(value: number | null | undefined): string {
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1440px] space-y-7 px-5 py-8 sm:px-8 lg:px-10">
+  <div class="mx-auto max-w-[1440px] space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
     <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
       <div>
         <div class="mb-2 flex flex-wrap items-center gap-2">
@@ -158,7 +273,7 @@ function formatRate(value: number | null | undefined): string {
     <template v-else-if="dashboard && latest">
       <section
         aria-label="Informasi host"
-        class="grid grid-cols-2 gap-3 border-y border-gray-200 py-4 dark:border-gray-800 sm:grid-cols-4"
+        class="grid grid-cols-2 gap-x-4 gap-y-4 border-y border-gray-200 py-4 dark:border-gray-800 sm:grid-cols-4"
       >
         <div>
           <span class="text-xs text-gray-500 dark:text-gray-400">Hostname</span><p class="mt-1 text-sm font-medium">
@@ -184,146 +299,52 @@ function formatRate(value: number | null | undefined): string {
 
       <section
         aria-label="Ringkasan resource"
-        class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5"
+        class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5"
       >
         <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-4' }"
+          v-for="card in overviewCards"
+          :key="card.title"
+          class="h-full rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
+          :ui="{ body: 'p-0' }"
         >
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-medium text-gray-500">CPU</span><UBadge
-              :color="statusMeta(latest.cpu.status).color"
-              variant="subtle"
-              size="xs"
-            >
-              {{ statusMeta(latest.cpu.status).label }}
-            </UBadge>
+          <div class="flex min-h-[276px] flex-col p-4 sm:p-5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-sm font-semibold">{{ card.title }}</span><UBadge
+                :color="statusMeta(card.status).color"
+                variant="subtle"
+                size="xs"
+              >
+                {{ statusMeta(card.status).label }}
+              </UBadge>
+            </div>
+            <div class="mt-4 flex min-h-28 items-center justify-center">
+              <VpsDonutChart
+                :segments="card.segments"
+                :center-value="card.centerValue"
+                :center-label="card.centerLabel"
+                :chart-label="card.chartLabel"
+              />
+            </div>
+            <div class="mt-4 space-y-2.5">
+              <div
+                v-for="detail in card.details"
+                :key="detail.label"
+                class="flex items-start justify-between gap-3 text-xs"
+              >
+                <span class="min-w-0 text-gray-500 dark:text-gray-400">{{ detail.label }}</span>
+                <span class="shrink-0 text-right font-medium text-gray-800 dark:text-gray-200">{{ detail.value }}</span>
+              </div>
+            </div>
+            <p class="mt-auto pt-3 text-[10px] leading-4 text-gray-500 dark:text-gray-400">
+              {{ card.footnote }}
+            </p>
           </div>
-          <p class="mt-3 text-2xl font-semibold tracking-tight">
-            {{ percent(latest.cpu.usagePercent) }}
-          </p><UProgress
-            v-if="latest.cpu.usagePercent !== null"
-            :model-value="latest.cpu.usagePercent ?? 0"
-            :color="statusMeta(latest.cpu.status).color"
-            size="sm"
-            class="mt-3"
-            aria-label="Penggunaan CPU"
-          />
-          <p class="mt-2 text-xs text-gray-500">
-            {{ dashboard.thresholds.cpu.warningPercent }}% peringatan · {{ dashboard.thresholds.cpu.criticalPercent }}% kritis
-          </p>
-        </UCard>
-        <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-4' }"
-        >
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-medium text-gray-500">Memory</span><UBadge
-              :color="statusMeta(latest.memory.status).color"
-              variant="subtle"
-              size="xs"
-            >
-              {{ statusMeta(latest.memory.status).label }}
-            </UBadge>
-          </div>
-          <p class="mt-3 text-2xl font-semibold tracking-tight">
-            {{ percent(memoryUsedPercent) }}
-          </p><UProgress
-            v-if="memoryUsedPercent !== null"
-            :model-value="memoryUsedPercent ?? 0"
-            :color="statusMeta(latest.memory.status).color"
-            size="sm"
-            class="mt-3"
-            aria-label="Memory terpakai"
-          />
-          <p class="mt-2 text-xs text-gray-500">
-            {{ formatBytes(latest.memory.availableBytes) }} tersedia dari {{ formatBytes(latest.memory.totalBytes) }}
-          </p>
-          <p class="mt-1 text-xs text-gray-500">
-            Swap terpakai {{ percent(swapUsedPercent) }}
-          </p>
-          <p class="mt-1 text-xs text-gray-500">
-            Peringatan &lt;{{ dashboard.thresholds.memoryAvailable.warningBelowPercent }}% tersedia · kritis &lt;{{ dashboard.thresholds.memoryAvailable.criticalBelowPercent }}%
-          </p>
-        </UCard>
-        <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-4' }"
-        >
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-medium text-gray-500">Storage</span><UBadge
-              :color="statusMeta(latest.storage.status).color"
-              variant="subtle"
-              size="xs"
-            >
-              {{ statusMeta(latest.storage.status).label }}
-            </UBadge>
-          </div>
-          <p class="mt-3 text-2xl font-semibold tracking-tight">
-            {{ percent(storageUsedPercent) }}
-          </p><UProgress
-            v-if="storageUsedPercent !== null"
-            :model-value="storageUsedPercent ?? 0"
-            :color="statusMeta(latest.storage.status).color"
-            size="sm"
-            class="mt-3"
-            aria-label="Storage terpakai pada filesystem utama"
-          />
-          <p class="mt-2 text-xs text-gray-500">
-            {{ primaryFilesystem?.mountPoint ?? 'Filesystem utama' }} · {{ formatBytes(primaryFilesystem?.usedBytes ?? null) }} terpakai
-          </p>
-          <p class="mt-1 text-xs text-gray-500">
-            {{ dashboard.thresholds.storageUsed.warningPercent }}% peringatan · {{ dashboard.thresholds.storageUsed.criticalPercent }}% kritis
-          </p>
-        </UCard>
-        <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-4' }"
-        >
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-medium text-gray-500">Services</span><UBadge
-              :color="statusMeta(latest.services.status).color"
-              variant="subtle"
-              size="xs"
-            >
-              {{ statusMeta(latest.services.status).label }}
-            </UBadge>
-          </div>
-          <p class="mt-3 text-2xl font-semibold tracking-tight">
-            {{ latest.services.active ?? '—' }}<span class="text-base font-normal text-gray-400"> / {{ latest.services.units.length }}</span>
-          </p>
-          <p class="mt-4 text-xs text-gray-500">
-            Aktif · {{ latest.services.failed ?? '—' }} gagal
-          </p>
-        </UCard>
-        <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-4' }"
-        >
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-medium text-gray-500">Network</span><UBadge
-              :color="statusMeta(latest.network.status).color"
-              variant="subtle"
-              size="xs"
-            >
-              {{ statusMeta(latest.network.status).label }}
-            </UBadge>
-          </div>
-          <p class="mt-3 text-lg font-semibold tracking-tight">
-            ↓ {{ formatRate(networkInterface?.rxBytesPerSecond) }}
-          </p>
-          <p class="mt-1 text-lg font-semibold tracking-tight">
-            ↑ {{ formatRate(networkInterface?.txBytesPerSecond) }}
-          </p>
-          <p class="mt-1 text-xs text-gray-500">
-            {{ networkInterface?.name ?? 'Interface belum tersedia' }} · kapasitas belum diketahui
-          </p>
         </UCard>
       </section>
 
       <section
         aria-label="Tren resource"
-        class="space-y-3"
+        class="space-y-4"
       >
         <div class="flex items-end justify-between gap-3">
           <div>
@@ -526,52 +547,100 @@ function formatRate(value: number | null | undefined): string {
               {{ latest.services.active ?? '—' }} aktif
             </UBadge>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[520px] text-left text-xs">
-              <thead class="border-y border-gray-100 text-[10px] uppercase tracking-wide text-gray-400 dark:border-gray-800">
-                <tr>
-                  <th class="px-5 py-3 font-medium">
-                    Unit
-                  </th><th class="px-3 py-3 font-medium">
-                    Kondisi aktual
-                  </th><th class="px-3 py-3 font-medium">
-                    Ekspektasi
-                  </th><th class="px-5 py-3 text-right font-medium">
-                    Status
-                  </th>
-                </tr>
-              </thead><tbody>
-                <tr
-                  v-for="unit in latest.services.units"
-                  :key="unit.name"
-                  class="border-b border-gray-100 last:border-0 dark:border-gray-800"
-                >
-                  <td class="px-5 py-3 font-medium">
-                    {{ unit.name }}
-                  </td><td class="px-3 py-3 text-gray-500">
-                    {{ unit.actualState }}
-                  </td><td class="px-3 py-3 text-gray-500">
-                    {{ unit.expectedState }}
-                  </td><td class="px-5 py-3 text-right">
-                    <UBadge
-                      :color="statusMeta(unit.status).color"
-                      variant="subtle"
-                      size="xs"
-                    >
-                      {{ statusMeta(unit.status).label }}
-                    </UBadge>
-                  </td>
-                </tr><tr v-if="!latest.services.units.length">
-                  <td
-                    colspan="4"
-                    class="px-5 py-8 text-center text-gray-500"
+          <div
+            v-if="serviceItems.length"
+            class="border-t border-gray-100 dark:border-gray-800"
+          >
+            <UAccordion
+              :items="serviceItems"
+              type="multiple"
+              :ui="{
+                root: '',
+                item: 'border-b border-gray-100 last:border-0 dark:border-gray-800',
+                header: '',
+                trigger: 'w-full cursor-pointer px-5 py-3.5 text-left transition-colors hover:bg-gray-50/80 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary dark:hover:bg-gray-900/50',
+                label: 'w-full',
+                trailingIcon: 'size-4 text-gray-400 transition-transform duration-200',
+                content: '',
+                body: 'border-t border-gray-100 bg-gray-50/60 px-5 py-4 dark:border-gray-800 dark:bg-gray-900/30'
+              }"
+            >
+              <template #default="{ item }">
+                <div class="flex w-full min-w-0 items-center justify-between gap-3 text-xs">
+                  <div class="min-w-0">
+                    <span class="block truncate font-medium text-gray-900 dark:text-white">{{ item.name }}</span>
+                    <span class="mt-1 block text-gray-500 dark:text-gray-400">{{ item.actualState }} · Ekspektasi {{ item.expectedState }}</span>
+                  </div>
+                  <UBadge
+                    :color="statusMeta(item.status).color"
+                    variant="subtle"
+                    size="xs"
+                    class="shrink-0"
                   >
-                    Belum ada unit systemd yang dipantau.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    {{ statusMeta(item.status).label }}
+                  </UBadge>
+                </div>
+              </template>
+              <template #body="{ item }">
+                <dl class="grid gap-x-6 gap-y-4 text-xs sm:grid-cols-2 xl:grid-cols-3">
+                  <div>
+                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      Description
+                    </dt>
+                    <dd class="mt-1 text-gray-700 dark:text-gray-300">
+                      {{ item.description ?? '—' }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      Port
+                    </dt>
+                    <dd class="mt-1 text-gray-700 dark:text-gray-300">
+                      {{ formatServicePorts(item.ports) }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      PID
+                    </dt>
+                    <dd class="mt-1 font-mono text-gray-700 dark:text-gray-300">
+                      {{ item.pid ?? '—' }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      Uptime
+                    </dt>
+                    <dd class="mt-1 text-gray-700 dark:text-gray-300">
+                      {{ formatUptime(item.uptimeSeconds) }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      Path
+                    </dt>
+                    <dd class="mt-1 break-all font-mono text-gray-700 dark:text-gray-300">
+                      {{ item.path ?? '—' }}
+                    </dd>
+                  </div>
+                  <div class="sm:col-span-2 xl:col-span-1">
+                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      Command Line
+                    </dt>
+                    <dd class="mt-1 break-all font-mono text-gray-700 dark:text-gray-300">
+                      {{ item.commandLine ?? '—' }}
+                    </dd>
+                  </div>
+                </dl>
+              </template>
+            </UAccordion>
           </div>
+          <p
+            v-else
+            class="border-t border-gray-100 px-5 py-8 text-center text-xs text-gray-500 dark:border-gray-800"
+          >
+            Belum ada unit systemd yang dipantau.
+          </p>
         </UCard>
         <UCard
           class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"

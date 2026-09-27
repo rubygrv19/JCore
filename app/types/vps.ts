@@ -34,7 +34,19 @@ export interface VpsDashboardResponse {
     services: {
       active: number | null
       failed: number | null
-      units: Array<{ name: string, actualState: string, expectedState: 'active' | 'inactive', since: string | null, status: VpsStatus }>
+      units: Array<{
+        name: string
+        actualState: string
+        expectedState: 'active' | 'inactive'
+        since: string | null
+        status: VpsStatus
+        description: string | null
+        ports: Array<{ port: number, protocol: 'tcp' | 'udp' }>
+        pid: number | null
+        uptimeSeconds: number | null
+        path: string | null
+        commandLine: string | null
+      }>
       status: VpsStatus
     }
   }

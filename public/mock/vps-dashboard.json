@@ -52,11 +52,11 @@
       "active": 4,
       "failed": 1,
       "units": [
-        { "name": "nginx.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy" },
-        { "name": "postgresql.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy" },
-        { "name": "docker.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy" },
-        { "name": "cron.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy" },
-        { "name": "myapp.service", "actualState": "failed", "expectedState": "active", "since": "2026-09-27T15:42:00.000Z", "status": "critical" }
+        { "name": "nginx.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy", "description": "HTTP server and reverse proxy", "ports": [{ "port": 80, "protocol": "tcp" }, { "port": 443, "protocol": "tcp" }], "pid": 1240, "uptimeSeconds": 604800, "path": "/usr/sbin/nginx", "commandLine": "/usr/sbin/nginx -g daemon off;" },
+        { "name": "postgresql.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy", "description": "PostgreSQL database server", "ports": [{ "port": 5432, "protocol": "tcp" }], "pid": 1382, "uptimeSeconds": 604800, "path": "/usr/lib/postgresql/16/bin/postgres", "commandLine": "/usr/lib/postgresql/16/bin/postgres -D /var/lib/postgresql/16/main" },
+        { "name": "docker.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy", "description": "Docker application container engine", "ports": [], "pid": 1521, "uptimeSeconds": 604800, "path": "/usr/bin/dockerd", "commandLine": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock" },
+        { "name": "cron.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy", "description": "Regular background program processing daemon", "ports": [], "pid": 891, "uptimeSeconds": 604800, "path": "/usr/sbin/cron", "commandLine": "/usr/sbin/cron -f -P" },
+        { "name": "myapp.service", "actualState": "failed", "expectedState": "active", "since": "2026-09-27T15:42:00.000Z", "status": "critical", "description": "Demo application service", "ports": [{ "port": 3000, "protocol": "tcp" }], "pid": null, "uptimeSeconds": null, "path": "/opt/demo/myapp", "commandLine": "/opt/demo/myapp --serve" }
       ],
       "status": "critical"
     }
