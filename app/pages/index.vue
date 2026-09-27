@@ -1,8 +1,30 @@
 <script setup lang="ts">
-const menu = [
-  { label: 'Ringkasan', icon: 'i-lucide-layout-dashboard', href: '#ringkasan' },
-  { label: 'Transaksi', icon: 'i-lucide-arrow-left-right', href: '#transaksi' }
+const menuGroups = [
+  {
+    label: 'Dashboard',
+    icon: 'i-lucide-layout-dashboard',
+    children: [
+      { label: 'Ringkasan', href: '#ringkasan' },
+      { label: 'Pendapatan', href: '#pendapatan' },
+      { label: 'Target bulanan', href: '#target' }
+    ]
+  },
+  {
+    label: 'Penjualan',
+    icon: 'i-lucide-shopping-bag',
+    children: [
+      { label: 'Transaksi', href: '#transaksi' }
+    ]
+  }
 ]
+
+const expandedGroups = ref(new Set(['Dashboard', 'Penjualan']))
+const activeMenu = ref('Ringkasan')
+
+function toggleGroup(label: string) {
+  if (expandedGroups.value.has(label)) expandedGroups.value.delete(label)
+  else expandedGroups.value.add(label)
+}
 
 const metrics = [
   { label: 'Total pendapatan', value: 'Rp 48,2 jt', change: '+12,8%', icon: 'i-lucide-wallet', tone: 'green' },
@@ -29,9 +51,31 @@ const transactions = [
       </a>
       <p class="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[.16em] text-gray-400">Menu</p>
       <nav aria-label="Menu utama" class="space-y-1">
-        <a v-for="(item, index) in menu" :key="item.label" :href="item.href" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition" :class="index === 0 ? 'bg-emerald-50 font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'">
-          <UIcon :name="item.icon" class="size-[18px]" />{{ item.label }}
-        </a>
+        <div v-for="group in menuGroups" :key="group.label">
+          <button
+            type="button"
+            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+            :aria-expanded="expandedGroups.has(group.label)"
+            :aria-controls="`menu-${group.label.toLowerCase()}`"
+            @click="toggleGroup(group.label)"
+          >
+            <UIcon :name="group.icon" class="size-[18px]" />
+            <span class="flex-1">{{ group.label }}</span>
+            <UIcon name="i-lucide-chevron-down" class="size-4 text-gray-400 transition-transform" :class="expandedGroups.has(group.label) ? 'rotate-180' : ''" />
+          </button>
+          <div v-show="expandedGroups.has(group.label)" :id="`menu-${group.label.toLowerCase()}`" class="ml-5 space-y-0.5 border-l border-gray-200 pl-3 dark:border-gray-700">
+            <a
+              v-for="child in group.children"
+              :key="child.label"
+              :href="child.href"
+              class="block rounded-md px-3 py-2 text-[13px] transition"
+              :class="activeMenu === child.label ? 'bg-emerald-50 font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'"
+              @click="activeMenu = child.label"
+            >
+              {{ child.label }}
+            </a>
+          </div>
+        </div>
       </nav>
       <div class="mt-auto rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
         <div class="mb-2 flex items-center gap-2 text-xs font-semibold"><UIcon name="i-lucide-sparkles" class="size-4 text-emerald-600" /> Ruang kerja demo</div>
@@ -74,22 +118,26 @@ const transactions = [
         </section>
 
         <section class="mt-6 grid gap-5 xl:grid-cols-[1.65fr_1fr]">
-          <UCard class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]" :ui="{ body: 'p-5 sm:p-6' }">
-            <div class="flex items-start justify-between"><div><h2 class="text-sm font-semibold">Pendapatan</h2><p class="mt-1 text-xs text-gray-500">Performa selama 7 hari terakhir</p></div><span class="inline-flex items-center gap-1.5 text-xs text-gray-500"><span class="size-2 rounded-full bg-emerald-500" /> Minggu ini</span></div>
-            <RevenueChart class="mt-7" />
-          </UCard>
+          <div id="pendapatan" class="scroll-mt-20">
+            <UCard class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]" :ui="{ body: 'p-5 sm:p-6' }">
+              <div class="flex items-start justify-between"><div><h2 class="text-sm font-semibold">Pendapatan</h2><p class="mt-1 text-xs text-gray-500">Performa selama 7 hari terakhir</p></div><span class="inline-flex items-center gap-1.5 text-xs text-gray-500"><span class="size-2 rounded-full bg-emerald-500" /> Minggu ini</span></div>
+              <RevenueChart class="mt-7" />
+            </UCard>
+          </div>
 
-          <UCard class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]" :ui="{ body: 'p-5 sm:p-6' }">
-            <div class="flex items-start justify-between"><div><h2 class="text-sm font-semibold">Target bulanan</h2><p class="mt-1 text-xs text-gray-500">Pendapatan bulan ini</p></div><UIcon name="i-lucide-ellipsis" class="size-5 text-gray-400" /></div>
-            <div class="mt-7 flex items-center gap-5">
-              <div class="relative grid size-28 shrink-0 place-items-center rounded-full" style="background: conic-gradient(#10b981 0% 72%, #e5e7eb 72% 100%)"><div class="grid size-[5.4rem] place-items-center rounded-full bg-white text-center dark:bg-[#151719]"><div><p class="text-xl font-semibold">72%</p><p class="text-[10px] text-gray-400">tercapai</p></div></div></div>
-              <div><p class="text-2xl font-semibold tracking-tight">Rp 72 jt</p><p class="mt-1 text-xs text-gray-500">dari target Rp 100 jt</p><p class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-emerald-600"><UIcon name="i-lucide-trending-up" class="size-3.5" />On track</p></div>
-            </div>
-            <div class="mt-6 border-t border-gray-100 pt-4 text-xs text-gray-500 dark:border-gray-800">Sisa target <span class="float-right font-medium text-gray-900 dark:text-white">Rp 28 jt</span></div>
-          </UCard>
+          <div id="target" class="scroll-mt-20">
+            <UCard class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]" :ui="{ body: 'p-5 sm:p-6' }">
+              <div class="flex items-start justify-between"><div><h2 class="text-sm font-semibold">Target bulanan</h2><p class="mt-1 text-xs text-gray-500">Pendapatan bulan ini</p></div><UIcon name="i-lucide-ellipsis" class="size-5 text-gray-400" /></div>
+              <div class="mt-7 flex items-center gap-5">
+                <div class="relative grid size-28 shrink-0 place-items-center rounded-full" style="background: conic-gradient(#10b981 0% 72%, #e5e7eb 72% 100%)"><div class="grid size-[5.4rem] place-items-center rounded-full bg-white text-center dark:bg-[#151719]"><div><p class="text-xl font-semibold">72%</p><p class="text-[10px] text-gray-400">tercapai</p></div></div></div>
+                <div><p class="text-2xl font-semibold tracking-tight">Rp 72 jt</p><p class="mt-1 text-xs text-gray-500">dari target Rp 100 jt</p><p class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-emerald-600"><UIcon name="i-lucide-trending-up" class="size-3.5" />On track</p></div>
+              </div>
+              <div class="mt-6 border-t border-gray-100 pt-4 text-xs text-gray-500 dark:border-gray-800">Sisa target <span class="float-right font-medium text-gray-900 dark:text-white">Rp 28 jt</span></div>
+            </UCard>
+          </div>
         </section>
 
-        <section id="transaksi" class="mt-6">
+        <section id="transaksi" class="mt-6 scroll-mt-20">
           <UCard class="rounded-xl border-gray-200/80 bg-white shadow-none dark:border-gray-800 dark:bg-[#151719]" :ui="{ body: 'p-0' }">
             <div class="flex items-center justify-between px-5 py-5 sm:px-6"><div><h2 class="text-sm font-semibold">Transaksi terbaru</h2><p class="mt-1 text-xs text-gray-500">Aktivitas penjualan terkini</p></div><a href="#transaksi" class="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">Lihat semua<UIcon name="i-lucide-arrow-up-right" class="size-3.5" /></a></div>
             <div class="overflow-x-auto">
