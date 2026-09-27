@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "dataMode": "mock",
+  "collectedAt": "2026-09-27T16:00:00.000Z",
+  "host": {
+    "hostname": "vps-demo-01",
+    "os": "Ubuntu 24.04 LTS",
+    "uptimeSeconds": 604800,
+    "cpuCores": 4
+  },
+  "health": {
+    "status": "critical",
+    "reasons": [
+      "myapp.service gagal meskipun diharapkan aktif.",
+      "Memory available berada di bawah ambang peringatan.",
+      "Filesystem / berada di atas ambang peringatan."
+    ]
+  },
+  "thresholds": {
+    "cpu": { "warningPercent": 80, "criticalPercent": 90, "forSeconds": 300 },
+    "memoryAvailable": { "warningBelowPercent": 20, "criticalBelowPercent": 10, "forSeconds": 300 },
+    "storageUsed": { "warningPercent": 80, "criticalPercent": 90, "forSeconds": 300 }
+  },
+  "current": {
+    "cpu": {
+      "usagePercent": 42,
+      "loadAverage": { "1m": 0.84, "5m": 0.78, "15m": 0.64 },
+      "status": "healthy"
+    },
+    "memory": {
+      "totalBytes": 8589934592,
+      "availableBytes": 1374389535,
+      "swapTotalBytes": 2147483648,
+      "swapUsedBytes": 536870912,
+      "status": "warning"
+    },
+    "storage": {
+      "filesystems": [
+        { "mountPoint": "/", "fileSystem": "ext4", "totalBytes": 85899345920, "usedBytes": 73014444032, "inodeUsedPercent": 34, "status": "warning" },
+        { "mountPoint": "/boot", "fileSystem": "ext4", "totalBytes": 1073741824, "usedBytes": 483183820, "inodeUsedPercent": 12, "status": "healthy" }
+      ],
+      "io": { "readBytesPerSecond": 1835008, "writeBytesPerSecond": 917504 },
+      "status": "warning"
+    },
+    "network": {
+      "interfaces": [
+        { "name": "eth0", "rxBytesPerSecond": 1048576, "txBytesPerSecond": 524288, "rxErrorsPerSecond": 0, "txErrorsPerSecond": 0, "rxDropsPerSecond": 0, "txDropsPerSecond": 0, "capacityBitsPerSecond": null, "status": "unknown" }
+      ],
+      "status": "unknown"
+    },
+    "services": {
+      "active": 4,
+      "failed": 1,
+      "units": [
+        { "name": "nginx.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy" },
+        { "name": "postgresql.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy" },
+        { "name": "docker.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy" },
+        { "name": "cron.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy" },
+        { "name": "myapp.service", "actualState": "failed", "expectedState": "active", "since": "2026-09-27T15:42:00.000Z", "status": "critical" }
+      ],
+      "status": "critical"
+    }
+  },
+  "history": {
+    "range": "60m",
+    "stepSeconds": 300,
+    "samples": [
+      { "timestamp": "2026-09-27T15:05:00.000Z", "cpuUsagePercent": 30, "memoryAvailablePercent": 23, "swapUsedPercent": 17, "diskReadBytesPerSecond": 550000, "diskWriteBytesPerSecond": 390000, "networkRxBytesPerSecond": 700000, "networkTxBytesPerSecond": 350000 },
+      { "timestamp": "2026-09-27T15:10:00.000Z", "cpuUsagePercent": 36, "memoryAvailablePercent": 22, "swapUsedPercent": 18, "diskReadBytesPerSecond": 620000, "diskWriteBytesPerSecond": 430000, "networkRxBytesPerSecond": 760000, "networkTxBytesPerSecond": 390000 },
+      { "timestamp": "2026-09-27T15:15:00.000Z", "cpuUsagePercent": 33, "memoryAvailablePercent": 22, "swapUsedPercent": 19, "diskReadBytesPerSecond": 480000, "diskWriteBytesPerSecond": 520000, "networkRxBytesPerSecond": 810000, "networkTxBytesPerSecond": 410000 },
+      { "timestamp": "2026-09-27T15:20:00.000Z", "cpuUsagePercent": 41, "memoryAvailablePercent": 21, "swapUsedPercent": 19, "diskReadBytesPerSecond": 790000, "diskWriteBytesPerSecond": 610000, "networkRxBytesPerSecond": 900000, "networkTxBytesPerSecond": 430000 },
+      { "timestamp": "2026-09-27T15:25:00.000Z", "cpuUsagePercent": 38, "memoryAvailablePercent": 21, "swapUsedPercent": 20, "diskReadBytesPerSecond": 880000, "diskWriteBytesPerSecond": 740000, "networkRxBytesPerSecond": 980000, "networkTxBytesPerSecond": 470000 },
+      { "timestamp": "2026-09-27T15:30:00.000Z", "cpuUsagePercent": 49, "memoryAvailablePercent": 20, "swapUsedPercent": 21, "diskReadBytesPerSecond": 920000, "diskWriteBytesPerSecond": 800000, "networkRxBytesPerSecond": 1100000, "networkTxBytesPerSecond": 510000 },
+      { "timestamp": "2026-09-27T15:35:00.000Z", "cpuUsagePercent": 45, "memoryAvailablePercent": 19, "swapUsedPercent": 21, "diskReadBytesPerSecond": 1010000, "diskWriteBytesPerSecond": 890000, "networkRxBytesPerSecond": 1180000, "networkTxBytesPerSecond": 550000 },
+      { "timestamp": "2026-09-27T15:40:00.000Z", "cpuUsagePercent": 54, "memoryAvailablePercent": 18, "swapUsedPercent": 22, "diskReadBytesPerSecond": 1250000, "diskWriteBytesPerSecond": 980000, "networkRxBytesPerSecond": 1260000, "networkTxBytesPerSecond": 610000 },
+      { "timestamp": "2026-09-27T15:45:00.000Z", "cpuUsagePercent": 47, "memoryAvailablePercent": 18, "swapUsedPercent": 23, "diskReadBytesPerSecond": 1430000, "diskWriteBytesPerSecond": 1100000, "networkRxBytesPerSecond": 1350000, "networkTxBytesPerSecond": 640000 },
+      { "timestamp": "2026-09-27T15:50:00.000Z", "cpuUsagePercent": 51, "memoryAvailablePercent": 17, "swapUsedPercent": 24, "diskReadBytesPerSecond": 1580000, "diskWriteBytesPerSecond": 1170000, "networkRxBytesPerSecond": 1420000, "networkTxBytesPerSecond": 670000 },
+      { "timestamp": "2026-09-27T15:55:00.000Z", "cpuUsagePercent": 46, "memoryAvailablePercent": 16, "swapUsedPercent": 24, "diskReadBytesPerSecond": 1660000, "diskWriteBytesPerSecond": 1250000, "networkRxBytesPerSecond": 1510000, "networkTxBytesPerSecond": 700000 },
+      { "timestamp": "2026-09-27T16:00:00.000Z", "cpuUsagePercent": 42, "memoryAvailablePercent": 16, "swapUsedPercent": 25, "diskReadBytesPerSecond": 1835008, "diskWriteBytesPerSecond": 917504, "networkRxBytesPerSecond": 1048576, "networkTxBytesPerSecond": 524288 }
+    ]
+  },
+  "alerts": { "available": false, "items": [] }
+}
