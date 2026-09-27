@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import type { VpsStatus } from '~/types/vps'
+import type { TableColumn } from '@nuxt/ui'
+import type { VpsDashboardResponse, VpsStatus } from '~/types/vps'
 import { formatBytes, formatServicePorts, formatUptime, percent, VPS_STATUS_META } from '~/utils/vps-status'
 import { useVpsDashboard } from '~/utils/vps-client'
+
+type VpsServiceUnit = VpsDashboardResponse['current']['services']['units'][number]
 
 useSeoMeta({ title: 'VPS' })
 
@@ -31,6 +34,20 @@ const storageUsedPercent = computed(() => {
 })
 const networkInterface = computed(() => latest.value?.network.interfaces[0])
 const serviceItems = computed(() => (latest.value?.services.units ?? []).map(unit => ({ ...unit, label: unit.name, value: unit.name })))
+const expandedServiceRows = ref<Record<string, boolean>>({})
+const serviceColumns: TableColumn<VpsServiceUnit>[] = [
+  { id: 'expand', header: '', size: 48, enableSorting: false },
+  { accessorKey: 'name', header: 'Service' },
+  { accessorKey: 'actualState', header: 'State' },
+  { accessorKey: 'expectedState', header: 'Ekspektasi' },
+  { accessorKey: 'status', header: 'Kondisi' }
+]
+function toggleServiceRow(rowId: string) {
+  expandedServiceRows.value = {
+    ...expandedServiceRows.value,
+    [rowId]: !expandedServiceRows.value[rowId]
+  }
+}
 const sampleCount = computed(() => points.value.length)
 const clampPercent = (value: number | null) => value === null ? 0 : Math.min(100, Math.max(0, value))
 const overviewCards = computed(() => {
@@ -522,7 +539,7 @@ function formatRate(value: number | null | undefined): string {
         </UCard>
       </section>
 
-      <section class="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
+      <section class="space-y-4">
         <UCard
           class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
         >
@@ -540,100 +557,96 @@ function formatRate(value: number | null | undefined): string {
               {{ latest.services.active ?? '—' }} aktif
             </UBadge>
           </div>
-          <div
-            v-if="serviceItems.length"
-            class="mt-4 border-t border-gray-100 dark:border-gray-800"
-          >
-            <UAccordion
-              :items="serviceItems"
-              type="multiple"
-              :ui="{
-                root: '',
-                item: 'border-b border-gray-100 last:border-0 dark:border-gray-800',
-                header: '',
-                trigger: 'w-full cursor-pointer py-3.5 text-left transition-colors hover:bg-gray-50/80 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary dark:hover:bg-gray-900/50',
-                label: 'w-full',
-                trailingIcon: 'size-4 text-gray-400 transition-transform duration-200',
-                content: '',
-                body: 'border-t border-gray-100 bg-gray-50/60 py-4 dark:border-gray-800 dark:bg-gray-900/30'
-              }"
+          <div class="mt-4 overflow-x-auto">
+            <UTable
+              v-model:expanded="expandedServiceRows"
+              :data="serviceItems"
+              :columns="serviceColumns"
+              :get-row-id="row => row.name"
+              :expanded-options="{ getRowCanExpand: () => true }"
+              empty="Belum ada unit systemd yang dipantau."
+              class="min-w-[680px]"
+              :ui="{ th: 'text-xs', td: 'align-middle text-xs' }"
             >
-              <template #default="{ item }">
-                <div class="flex w-full min-w-0 items-center justify-between gap-3 text-xs">
-                  <div class="min-w-0">
-                    <span class="block truncate font-medium text-gray-900 dark:text-white">{{ item.name }}</span>
-                    <span class="mt-1 block text-gray-500 dark:text-gray-400">{{ item.actualState }} · Ekspektasi {{ item.expectedState }}</span>
-                  </div>
-                  <UBadge
-                    :color="statusMeta(item.status).color"
-                    variant="subtle"
-                    size="xs"
-                    class="shrink-0"
-                  >
-                    {{ statusMeta(item.status).label }}
-                  </UBadge>
+              <template #expand-cell="{ row }">
+                <UButton
+                  :icon="row.getIsExpanded() ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                  :aria-label="row.getIsExpanded() ? `Tutup detail ${row.original.name}` : `Buka detail ${row.original.name}`"
+                  color="neutral"
+                  variant="ghost"
+                  size="xs"
+                  class="cursor-pointer"
+                  @click="toggleServiceRow(row.id)"
+                />
+              </template>
+              <template #name-cell="{ row }">
+                <span class="font-medium text-gray-900 dark:text-white">{{ row.original.name }}</span>
+              </template>
+              <template #status-cell="{ row }">
+                <UBadge
+                  :color="statusMeta(row.original.status).color"
+                  variant="subtle"
+                  size="xs"
+                >
+                  {{ statusMeta(row.original.status).label }}
+                </UBadge>
+              </template>
+              <template #expanded="{ row }">
+                <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-900/50 sm:p-5">
+                  <dl class="grid gap-x-6 gap-y-4 text-xs sm:grid-cols-2 xl:grid-cols-3">
+                    <div>
+                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                        Description
+                      </dt>
+                      <dd class="mt-1 text-gray-700 dark:text-gray-300">
+                        {{ row.original.description ?? '—' }}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                        Port
+                      </dt>
+                      <dd class="mt-1 text-gray-700 dark:text-gray-300">
+                        {{ formatServicePorts(row.original.ports) }}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                        PID
+                      </dt>
+                      <dd class="mt-1 font-mono text-gray-700 dark:text-gray-300">
+                        {{ row.original.pid ?? '—' }}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                        Uptime
+                      </dt>
+                      <dd class="mt-1 text-gray-700 dark:text-gray-300">
+                        {{ formatUptime(row.original.uptimeSeconds) }}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                        Path
+                      </dt>
+                      <dd class="mt-1 break-all font-mono text-gray-700 dark:text-gray-300">
+                        {{ row.original.path ?? '—' }}
+                      </dd>
+                    </div>
+                    <div class="sm:col-span-2 xl:col-span-1">
+                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                        Command Line
+                      </dt>
+                      <dd class="mt-1 break-all font-mono text-gray-700 dark:text-gray-300">
+                        {{ row.original.commandLine ?? '—' }}
+                      </dd>
+                    </div>
+                  </dl>
                 </div>
               </template>
-              <template #body="{ item }">
-                <dl class="grid gap-x-6 gap-y-4 text-xs sm:grid-cols-2 xl:grid-cols-3">
-                  <div>
-                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-                      Description
-                    </dt>
-                    <dd class="mt-1 text-gray-700 dark:text-gray-300">
-                      {{ item.description ?? '—' }}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-                      Port
-                    </dt>
-                    <dd class="mt-1 text-gray-700 dark:text-gray-300">
-                      {{ formatServicePorts(item.ports) }}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-                      PID
-                    </dt>
-                    <dd class="mt-1 font-mono text-gray-700 dark:text-gray-300">
-                      {{ item.pid ?? '—' }}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-                      Uptime
-                    </dt>
-                    <dd class="mt-1 text-gray-700 dark:text-gray-300">
-                      {{ formatUptime(item.uptimeSeconds) }}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-                      Path
-                    </dt>
-                    <dd class="mt-1 break-all font-mono text-gray-700 dark:text-gray-300">
-                      {{ item.path ?? '—' }}
-                    </dd>
-                  </div>
-                  <div class="sm:col-span-2 xl:col-span-1">
-                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-                      Command Line
-                    </dt>
-                    <dd class="mt-1 break-all font-mono text-gray-700 dark:text-gray-300">
-                      {{ item.commandLine ?? '—' }}
-                    </dd>
-                  </div>
-                </dl>
-              </template>
-            </UAccordion>
+            </UTable>
           </div>
-          <p
-            v-else
-            class="mt-4 border-t border-gray-100 py-8 text-center text-xs text-gray-500 dark:border-gray-800"
-          >
-            Belum ada unit systemd yang dipantau.
-          </p>
         </UCard>
         <UCard
           class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
@@ -652,7 +665,7 @@ function formatRate(value: number | null | undefined): string {
           </div>
           <ul
             v-if="dashboard.health.reasons.length"
-            class="mt-4 space-y-3"
+            class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
           >
             <li
               v-for="(reason, index) in dashboard.health.reasons"
