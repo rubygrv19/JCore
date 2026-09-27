@@ -305,9 +305,9 @@ function formatRate(value: number | null | undefined): string {
           v-for="card in overviewCards"
           :key="card.title"
           class="h-full rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-          :ui="{ body: 'p-0' }"
+          :ui="{ body: 'p-4 sm:p-5' }"
         >
-          <div class="flex min-h-[276px] flex-col p-3 sm:p-4">
+          <div class="flex min-h-[276px] flex-col">
             <div class="flex items-center justify-between gap-2">
               <span class="text-sm font-semibold">{{ card.title }}</span><UBadge
                 :color="statusMeta(card.status).color"
