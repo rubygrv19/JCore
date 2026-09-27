@@ -56,7 +56,7 @@ const options = computed(() => {
       x: {
         grid: { display: false },
         border: { display: false },
-        ticks: { color: muted, font: { family: 'DM Sans', size: 10 } }
+        ticks: { color: muted, font: { family: 'Inter', size: 10 } }
       },
       y: {
         min: 0,
@@ -65,7 +65,7 @@ const options = computed(() => {
           stepSize: 2,
           color: muted,
           padding: 8,
-          font: { family: 'DM Sans', size: 10 },
+          font: { family: 'Inter', size: 10 },
           callback: (value: string | number) => `Rp ${value} jt`
         },
         grid: { color: grid, borderDash: [4, 4], drawTicks: false },

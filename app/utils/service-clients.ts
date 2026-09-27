@@ -12,6 +12,12 @@ export function normalizeBaseUrl(value: string): string {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw new Error('Base URL harus menggunakan HTTP atau HTTPS.')
   }
+  if (url.username || url.password) {
+    throw new Error('Base URL tidak boleh memuat kredensial.')
+  }
+  if (url.search || url.hash) {
+    throw new Error('Base URL tidak boleh memuat query atau fragment.')
+  }
 
   return url.href.replace(/\/+$/, '')
 }

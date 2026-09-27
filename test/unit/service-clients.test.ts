@@ -9,6 +9,11 @@ describe('service API clients', () => {
     expect(() => normalizeBaseUrl('not a URL')).toThrow()
   })
 
+  it('rejects credentials and query strings in browser-visible base URLs', () => {
+    expect(() => normalizeBaseUrl('https://user:secret@vps.example.test/api')).toThrow('Base URL tidak boleh memuat kredensial.')
+    expect(() => normalizeBaseUrl('https://vps.example.test/api?token=secret')).toThrow('Base URL tidak boleh memuat query atau fragment.')
+  })
+
   it('sends each service request to its own configured base URL', async () => {
     const baseUrls: Record<ServiceKey, string> = {
       'vps': 'https://vps.example.test/api',

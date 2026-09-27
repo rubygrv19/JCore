@@ -7,14 +7,14 @@ export default defineConfig({
       {
         test: {
           name: 'unit',
-          include: ['tests/unit/**/*.test.ts'],
+          include: ['test/unit/**/*.test.ts'],
           environment: 'node'
         }
       },
       await defineVitestProject({
         test: {
           name: 'nuxt',
-          include: ['tests/nuxt/**/*.nuxt.test.ts']
+          include: ['test/nuxt/**/*.nuxt.test.ts']
         }
       })
     ]

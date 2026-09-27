@@ -5,13 +5,15 @@ useHead({
 })
 
 useSeoMeta({
-  title: 'Ringkasan — Dashboard',
-  description: 'Dashboard ringkasan bisnis dengan data demo.'
+  titleTemplate: '%s — Ruangkerja',
+  description: 'Dashboard layanan dan konfigurasi workspace.'
 })
 </script>
 
 <template>
   <UApp>
-    <NuxtPage />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </UApp>
 </template>

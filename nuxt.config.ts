@@ -21,6 +21,17 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2026-06-30',
 
+  nitro: {
+    prerender: {
+      routes: [
+        '/services/vps',
+        '/services/timeshit',
+        '/services/code-review',
+        '/services/quota-tracker'
+      ]
+    }
+  },
+
   eslint: {
     config: {
       stylistic: {

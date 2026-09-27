@@ -4,13 +4,3 @@
 @theme static {
   --font-sans: 'Inter', sans-serif;
 }
-
-.metric-green { color: #059669; background: #ecfdf5; }
-.metric-blue { color: #2563eb; background: #eff6ff; }
-.metric-violet { color: #7c3aed; background: #f5f3ff; }
-.metric-amber { color: #d97706; background: #fffbeb; }
-
-.dark .metric-green { color: #6ee7b7; background: rgb(16 185 129 / 12%); }
-.dark .metric-blue { color: #93c5fd; background: rgb(59 130 246 / 12%); }
-.dark .metric-violet { color: #c4b5fd; background: rgb(139 92 246 / 12%); }
-.dark .metric-amber { color: #fcd34d; background: rgb(245 158 11 / 12%); }
