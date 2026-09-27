@@ -16,7 +16,7 @@ const menuGroups = [
       { label: 'VPS', href: '#vps' },
       { label: 'Timeshit', href: '#timeshit' },
       { label: 'Code Review', href: '#code-review' },
-      { label: 'Quota Track', href: '#quota-track' }
+      { label: 'Quota Tracker', href: '#quota-tracker' }
     ]
   },
   {
@@ -28,6 +28,19 @@ const menuGroups = [
 
 const expandedGroups = ref(new Set(['Dashboard', 'Services']))
 const activeMenu = ref('Ringkasan')
+const services = [
+  { label: 'VPS', icon: 'i-lucide-server' },
+  { label: 'Timeshit', icon: 'i-lucide-clock-3' },
+  { label: 'Code Review', icon: 'i-lucide-git-pull-request' },
+  { label: 'Quota Tracker', icon: 'i-lucide-chart-no-axes-column-increasing' }
+]
+const selectedService = ref('')
+const configModalOpen = ref(false)
+
+function openConfig(service: string) {
+  selectedService.value = service
+  configModalOpen.value = true
+}
 
 function toggleGroup(label: string) {
   if (expandedGroups.value.has(label)) expandedGroups.value.delete(label)
@@ -53,7 +66,7 @@ const transactions = [
 <template>
   <div class="min-h-screen bg-[#f7f8fa] text-gray-900 dark:bg-[#101214] dark:text-white">
     <aside class="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-gray-200/80 bg-white px-5 py-6 dark:border-gray-800 dark:bg-[#151719] lg:flex">
-      <a href="#ringkasan" class="mb-10 flex items-center gap-3 px-2">
+      <a href="#ringkasan" class="mb-10 flex items-center gap-3 px-2" @click="activeMenu = 'Ringkasan'">
         <span class="grid size-9 place-items-center rounded-xl bg-emerald-500 text-white"><UIcon name="i-lucide-panels-top-left" class="size-5" /></span>
         <span class="text-[15px] font-semibold tracking-tight">ruang<span class="text-emerald-600">kerja</span></span>
       </a>
@@ -101,11 +114,11 @@ const transactions = [
 
     <main id="ringkasan" class="lg:pl-64">
       <header class="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200/80 bg-white/90 px-5 backdrop-blur-md dark:border-gray-800 dark:bg-[#151719]/90 sm:px-8">
-        <a href="#ringkasan" class="flex items-center gap-2.5 lg:hidden">
+        <a href="#ringkasan" class="flex items-center gap-2.5 lg:hidden" @click="activeMenu = 'Ringkasan'">
           <span class="grid size-8 place-items-center rounded-lg bg-emerald-500 text-white"><UIcon name="i-lucide-panels-top-left" class="size-4" /></span>
           <span class="text-sm font-semibold">ruang<span class="text-emerald-600">kerja</span></span>
         </a>
-        <div class="hidden text-sm text-gray-500 lg:block">Workspace <span class="mx-2 text-gray-300">/</span><span class="font-medium text-gray-900 dark:text-white">Ringkasan</span></div>
+        <div class="hidden text-sm text-gray-500 lg:block">Workspace <span class="mx-2 text-gray-300">/</span><span class="font-medium text-gray-900 dark:text-white">{{ activeMenu === 'Settings' ? 'Settings' : 'Ringkasan' }}</span></div>
         <div class="ml-auto flex items-center gap-2">
           <UIcon name="i-lucide-search" class="mx-2 size-[18px] text-gray-400" aria-hidden="true" />
           <UIcon name="i-lucide-bell" class="mx-2 size-[18px] text-gray-400" aria-hidden="true" />
@@ -114,7 +127,30 @@ const transactions = [
         </div>
       </header>
 
-      <div class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
+      <div v-if="activeMenu === 'Settings'" class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
+        <div class="mb-8">
+          <h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">Settings</h1>
+          <p class="mt-1 text-sm text-gray-500">Konfigurasi layanan.</p>
+        </div>
+        <section aria-label="Konfigurasi services" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <button
+            v-for="service in services"
+            :key="service.label"
+            type="button"
+            class="cursor-pointer rounded-xl border border-gray-200/80 bg-white p-5 text-left shadow-none transition hover:border-emerald-300 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:border-gray-800 dark:bg-[#151719] dark:hover:border-emerald-700"
+            @click="openConfig(service.label)"
+          >
+            <span class="mb-5 grid size-10 place-items-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <UIcon :name="service.icon" class="size-5" />
+            </span>
+            <span class="block text-sm font-semibold">{{ service.label }}</span>
+            <span class="mt-1 block text-xs text-gray-500">Konfigurasi layanan</span>
+            <span class="mt-5 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">Atur konfigurasi<UIcon name="i-lucide-arrow-up-right" class="size-3.5" /></span>
+          </button>
+        </section>
+      </div>
+
+      <div v-else class="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div><p class="mb-2 text-sm text-gray-500">Minggu, 27 September 2026</p><h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">Ringkasan</h1><p class="mt-1 text-sm text-gray-500">Pantau perkembangan bisnis Anda.</p></div>
           <div class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"><UIcon name="i-lucide-calendar-days" class="size-4 text-gray-400" />7 hari terakhir<UIcon name="i-lucide-chevron-down" class="size-4 text-gray-400" /></div>
@@ -162,6 +198,12 @@ const transactions = [
         </section>
         <p class="mt-5 text-center text-[10px] text-gray-400">Data pada dashboard ini hanya contoh.</p>
       </div>
+
+      <UModal v-model:open="configModalOpen" :title="selectedService">
+        <template #body>
+          <p class="py-4 text-center text-sm font-medium text-gray-600 dark:text-gray-300">Coming Soon</p>
+        </template>
+      </UModal>
     </main>
   </div>
 </template>
