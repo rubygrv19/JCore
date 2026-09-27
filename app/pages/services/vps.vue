@@ -324,7 +324,7 @@ function formatRate(value: number | null | undefined): string {
                 {{ statusMeta(card.status).label }}
               </UBadge>
             </div>
-            <div class="mt-6 grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-4 sm:gap-6">
+            <div class="mt-6 grid grid-cols-[9rem_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-6">
               <VpsDonutChart
                 :segments="card.segments"
                 :center-value="card.centerValue"
