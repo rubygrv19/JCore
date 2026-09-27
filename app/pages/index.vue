@@ -10,15 +10,17 @@ const menuGroups = [
     ]
   },
   {
-    label: 'Penjualan',
-    icon: 'i-lucide-shopping-bag',
+    label: 'Services',
+    icon: 'i-lucide-server',
     children: [
-      { label: 'Transaksi', href: '#transaksi' }
+      { label: 'VPS', href: '#vps' },
+      { label: 'Timeshit', href: '#timeshit' },
+      { label: 'Code Review', href: '#code-review' }
     ]
   }
 ]
 
-const expandedGroups = ref(new Set(['Dashboard', 'Penjualan']))
+const expandedGroups = ref(new Set(['Dashboard', 'Services']))
 const activeMenu = ref('Ringkasan')
 
 function toggleGroup(label: string) {
