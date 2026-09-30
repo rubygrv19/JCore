@@ -17,7 +17,7 @@ These rules apply to every AI-assisted change in this repository. Read this file
 ## Required stack and Nuxt conventions
 
 - Use the existing Nuxt 4 project with Nuxt UI, Nuxt Fonts, Nuxt Icon, Nuxt Image, and Pinia. Preserve pnpm and its lockfile.
-- Keep the application compatible with static generation to `.output/public`. Ask before introducing server routes or changing the hosting model.
+- Run the application with the Nuxt Node server (`pnpm build` / `pnpm start`) when using the local Linux process collector. `pnpm start` binds to loopback for the current local-only stage. Static generation does not include this server endpoint and is not the production mode for VPS telemetry.
 - Use Inter as the global font through Nuxt Fonts.
 - Use Nuxt UI components for standard interactive controls and UI primitives. Keep native semantic elements for document structure and navigation.
 - Do not recreate primitives already provided by Nuxt UI. A focused app component is allowed only to integrate a capability Nuxt UI does not provide, such as the existing Chart.js chart wrapper. Keep it small and use Nuxt UI for surrounding controls.
@@ -30,7 +30,7 @@ These rules apply to every AI-assisted change in this repository. Read this file
 
 - Create an independent fetch client for each service, configured with that service's own base URL. Never route all services through one mutable global base URL.
 - Keep API access behind service-specific client functions; UI code must not construct endpoint URLs ad hoc.
-- Until the user supplies API documentation or confirms a contract, implement only the agreed mock path and base URL configuration. Do not guess endpoint paths, authentication, request/response shapes, retries, or business rules.
+- Until the user supplies API documentation or confirms a contract, implement only the agreed mock path and base URL configuration. The explicitly approved local VPS process collector reads Linux `/proc` through a Nuxt server endpoint and exposes only the documented process snapshot. Do not guess endpoints, authentication, request/response shapes, retries, or business rules for other services.
 - Validate and normalize base URLs before use. Validate API responses at runtime against the documented contract before rendering them.
 - Keep the mock JSON, JSON Schema, TypeScript types, tests, and response-contract documentation aligned. Version intentional contract changes and update all related references together.
 - Preserve the meanings of `null`, empty arrays, units, timestamps, and status enums. Do not convert unknown values to zero or translate machine-readable keys/enums.

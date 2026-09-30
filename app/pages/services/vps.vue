@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { VpsDashboardResponse, VpsProcessState, VpsStatus } from '~/types/vps'
+import type { VpsProcess } from '~/types/vps-processes'
 import { formatBytes, formatProcessPercent, formatProcessStartedAt, formatServicePorts, formatUptime, getActiveProcesses, paginateItems, percent, VPS_STATUS_META } from '~/utils/vps-status'
 import { useVpsDashboard } from '~/utils/vps-client'
+import { fetchVpsProcesses } from '~/utils/vps-processes-client'
 
 type VpsServiceUnit = VpsDashboardResponse['current']['services']['units'][number]
-type VpsProcess = VpsDashboardResponse['current']['processes']['items'][number]
 
 useSeoMeta({ title: 'VPS' })
 
@@ -17,6 +18,12 @@ const processPage = ref(1)
 const processPageSize = 10
 const now = ref(Date.now())
 let freshnessTimer: ReturnType<typeof setInterval> | undefined
+const liveProcesses = shallowRef<VpsProcess[] | null>(null)
+const processSnapshotAt = ref<string | null>(null)
+const processFetchFailed = ref(false)
+const processSource = computed(() => liveProcesses.value
+  ? processFetchFailed.value ? 'Stale snapshot · Linux /proc update failed' : 'Live · Linux /proc'
+  : 'Demo data · Linux required')
 const chartLabels = computed(() => points.value.map(point => new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).format(new Date(point.timestamp))))
 const collectedAtDate = computed(() => dashboard.value?.collectedAt ? Date.parse(dashboard.value.collectedAt) : Number.NaN)
 const dataAgeSeconds = computed(() => Number.isFinite(collectedAtDate.value) ? Math.max(0, Math.floor((now.value - collectedAtDate.value) / 1000)) : null)
@@ -50,7 +57,7 @@ const storageUsedPercent = computed(() => {
 })
 const networkInterface = computed(() => latest.value?.network.interfaces[0])
 const serviceItems = computed(() => (latest.value?.services.units ?? []).map(unit => ({ ...unit, label: unit.name, value: unit.name })))
-const processItems = computed(() => getActiveProcesses(latest.value?.processes.items ?? []))
+const processItems = computed(() => getActiveProcesses(liveProcesses.value ?? latest.value?.processes.items ?? []))
 const processPageCount = computed(() => Math.max(1, Math.ceil(processItems.value.length / processPageSize)))
 const processPageItems = computed(() => paginateItems(processItems.value, processPage.value, processPageSize))
 const expandedServiceRows = ref<Record<string, boolean>>({})
@@ -68,6 +75,24 @@ watch(() => dashboard.value?.dataMode, (mode, _previousMode, onCleanup) => {
     void refresh()
   }, 10_000)
   onCleanup(() => clearInterval(freshnessTimer))
+})
+async function refreshProcesses() {
+  try {
+    const response = await fetchVpsProcesses()
+    liveProcesses.value = response.items
+    processSnapshotAt.value = response.collectedAt
+    processFetchFailed.value = false
+  } catch {
+    // Keep labeled fixture data on macOS and on hosts where Linux /proc is unavailable.
+    processFetchFailed.value = liveProcesses.value !== null
+  }
+}
+onMounted(() => {
+  void refreshProcesses()
+  freshnessTimer = setInterval(() => void refreshProcesses(), 10_000)
+})
+onBeforeUnmount(() => {
+  if (freshnessTimer) clearInterval(freshnessTimer)
 })
 const serviceColumns: TableColumn<VpsServiceUnit>[] = [
   { id: 'expand', header: '', size: 48, enableSorting: false },
@@ -759,13 +784,13 @@ function formatRate(value: number | null | undefined): string {
               <h2 class="text-sm font-semibold">
                 Active processes
               </h2><p class="mt-1 text-xs text-gray-500">
-                Running, sleeping, and unknown processes
+                {{ processSource }}<span v-if="processSnapshotAt"> · Updated {{ new Date(processSnapshotAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Jakarta' }) }}</span>
               </p>
             </div><UBadge
-              color="neutral"
-              variant="subtle"
+              :color="liveProcesses ? processFetchFailed ? 'warning' : 'success' : 'neutral'"
+              :variant="liveProcesses ? 'subtle' : 'outline'"
             >
-              {{ processItems.length }} processes
+              {{ liveProcesses ? processFetchFailed ? 'Stale' : 'Live' : 'Demo' }} · {{ processItems.length }} processes
             </UBadge>
           </div>
           <div class="mt-4 overflow-x-auto">

@@ -46,9 +46,9 @@ function openConfig(serviceKey: ServiceKey) {
 
 function saveConfig() {
   if (!selectedServiceKey.value) return
-  let baseUrl: string
+  let baseUrl = ''
   try {
-    baseUrl = normalizeBaseUrl(baseUrlDraft.value)
+    baseUrl = selectedServiceKey.value === 'vps' ? '' : normalizeBaseUrl(baseUrlDraft.value)
   } catch {
     baseUrlError.value = 'Enter an HTTP(S) URL without credentials, a query, or a fragment.'
     return
@@ -105,7 +105,7 @@ function saveConfig() {
             variant="subtle"
             size="sm"
             class="rounded-full"
-          >Not configured</UBadge>
+          >{{ service.key === 'vps' ? 'Local collector' : 'Not configured' }}</UBadge>
         </span>
         <span class="block text-sm font-semibold">{{ service.label }}</span>
         <span class="mt-1 block text-xs font-normal text-gray-500">Service configuration</span>
@@ -130,7 +130,14 @@ function saveConfig() {
             :ui="{ item: 'border-0', trigger: 'cursor-pointer px-4 py-3.5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50', content: 'px-4', body: 'pb-4 pt-1' }"
           >
             <template #body>
+              <div
+                v-if="selectedServiceKey === 'vps'"
+                class="rounded-lg border border-gray-200/80 bg-gray-50 p-3 text-sm leading-6 text-gray-600 dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-300"
+              >
+                The VPS process collector reads Linux /proc from the host running Nuxt. It is unavailable on macOS and other non-Linux hosts.
+              </div>
               <UFormField
+                v-else
                 label="Base URL"
                 :error="baseUrlError || undefined"
                 description="Base API URL for this service."

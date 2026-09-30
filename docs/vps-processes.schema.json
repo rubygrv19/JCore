@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dashboard-minimal:vps-processes:1.0",
+  "title": "VPS process snapshot 1.0",
+  "type": "object",
+  "required": ["source", "collectedAt", "items"],
+  "properties": {
+    "source": { "const": "linux-procfs" },
+    "collectedAt": { "type": "string", "format": "date-time" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "pid", "state", "user", "cpuPercentOfHost", "memoryPercent", "description", "location", "startedAt", "commandLine"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "pid": { "type": ["integer", "null"], "minimum": 1 },
+          "state": { "enum": ["running", "sleeping", "stopped", "zombie", "unknown"] },
+          "user": { "type": ["string", "null"] },
+          "cpuPercentOfHost": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+          "memoryPercent": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+          "description": { "type": ["string", "null"] },
+          "location": { "type": ["string", "null"] },
+          "startedAt": { "type": ["string", "null"], "format": "date-time" },
+          "commandLine": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}
