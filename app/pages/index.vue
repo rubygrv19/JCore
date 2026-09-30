@@ -9,7 +9,7 @@ useSeoMeta({ title: 'Dashboard' })
         Dashboard
       </h1>
       <p class="mt-1 text-sm text-gray-500">
-        Ringkasan workspace.
+        Workspace overview.
       </p>
     </div>
     <UCard
@@ -29,10 +29,10 @@ useSeoMeta({ title: 'Dashboard' })
           Coming Soon
         </UBadge>
         <h2 class="mt-4 text-lg font-semibold tracking-tight">
-          Dashboard sedang disiapkan
+          Dashboard is being prepared
         </h2>
         <p class="mt-2 max-w-sm text-sm leading-6 text-gray-500">
-          Konten Dashboard akan tersedia segera.
+          Dashboard content will be available soon.
         </p>
       </div>
     </UCard>

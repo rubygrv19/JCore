@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dashboard-minimal:vps-dashboard:1.2",
+  "title": "VPS dashboard response 1.2",
+  "type": "object",
+  "required": ["schemaVersion", "dataMode", "collectedAt", "host", "health", "thresholds", "current", "history"],
+  "properties": {
+    "schemaVersion": { "const": "1.2" },
+    "dataMode": { "enum": ["mock", "live"] },
+    "collectedAt": { "$ref": "#/$defs/nullableDateTime" },
+    "host": {
+      "type": "object",
+      "required": ["hostname", "os", "uptimeSeconds", "cpuCores"],
+      "properties": {
+        "hostname": { "$ref": "#/$defs/nullableString" },
+        "os": { "$ref": "#/$defs/nullableString" },
+        "uptimeSeconds": { "$ref": "#/$defs/nullableNonNegativeNumber" },
+        "cpuCores": { "$ref": "#/$defs/nullablePositiveNumber" }
+      }
+    },
+    "health": {
+      "type": "object",
+      "required": ["status", "reasons"],
+      "properties": { "status": { "$ref": "#/$defs/status" }, "reasons": { "type": "array", "items": { "type": "string" } } }
+    },
+    "thresholds": {
+      "type": "object",
+      "required": ["cpu", "memoryAvailable", "storageUsed"],
+      "properties": {
+        "cpu": { "$ref": "#/$defs/threshold" },
+        "memoryAvailable": { "type": "object", "required": ["warningBelowPercent", "criticalBelowPercent", "forSeconds"], "properties": { "warningBelowPercent": { "$ref": "#/$defs/nullablePercent" }, "criticalBelowPercent": { "$ref": "#/$defs/nullablePercent" }, "forSeconds": { "$ref": "#/$defs/nullableNonNegativeNumber" } } },
+        "storageUsed": { "$ref": "#/$defs/threshold" }
+      }
+    },
+    "current": {
+      "type": "object",
+      "required": ["cpu", "memory", "storage", "network", "services", "processes"],
+      "properties": {
+        "cpu": { "type": "object", "required": ["usagePercent", "loadAverage", "status"], "properties": { "usagePercent": { "$ref": "#/$defs/nullablePercent" }, "loadAverage": { "type": "object", "required": ["1m", "5m", "15m"], "properties": { "1m": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "5m": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "15m": { "$ref": "#/$defs/nullableNonNegativeNumber" } } }, "status": { "$ref": "#/$defs/status" } } },
+        "memory": { "type": "object", "required": ["totalBytes", "availableBytes", "swapTotalBytes", "swapUsedBytes", "status"], "properties": { "totalBytes": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "availableBytes": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "swapTotalBytes": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "swapUsedBytes": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "status": { "$ref": "#/$defs/status" } } },
+        "storage": { "type": "object", "required": ["filesystems", "io", "status"], "properties": { "filesystems": { "type": "array", "items": { "type": "object", "required": ["mountPoint", "fileSystem", "totalBytes", "usedBytes", "inodeUsedPercent", "status"], "properties": { "mountPoint": { "type": "string" }, "fileSystem": { "type": "string" }, "totalBytes": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "usedBytes": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "inodeUsedPercent": { "$ref": "#/$defs/nullablePercent" }, "status": { "$ref": "#/$defs/status" } } } }, "io": { "type": "object", "required": ["readBytesPerSecond", "writeBytesPerSecond"], "properties": { "readBytesPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "writeBytesPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" } } }, "status": { "$ref": "#/$defs/status" } } },
+        "network": { "type": "object", "required": ["interfaces", "status"], "properties": { "interfaces": { "type": "array", "items": { "type": "object", "required": ["name", "rxBytesPerSecond", "txBytesPerSecond", "rxErrorsPerSecond", "txErrorsPerSecond", "rxDropsPerSecond", "txDropsPerSecond", "capacityBitsPerSecond", "status"], "properties": { "name": { "type": "string" }, "rxBytesPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "txBytesPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "rxErrorsPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "txErrorsPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "rxDropsPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "txDropsPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "capacityBitsPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "status": { "$ref": "#/$defs/status" } } } }, "status": { "$ref": "#/$defs/status" } } },
+        "services": { "type": "object", "required": ["active", "failed", "units", "status"], "properties": { "active": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "failed": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "units": { "type": "array", "items": { "type": "object", "required": ["name", "actualState", "expectedState", "since", "status", "description", "ports", "pid", "uptimeSeconds", "path", "commandLine"], "properties": { "name": { "type": "string" }, "actualState": { "type": "string" }, "expectedState": { "enum": ["active", "inactive"] }, "since": { "$ref": "#/$defs/nullableDateTime" }, "status": { "$ref": "#/$defs/status" }, "description": { "$ref": "#/$defs/nullableString" }, "ports": { "type": "array", "items": { "type": "object", "required": ["port", "protocol"], "properties": { "port": { "type": "integer", "minimum": 1, "maximum": 65535 }, "protocol": { "enum": ["tcp", "udp"] } } } }, "pid": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "uptimeSeconds": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "path": { "$ref": "#/$defs/nullableString" }, "commandLine": { "$ref": "#/$defs/nullableString" } } } }, "status": { "$ref": "#/$defs/status" } } },
+        "processes": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "type": "object", "required": ["name", "pid", "state", "user", "cpuPercentOfHost", "memoryPercent", "description", "location", "startedAt", "commandLine"], "properties": { "name": { "type": "string" }, "pid": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "state": { "enum": ["running", "sleeping", "stopped", "zombie", "unknown"] }, "user": { "$ref": "#/$defs/nullableString" }, "cpuPercentOfHost": { "$ref": "#/$defs/nullablePercent" }, "memoryPercent": { "$ref": "#/$defs/nullablePercent" }, "description": { "$ref": "#/$defs/nullableString" }, "location": { "$ref": "#/$defs/nullableString" }, "startedAt": { "$ref": "#/$defs/nullableDateTime" }, "commandLine": { "$ref": "#/$defs/nullableString" } } } } } }
+      }
+    },
+    "history": { "type": "object", "required": ["range", "stepSeconds", "samples"], "properties": { "range": { "type": "string" }, "stepSeconds": { "type": "number", "exclusiveMinimum": 0 }, "samples": { "type": "array", "items": { "type": "object", "required": ["timestamp", "cpuUsagePercent", "memoryAvailablePercent", "swapUsedPercent", "diskReadBytesPerSecond", "diskWriteBytesPerSecond", "networkRxBytesPerSecond", "networkTxBytesPerSecond"], "properties": { "timestamp": { "type": "string", "format": "date-time" }, "cpuUsagePercent": { "$ref": "#/$defs/nullablePercent" }, "memoryAvailablePercent": { "$ref": "#/$defs/nullablePercent" }, "swapUsedPercent": { "$ref": "#/$defs/nullablePercent" }, "diskReadBytesPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "diskWriteBytesPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "networkRxBytesPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" }, "networkTxBytesPerSecond": { "$ref": "#/$defs/nullableNonNegativeNumber" } } } } } }
+  },
+  "$defs": {
+    "status": { "enum": ["healthy", "warning", "critical", "unknown"] },
+    "nullableString": { "type": ["string", "null"] },
+    "nullableDateTime": { "type": ["string", "null"], "format": "date-time" },
+    "nullableNonNegativeNumber": { "type": ["number", "null"], "minimum": 0 },
+    "nullablePositiveNumber": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+    "nullablePercent": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+    "threshold": { "type": "object", "required": ["warningPercent", "criticalPercent", "forSeconds"], "properties": { "warningPercent": { "$ref": "#/$defs/nullablePercent" }, "criticalPercent": { "$ref": "#/$defs/nullablePercent" }, "forSeconds": { "$ref": "#/$defs/nullableNonNegativeNumber" } } }
+  }
+}

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 useHead({
-  htmlAttrs: { lang: 'id' },
+  htmlAttrs: { lang: 'en' },
   link: [{ rel: 'icon', href: '/favicon.ico' }]
 })
 
 useSeoMeta({
   titleTemplate: '%s — Ruangkerja',
-  description: 'Dashboard layanan dan konfigurasi workspace.'
+  description: 'Service dashboard and workspace configuration.'
 })
 </script>
 

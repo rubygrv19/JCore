@@ -1,23 +1,25 @@
 # Dashboard Minimal
 
-Dashboard multi-halaman berbasis Nuxt 4 dengan Nuxt UI, Nuxt Fonts (Inter), Nuxt Icon, Nuxt Image, dan Pinia. Halaman Dashboard dan layanan saat ini berstatus Coming Soon; konfigurasi di Settings hanya tersimpan selama sesi browser. Belum ada API service yang dihubungkan.
+A multi-page dashboard built with Nuxt 4, Nuxt UI, Nuxt Fonts (Inter), Nuxt Icon, Nuxt Image, and Pinia. The Dashboard and service pages currently show a Coming Soon state. Settings are mock configuration held only in browser memory. No service API is connected yet.
 
-Route aplikasi berasal dari `app/pages/`: Dashboard (`/`), Settings (`/settings`), dan service (`/services/:service`). Halaman statis dibuat ke `.output/public`.
+Routes are defined in `app/pages/`: Dashboard (`/`), Settings (`/settings`), and services (`/services/:service`). Static pages are generated to `.output/public`.
 
-## Menjalankan
+## Development
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Buka alamat lokal yang ditampilkan Nuxt.
+Open the local address printed by Nuxt.
 
-## Perintah
+## Commands
 
-- `pnpm dev` — jalankan server pengembangan
-- `pnpm build` — buat output statis produksi di `.output/public`
-- `pnpm preview` — pratinjau build produksi
-- `pnpm typecheck` — periksa tipe TypeScript
-- `pnpm lint` — jalankan ESLint
-- `pnpm test` — jalankan tes di `test/unit/` dan `test/nuxt/`
+- `pnpm dev` — start the development server
+- `pnpm build` — generate the production static output in `.output/public`
+- `pnpm preview` — preview the production build
+- `pnpm typecheck` — check TypeScript types
+- `pnpm lint` — run ESLint
+- `pnpm test` — run tests in `test/unit/` and `test/nuxt/`
+
+See [AGENTS.md](./AGENTS.md) for project rules and the AI-assisted development workflow. See [the VPS response contract](./docs/vps-response-contract.md) for the VPS mock API shape.

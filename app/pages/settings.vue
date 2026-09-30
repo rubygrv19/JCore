@@ -13,9 +13,9 @@ const services: Array<{ key: ServiceKey, label: string, icon: string }> = [
   { key: 'quota-tracker', label: 'Quota Tracker', icon: 'i-lucide-chart-no-axes-column-increasing' }
 ]
 const serviceModeOptions: Array<{ value: Exclude<ServiceMode, ''>, label: string, description: string, icon: string, color: 'info' | 'warning' | 'error' }> = [
-  { value: 'coming-soon', label: 'Coming Soon', description: 'Tandai layanan sebagai belum tersedia.', icon: 'i-lucide-sparkles', color: 'info' },
-  { value: 'maintenance', label: 'Maintenance', description: 'Tandai layanan sedang dalam pemeliharaan.', icon: 'i-lucide-wrench', color: 'warning' },
-  { value: 'shutdown', label: 'Shutdown', description: 'Tandai layanan sebagai tidak aktif.', icon: 'i-lucide-power', color: 'error' }
+  { value: 'coming-soon', label: 'Coming Soon', description: 'Mark this service as not yet available.', icon: 'i-lucide-sparkles', color: 'info' },
+  { value: 'maintenance', label: 'Maintenance', description: 'Mark this service as under maintenance.', icon: 'i-lucide-wrench', color: 'warning' },
+  { value: 'shutdown', label: 'Shutdown', description: 'Mark this service as inactive.', icon: 'i-lucide-power', color: 'error' }
 ]
 const serviceCards = computed(() => services.map(service => ({
   ...service,
@@ -50,7 +50,7 @@ function saveConfig() {
   try {
     baseUrl = normalizeBaseUrl(baseUrlDraft.value)
   } catch {
-    baseUrlError.value = 'Gunakan URL HTTP(S) tanpa kredensial, query, atau fragment.'
+    baseUrlError.value = 'Enter an HTTP(S) URL without credentials, a query, or a fragment.'
     return
   }
 
@@ -66,11 +66,11 @@ function saveConfig() {
         Settings
       </h1>
       <p class="mt-1 text-sm text-gray-500">
-        Konfigurasi layanan.
+        Service configuration.
       </p>
     </div>
     <section
-      aria-label="Konfigurasi services"
+      aria-label="Service settings"
       class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
     >
       <UButton
@@ -105,11 +105,11 @@ function saveConfig() {
             variant="subtle"
             size="sm"
             class="rounded-full"
-          >Belum diatur</UBadge>
+          >Not configured</UBadge>
         </span>
         <span class="block text-sm font-semibold">{{ service.label }}</span>
-        <span class="mt-1 block text-xs font-normal text-gray-500">Konfigurasi layanan</span>
-        <span class="mt-5 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">Atur konfigurasi<UIcon
+        <span class="mt-1 block text-xs font-normal text-gray-500">Service configuration</span>
+        <span class="mt-5 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">Manage configuration<UIcon
           name="i-lucide-arrow-up-right"
           class="size-3.5"
         /></span>
@@ -133,7 +133,7 @@ function saveConfig() {
               <UFormField
                 label="Base URL"
                 :error="baseUrlError || undefined"
-                description="Alamat dasar API untuk layanan ini."
+                description="Base API URL for this service."
                 class="w-full"
               >
                 <UInput
@@ -157,7 +157,7 @@ function saveConfig() {
             <template #body>
               <div class="space-y-3">
                 <p class="text-xs leading-5 text-red-800/80 dark:text-red-200/80">
-                  Pilih mode tampilan layanan. Pengaturan ini masih dummy dan belum mengubah layanan.
+                  Choose how this service is presented. This mock setting does not change the service itself.
                 </p>
                 <URadioGroup
                   v-model="serviceModeDraft"
@@ -185,7 +185,7 @@ function saveConfig() {
                   <UCheckbox
                     v-model="shutdownConfirmed"
                     color="error"
-                    label="Saya paham mode ini akan menandai layanan sebagai tidak aktif."
+                    label="I understand this mode will mark the service as inactive."
                     class="cursor-pointer"
                   />
                 </div>
@@ -197,7 +197,7 @@ function saveConfig() {
       <template #footer>
         <div class="flex w-full items-center justify-between gap-4">
           <p class="text-xs text-gray-400">
-            Dummy untuk development; belum tersimpan ke backend
+            Development mock; changes are not saved to the backend
           </p>
           <div class="flex shrink-0 items-center gap-2">
             <UButton

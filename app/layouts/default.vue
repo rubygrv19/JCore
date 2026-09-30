@@ -103,10 +103,10 @@ function toggleGroup(label: string) {
           <UIcon
             name="i-lucide-sparkles"
             class="size-4 text-emerald-600"
-          /> Ruang kerja demo
+          /> Demo workspace
         </div>
         <p class="text-xs leading-5 text-gray-500 dark:text-gray-400">
-          Angka pada halaman ini adalah data contoh.
+          Values on this page are sample data.
         </p>
       </div>
       <div class="mt-5 flex items-center gap-3 px-1">
@@ -119,7 +119,7 @@ function toggleGroup(label: string) {
           <p class="truncate text-xs font-semibold">
             Alya Rahma
           </p><p class="truncate text-[11px] text-gray-500">
-            Pemilik akun
+            Account owner
           </p>
         </div>
       </div>

@@ -19,6 +19,8 @@
     "@nuxt/image": "^2.1.0",
     "@nuxt/ui": "^4.11.2",
     "@pinia/nuxt": "^1.0.2",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "chart.js": "4.5.1",
     "nuxt": "^4.5.2",
     "ofetch": "^1.5.1",

@@ -1,4 +1,5 @@
 export type VpsStatus = 'healthy' | 'warning' | 'critical' | 'unknown'
+export type VpsProcessState = 'running' | 'sleeping' | 'stopped' | 'zombie' | 'unknown'
 
 export interface VpsDashboardResponse {
   schemaVersion: string
@@ -49,6 +50,20 @@ export interface VpsDashboardResponse {
       }>
       status: VpsStatus
     }
+    processes: {
+      items: Array<{
+        name: string
+        pid: number | null
+        state: VpsProcessState
+        user: string | null
+        cpuPercentOfHost: number | null
+        memoryPercent: number | null
+        description: string | null
+        location: string | null
+        startedAt: string | null
+        commandLine: string | null
+      }>
+    }
   }
   history: {
     range: string
@@ -64,5 +79,4 @@ export interface VpsDashboardResponse {
       networkTxBytesPerSecond: number | null
     }>
   }
-  alerts: { available: boolean, items: Array<{ title: string, status: VpsStatus, since: string | null }> }
 }

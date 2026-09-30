@@ -10,7 +10,7 @@ const serviceLabels: Record<ServiceKey, { label: string, icon: string }> = {
 }
 const serviceKey = String(route.params.service)
 if (!SERVICE_KEYS.includes(serviceKey as ServiceKey)) {
-  throw createError({ statusCode: 404, statusMessage: 'Service tidak ditemukan' })
+  throw createError({ statusCode: 404, statusMessage: 'Service not found' })
 }
 const service = serviceLabels[serviceKey as ServiceKey]
 
@@ -24,7 +24,7 @@ useSeoMeta({ title: service.label })
         {{ service.label }}
       </h1>
       <p class="mt-1 text-sm text-gray-500">
-        Halaman layanan.
+        Service page.
       </p>
     </div>
     <UCard
@@ -44,10 +44,10 @@ useSeoMeta({ title: service.label })
           Coming Soon
         </UBadge>
         <h2 class="mt-4 text-lg font-semibold tracking-tight">
-          {{ service.label }} sedang disiapkan
+          {{ service.label }} is being prepared
         </h2>
         <p class="mt-2 max-w-sm text-sm leading-6 text-gray-500">
-          Konten untuk layanan ini akan tersedia segera.
+          Content for this service will be available soon.
         </p>
       </div>
     </UCard>

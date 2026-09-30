@@ -5,13 +5,13 @@ import { SERVICE_KEYS, type ServiceKey } from '../../app/types/services'
 describe('service API clients', () => {
   it('normalizes HTTP base URLs and rejects unsupported protocols', () => {
     expect(normalizeBaseUrl(' https://vps.example.test/api/ ')).toBe('https://vps.example.test/api')
-    expect(() => normalizeBaseUrl('ftp://vps.example.test')).toThrow('Base URL harus menggunakan HTTP atau HTTPS.')
+    expect(() => normalizeBaseUrl('ftp://vps.example.test')).toThrow('Base URL must use HTTP or HTTPS.')
     expect(() => normalizeBaseUrl('not a URL')).toThrow()
   })
 
   it('rejects credentials and query strings in browser-visible base URLs', () => {
-    expect(() => normalizeBaseUrl('https://user:secret@vps.example.test/api')).toThrow('Base URL tidak boleh memuat kredensial.')
-    expect(() => normalizeBaseUrl('https://vps.example.test/api?token=secret')).toThrow('Base URL tidak boleh memuat query atau fragment.')
+    expect(() => normalizeBaseUrl('https://user:secret@vps.example.test/api')).toThrow('Base URL must not contain credentials.')
+    expect(() => normalizeBaseUrl('https://vps.example.test/api?token=secret')).toThrow('Base URL must not contain a query string or fragment.')
   })
 
   it('sends each service request to its own configured base URL', async () => {

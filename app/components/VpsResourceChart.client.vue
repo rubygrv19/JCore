@@ -13,6 +13,7 @@ const props = defineProps<{
 
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
+const prefersReducedMotion = import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const data = computed<ChartData<'line'>>(() => ({
   labels: props.labels,
   datasets: props.datasets.map(series => ({
@@ -36,17 +37,23 @@ const options = computed<ChartOptions<'line'>>(() => {
   return {
     responsive: true,
     maintainAspectRatio: false,
+    animation: prefersReducedMotion ? false : { duration: 250 },
     interaction: { intersect: false, mode: 'index' },
     plugins: {
       legend: { display: props.datasets.length > 1, position: 'bottom', labels: { color: muted, usePointStyle: true, boxWidth: 6, boxHeight: 6, padding: 16, font: { family: 'Inter', size: 10 } } },
       tooltip: {
         displayColors: true,
-        backgroundColor: isDark.value ? '#202326' : '#ffffff',
+        backgroundColor: isDark.value ? 'rgb(32, 35, 38)' : 'rgb(255, 255, 255)',
         titleColor: isDark.value ? '#f9fafb' : '#111827',
         bodyColor: isDark.value ? '#d1d5db' : '#374151',
         borderColor: grid,
         borderWidth: 1,
+        padding: 10,
         callbacks: {
+          labelColor: (context: TooltipItem<'line'>) => ({
+            borderColor: context.dataset.borderColor as string,
+            backgroundColor: context.dataset.borderColor as string
+          }),
           label: (context: TooltipItem<'line'>) => {
             const value = context.parsed.y
             if (value === null) return `${context.dataset.label}: —`

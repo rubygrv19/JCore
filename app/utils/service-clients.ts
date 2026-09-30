@@ -10,13 +10,13 @@ export function normalizeBaseUrl(value: string): string {
 
   const url = new URL(input)
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    throw new Error('Base URL harus menggunakan HTTP atau HTTPS.')
+    throw new Error('Base URL must use HTTP or HTTPS.')
   }
   if (url.username || url.password) {
-    throw new Error('Base URL tidak boleh memuat kredensial.')
+    throw new Error('Base URL must not contain credentials.')
   }
   if (url.search || url.hash) {
-    throw new Error('Base URL tidak boleh memuat query atau fragment.')
+    throw new Error('Base URL must not contain a query string or fragment.')
   }
 
   return url.href.replace(/\/+$/, '')

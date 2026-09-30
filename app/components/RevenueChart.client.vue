@@ -4,7 +4,7 @@ import { Line } from 'vue-chartjs'
 
 ChartJS.register(CategoryScale, Filler, Legend, LinearScale, LineElement, PointElement, Tooltip)
 
-const labels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
+const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const revenue = [5.2, 6.5, 6, 7.3, 6.5, 8, 8.7]
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
@@ -12,7 +12,7 @@ const isDark = computed(() => colorMode.value === 'dark')
 const data = computed(() => ({
   labels,
   datasets: [{
-    label: 'Pendapatan',
+    label: 'Revenue',
     data: revenue,
     borderColor: '#10b981',
     backgroundColor: 'rgba(16, 185, 129, 0.12)',
@@ -47,7 +47,7 @@ const options = computed(() => {
         callbacks: {
           label: (context: TooltipItem<'line'>) => {
             const value = context.parsed.y
-            return value === null ? 'Rp —' : `Rp ${value.toLocaleString('id-ID')} jt`
+            return value === null ? 'IDR —' : `IDR ${value.toLocaleString('en-US')} million`
           }
         }
       }
@@ -66,7 +66,7 @@ const options = computed(() => {
           color: muted,
           padding: 8,
           font: { family: 'Inter', size: 10 },
-          callback: (value: string | number) => `Rp ${value} jt`
+          callback: (value: string | number) => `IDR ${value}M`
         },
         grid: { color: grid, borderDash: [4, 4], drawTicks: false },
         border: { display: false }
@@ -81,7 +81,7 @@ const options = computed(() => {
     <Line
       :data="data"
       :options="options"
-      aria-label="Grafik pendapatan contoh per hari selama satu minggu, dalam juta rupiah"
+      aria-label="Sample daily revenue chart for one week, in millions of Indonesian rupiah"
     />
   </div>
 </template>

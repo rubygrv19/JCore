@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.2",
   "dataMode": "mock",
   "collectedAt": "2026-09-27T16:00:00.000Z",
   "host": {
@@ -11,9 +11,9 @@
   "health": {
     "status": "critical",
     "reasons": [
-      "myapp.service gagal meskipun diharapkan aktif.",
-      "Memory available berada di bawah ambang peringatan.",
-      "Filesystem / berada di atas ambang peringatan."
+      "myapp.service failed even though it is expected to be active.",
+      "Available memory is below the warning threshold.",
+      "Filesystem / is above the warning threshold."
     ]
   },
   "thresholds": {
@@ -52,13 +52,21 @@
       "active": 4,
       "failed": 1,
       "units": [
-        { "name": "nginx.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy", "description": "HTTP server and reverse proxy", "ports": [{ "port": 80, "protocol": "tcp" }, { "port": 443, "protocol": "tcp" }], "pid": 1240, "uptimeSeconds": 604800, "path": "/usr/sbin/nginx", "commandLine": "/usr/sbin/nginx -g daemon off;" },
-        { "name": "postgresql.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy", "description": "PostgreSQL database server", "ports": [{ "port": 5432, "protocol": "tcp" }], "pid": 1382, "uptimeSeconds": 604800, "path": "/usr/lib/postgresql/16/bin/postgres", "commandLine": "/usr/lib/postgresql/16/bin/postgres -D /var/lib/postgresql/16/main" },
-        { "name": "docker.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy", "description": "Docker application container engine", "ports": [], "pid": 1521, "uptimeSeconds": 604800, "path": "/usr/bin/dockerd", "commandLine": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock" },
-        { "name": "cron.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T12:00:00.000Z", "status": "healthy", "description": "Regular background program processing daemon", "ports": [], "pid": 891, "uptimeSeconds": 604800, "path": "/usr/sbin/cron", "commandLine": "/usr/sbin/cron -f -P" },
+        { "name": "nginx.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T16:00:00.000Z", "status": "healthy", "description": "HTTP server and reverse proxy", "ports": [{ "port": 80, "protocol": "tcp" }, { "port": 443, "protocol": "tcp" }], "pid": 1240, "uptimeSeconds": 604800, "path": "/usr/sbin/nginx", "commandLine": "/usr/sbin/nginx -g daemon off;" },
+        { "name": "postgresql.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T16:00:00.000Z", "status": "healthy", "description": "PostgreSQL database server", "ports": [{ "port": 5432, "protocol": "tcp" }], "pid": 1382, "uptimeSeconds": 604800, "path": "/usr/lib/postgresql/16/bin/postgres", "commandLine": "/usr/lib/postgresql/16/bin/postgres -D /var/lib/postgresql/16/main" },
+        { "name": "docker.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T16:00:00.000Z", "status": "healthy", "description": "Docker application container engine", "ports": [], "pid": 1521, "uptimeSeconds": 604800, "path": "/usr/bin/dockerd", "commandLine": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock" },
+        { "name": "cron.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T16:00:00.000Z", "status": "healthy", "description": "Regular background program processing daemon", "ports": [], "pid": 891, "uptimeSeconds": 604800, "path": "/usr/sbin/cron", "commandLine": "/usr/sbin/cron -f -P" },
         { "name": "myapp.service", "actualState": "failed", "expectedState": "active", "since": "2026-09-27T15:42:00.000Z", "status": "critical", "description": "Demo application service", "ports": [{ "port": 3000, "protocol": "tcp" }], "pid": null, "uptimeSeconds": null, "path": "/opt/demo/myapp", "commandLine": "/opt/demo/myapp --serve" }
       ],
       "status": "critical"
+    },
+    "processes": {
+      "items": [
+        { "name": "nginx", "pid": 1240, "state": "running", "user": "root", "cpuPercentOfHost": 0.9, "memoryPercent": 0.8, "description": "HTTP server and reverse proxy", "location": "/usr/sbin/nginx", "startedAt": "2026-09-20T16:00:00.000Z", "commandLine": "/usr/sbin/nginx -g daemon off;" },
+        { "name": "postgres", "pid": 1382, "state": "running", "user": "postgres", "cpuPercentOfHost": 1.4, "memoryPercent": 4.2, "description": "PostgreSQL database server", "location": "/usr/lib/postgresql/16/bin/postgres", "startedAt": "2026-09-20T16:00:00.000Z", "commandLine": "/usr/lib/postgresql/16/bin/postgres -D /var/lib/postgresql/16/main" },
+        { "name": "dockerd", "pid": 1521, "state": "running", "user": "root", "cpuPercentOfHost": 2.1, "memoryPercent": 3.6, "description": "Docker application container engine", "location": "/usr/bin/dockerd", "startedAt": "2026-09-20T16:00:00.000Z", "commandLine": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock" },
+        { "name": "cron", "pid": 891, "state": "running", "user": "root", "cpuPercentOfHost": 0.1, "memoryPercent": 0.2, "description": "Regular background program processing daemon", "location": "/usr/sbin/cron", "startedAt": "2026-09-20T16:00:00.000Z", "commandLine": "/usr/sbin/cron -f -P" }
+      ]
     }
   },
   "history": {
@@ -78,6 +86,5 @@
       { "timestamp": "2026-09-27T15:55:00.000Z", "cpuUsagePercent": 46, "memoryAvailablePercent": 16, "swapUsedPercent": 24, "diskReadBytesPerSecond": 1660000, "diskWriteBytesPerSecond": 1250000, "networkRxBytesPerSecond": 1510000, "networkTxBytesPerSecond": 700000 },
       { "timestamp": "2026-09-27T16:00:00.000Z", "cpuUsagePercent": 42, "memoryAvailablePercent": 16, "swapUsedPercent": 25, "diskReadBytesPerSecond": 1835008, "diskWriteBytesPerSecond": 917504, "networkRxBytesPerSecond": 1048576, "networkTxBytesPerSecond": 524288 }
     ]
-  },
-  "alerts": { "available": false, "items": [] }
+  }
 }

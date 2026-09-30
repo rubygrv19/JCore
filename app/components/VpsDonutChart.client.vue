@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import { ArcElement, Chart as ChartJS, Tooltip, type ChartData, type ChartOptions } from 'chart.js'
 import { Doughnut } from 'vue-chartjs'
+import { formatBytes } from '~/utils/vps-status'
 
 ChartJS.register(ArcElement, Tooltip)
 
 const props = defineProps<{
   segments: Array<{ label: string, value: number, color: string }>
   centerValue: string
-  centerLabel: string
   chartLabel: string
+  unit: 'percent' | 'rate'
 }>()
 
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
+const prefersReducedMotion = import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 const chartData = computed<ChartData<'doughnut'>>(() => {
   const hasData = props.segments.some(segment => segment.value > 0)
   const segments = hasData
     ? props.segments
-    : [{ label: 'Tidak tersedia', value: 1, color: '#9ca3af' }]
+    : [{ label: 'Unavailable', value: 1, color: '#9ca3af' }]
 
   return {
     labels: segments.map(segment => segment.label),
@@ -35,18 +37,20 @@ const options = computed<ChartOptions<'doughnut'>>(() => ({
   responsive: true,
   maintainAspectRatio: true,
   cutout: '76%',
-  animation: { duration: 250 },
+  animation: prefersReducedMotion ? false : { duration: 250 },
+  transitions: { active: { animation: { duration: 0 } } },
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: isDark.value ? '#202326' : '#ffffff',
+      enabled: props.segments.some(segment => segment.value > 0),
+      backgroundColor: isDark.value ? 'rgb(32, 35, 38)' : 'rgb(255, 255, 255)',
       titleColor: isDark.value ? '#f9fafb' : '#111827',
       bodyColor: isDark.value ? '#d1d5db' : '#374151',
       borderColor: isDark.value ? 'rgba(255, 255, 255, 0.08)' : 'rgba(17, 24, 39, 0.08)',
       borderWidth: 1,
       padding: 10,
       callbacks: {
-        label: context => ` ${context.label}: ${context.formattedValue}`
+        label: context => ` ${context.label}: ${props.unit === 'rate' ? `${formatBytes(context.parsed)}/s` : `${context.parsed.toFixed(0)}%`}`
       }
     }
   }
@@ -57,15 +61,15 @@ const options = computed<ChartOptions<'doughnut'>>(() => ({
   <div
     role="img"
     :aria-label="chartLabel"
-    class="relative size-40 shrink-0 sm:size-44"
+    class="relative size-44 shrink-0 sm:size-48"
   >
     <Doughnut
+      class="relative z-10"
       :data="chartData"
       :options="options"
     />
-    <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-      <span class="max-w-20 truncate text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ centerValue }}</span>
-      <span class="max-w-20 truncate text-[10px] text-gray-500 dark:text-gray-400">{{ centerLabel }}</span>
+    <div class="pointer-events-none absolute inset-0 z-0 flex items-center justify-center text-center">
+      <span class="max-w-28 truncate text-[24px] font-semibold tracking-tight text-gray-900 dark:text-white">{{ centerValue }}</span>
     </div>
   </div>
 </template>
