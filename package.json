@@ -24,6 +24,7 @@
     "ajv-formats": "^3.0.1",
     "chart.js": "4.5.1",
     "nuxt": "^4.5.2",
+    "nuxt-auth-utils": "0.5.30",
     "ofetch": "^1.5.1",
     "pinia": "^4.0.3",
     "tailwindcss": "^4.3.3",

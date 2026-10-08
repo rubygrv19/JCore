@@ -9,10 +9,11 @@ describe('VPS backend reference fixture', () => {
     expect(() => parseVpsDashboardResponse({ ...fixture, current: null })).toThrow('VPS response does not match the data contract.')
   })
 
-  it('keeps process CPU values within host capacity and omits unused alerts', () => {
-    expect(fixture.schemaVersion).toBe('1.2')
+  it('keeps process CPU values within host capacity and includes dashboard alert records', () => {
+    expect(fixture.schemaVersion).toBe('1.3')
     expect(fixture.dataMode).toBe('mock')
-    expect(fixture).not.toHaveProperty('alerts')
+    expect(fixture.alerts).toHaveLength(3)
+    expect(fixture.alerts.some(alert => alert.resource === 'services' && alert.target === 'myapp.service')).toBe(true)
     for (const process of fixture.current.processes.items) {
       expect(process.cpuPercentOfHost).toBeGreaterThanOrEqual(0)
       expect(process.cpuPercentOfHost).toBeLessThanOrEqual(100)

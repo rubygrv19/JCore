@@ -22,6 +22,7 @@ describe('VPS dashboard formatting and state labels', () => {
   it('formats the service ports shown in the systemd detail accordion', () => {
     expect(formatServicePorts([{ port: 80, protocol: 'tcp' }, { port: 53, protocol: 'udp' }])).toBe('TCP 80, UDP 53')
     expect(formatServicePorts([])).toBe('No ports detected')
+    expect(formatServicePorts(null)).toBe('Unknown')
   })
 
   it('formats process percentages and start times from the snapshot timestamp', () => {

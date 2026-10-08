@@ -3,4 +3,8 @@
 
 @theme static {
   --font-sans: 'Inter', sans-serif;
+  --color-app-canvas: #f7f8fa;
+  --color-app-sidebar: #ffffff;
+  --color-app-canvas-dark: #101214;
+  --color-app-sidebar-dark: #151719;
 }

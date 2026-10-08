@@ -1,5 +1,6 @@
 export type VpsStatus = 'healthy' | 'warning' | 'critical' | 'unknown'
 export type VpsProcessState = 'running' | 'sleeping' | 'stopped' | 'zombie' | 'unknown'
+export type VpsAlertSeverity = 'warning' | 'critical'
 
 export interface VpsDashboardResponse {
   schemaVersion: string
@@ -15,6 +16,17 @@ export interface VpsDashboardResponse {
     status: VpsStatus
     reasons: string[]
   }
+  alerts: Array<{
+    name: string
+    resource: 'host' | 'cpu' | 'memory' | 'storage' | 'services'
+    severity: VpsAlertSeverity
+    state: 'pending' | 'firing'
+    summary: string
+    description: string
+    activeAt: string
+    value: number | null
+    target: string | null
+  }>
   thresholds: {
     cpu: { warningPercent: number | null, criticalPercent: number | null, forSeconds: number | null }
     memoryAvailable: { warningBelowPercent: number | null, criticalBelowPercent: number | null, forSeconds: number | null }
@@ -38,11 +50,11 @@ export interface VpsDashboardResponse {
       units: Array<{
         name: string
         actualState: string
-        expectedState: 'active' | 'inactive'
+        expectedState: 'active' | 'inactive' | 'unknown'
         since: string | null
         status: VpsStatus
         description: string | null
-        ports: Array<{ port: number, protocol: 'tcp' | 'udp' }>
+        ports: Array<{ port: number, protocol: 'tcp' | 'udp' }> | null
         pid: number | null
         uptimeSeconds: number | null
         path: string | null

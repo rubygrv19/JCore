@@ -80,7 +80,8 @@ export function formatUptime(seconds: number | null): string {
   return days ? `${days} ${dayLabel} ${hours} ${hourLabel}` : `${hours} ${hourLabel}`
 }
 
-export function formatServicePorts(ports: Array<{ port: number, protocol: 'tcp' | 'udp' }>): string {
+export function formatServicePorts(ports: Array<{ port: number, protocol: 'tcp' | 'udp' }> | null): string {
+  if (ports === null) return 'Unknown'
   if (!ports.length) return 'No ports detected'
   return ports.map(({ port, protocol }) => `${protocol.toUpperCase()} ${port}`).join(', ')
 }

@@ -6,7 +6,8 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/icon',
     '@nuxt/image',
-    '@pinia/nuxt'
+    '@pinia/nuxt',
+    'nuxt-auth-utils'
   ],
 
   devtools: {
@@ -15,22 +16,24 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  routeRules: {
-    '/': { prerender: true }
+  runtimeConfig: {
+    vpsPrometheusUrl: 'http://127.0.0.1:9090',
+    auth: {
+      adminEmail: '',
+      adminPassword: ''
+    },
+    session: {
+      name: process.env.NODE_ENV === 'production' ? '__Host-jcore-session' : 'jcore-session',
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/'
+      }
+    }
   },
 
   compatibilityDate: '2026-06-30',
-
-  nitro: {
-    prerender: {
-      routes: [
-        '/services/vps',
-        '/services/timeshit',
-        '/services/code-review',
-        '/services/quota-tracker'
-      ]
-    }
-  },
 
   eslint: {
     config: {

@@ -1,4 +1,4 @@
-import Ajv2020 from 'ajv/dist/2020'
+import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import schema from '../../docs/vps-processes.schema.json'
 import type { VpsProcessesResponse } from '~/types/vps-processes'

@@ -1,4 +1,4 @@
-import Ajv2020, { type AnySchema } from 'ajv/dist/2020'
+import Ajv2020, { type AnySchema } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import schema from '../../docs/vps-dashboard.schema.json'
 import type { VpsDashboardResponse } from '~/types/vps'

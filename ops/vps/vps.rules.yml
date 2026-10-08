@@ -1,0 +1,93 @@
+groups:
+  - name: jcore-vps-recording
+    interval: 15s
+    rules:
+      - record: vps:cpu_usage_percent
+        expr: 100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))
+      - record: vps:memory_available_percent
+        expr: 100 * node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+      - record: vps:filesystem_used_percent
+        expr: 100 * (1 - node_filesystem_avail_bytes{fstype!~"autofs|binfmt_misc|bpf|cgroup.*|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|nsfs|overlay|proc|pstore|rpc_pipefs|securityfs|squashfs|sysfs|tmpfs|tracefs",mountpoint!~"^/(proc|sys|dev|run)(/.*)?$"} / node_filesystem_size_bytes{fstype!~"autofs|binfmt_misc|bpf|cgroup.*|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|nsfs|overlay|proc|pstore|rpc_pipefs|securityfs|squashfs|sysfs|tmpfs|tracefs",mountpoint!~"^/(proc|sys|dev|run)(/.*)?$"})
+
+  - name: jcore-vps-alerts
+    interval: 15s
+    rules:
+      - alert: VpsCollectorUnavailable
+        expr: up{job="node-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          resource: host
+        annotations:
+          summary: VPS metrics collector is unavailable
+          description: Prometheus cannot scrape the local Node Exporter.
+
+      - alert: VpsCpuWarning
+        expr: vps:cpu_usage_percent >= 80 and vps:cpu_usage_percent < 90
+        for: 5m
+        labels:
+          severity: warning
+          resource: cpu
+        annotations:
+          summary: CPU usage is above the warning threshold
+          description: CPU usage has stayed at or above 80% for 5 minutes.
+
+      - alert: VpsCpuCritical
+        expr: vps:cpu_usage_percent >= 90
+        for: 5m
+        labels:
+          severity: critical
+          resource: cpu
+        annotations:
+          summary: CPU usage is critical
+          description: CPU usage has stayed at or above 90% for 5 minutes.
+
+      - alert: VpsMemoryWarning
+        expr: vps:memory_available_percent < 20 and vps:memory_available_percent >= 10
+        for: 5m
+        labels:
+          severity: warning
+          resource: memory
+        annotations:
+          summary: Available memory is below the warning threshold
+          description: Available memory has stayed below 20% for 5 minutes.
+
+      - alert: VpsMemoryCritical
+        expr: vps:memory_available_percent < 10
+        for: 5m
+        labels:
+          severity: critical
+          resource: memory
+        annotations:
+          summary: Available memory is critical
+          description: Available memory has stayed below 10% for 5 minutes.
+
+      - alert: VpsFilesystemWarning
+        expr: vps:filesystem_used_percent >= 80 and vps:filesystem_used_percent < 90
+        for: 5m
+        labels:
+          severity: warning
+          resource: storage
+        annotations:
+          summary: Filesystem is above the warning threshold
+          description: Filesystem {{ $labels.mountpoint }} usage has stayed at or above 80% for 5 minutes.
+
+      - alert: VpsFilesystemCritical
+        expr: vps:filesystem_used_percent >= 90
+        for: 5m
+        labels:
+          severity: critical
+          resource: storage
+        annotations:
+          summary: Filesystem usage is critical
+          description: Filesystem {{ $labels.mountpoint }} usage has stayed at or above 90% for 5 minutes.
+
+      - alert: VpsSystemdUnitFailed
+        expr: node_systemd_unit_state{type="service",state="failed"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          resource: services
+        annotations:
+          summary: systemd unit has failed
+          description: systemd unit {{ $labels.name }} is in failed state.

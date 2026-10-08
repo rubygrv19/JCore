@@ -10,9 +10,10 @@ These rules apply to every AI-assisted change in this repository. Read this file
 - Do not invent product behavior, API contracts, endpoints, payloads, credentials, or data presented as real. Ask the user when a missing decision materially affects behavior or architecture.
 - Use clearly labeled mock data while a service or API is unavailable. Never present mock values as live data.
 - Keep service-specific behavior and configuration isolated. VPS, Timeshit, Code Review, and Quota Tracker may use different API base URLs.
-- API requests are made directly from the browser. Each API must allow the dashboard origin through CORS. Do not add a dashboard proxy unless the user requests one.
+- Service API requests are made directly from the browser. Each service API must allow the dashboard origin through CORS. The approved VPS telemetry exception uses same-origin Nuxt server endpoints to read the host-local Prometheus API; keep Prometheus and Node Exporter bound to loopback and do not expose them directly to the browser.
 - The backend/database owns persisted service configuration. Until that backend is specified and available, configuration is mock and non-persistent; do not persist it in localStorage or invent a backend schema.
 - Never put API secrets or private credentials in browser state, client-visible runtime config, or mock data. Redact secrets from command lines before returning telemetry. Ask before designing authentication or credential storage.
+- Authentication is approved for one administrator configured only through server environment variables. Never add real credentials or session secrets to source, `.env.example`, client runtime config, browser state, or mock data. Guard every dashboard page with the global route middleware and every private server API route with `requireUserSession(event)`; middleware alone does not protect API routes.
 
 ## Required stack and Nuxt conventions
 
@@ -30,7 +31,7 @@ These rules apply to every AI-assisted change in this repository. Read this file
 
 - Create an independent fetch client for each service, configured with that service's own base URL. Never route all services through one mutable global base URL.
 - Keep API access behind service-specific client functions; UI code must not construct endpoint URLs ad hoc.
-- Until the user supplies API documentation or confirms a contract, implement only the agreed mock path and base URL configuration. The explicitly approved local VPS process collector reads Linux `/proc` through a Nuxt server endpoint and exposes only the documented process snapshot. Do not guess endpoints, authentication, request/response shapes, retries, or business rules for other services.
+- Until the user supplies API documentation or confirms a contract, implement only the agreed mock path and base URL configuration. The approved VPS collector reads Linux `/proc` through a Nuxt server endpoint; approved host metrics and current alerts come from the host-local Prometheus API through a separate Nuxt server endpoint. Expose only the documented snapshots. Do not guess endpoints, authentication, request/response shapes, retries, or business rules for other services.
 - Validate and normalize base URLs before use. Validate API responses at runtime against the documented contract before rendering them.
 - Keep the mock JSON, JSON Schema, TypeScript types, tests, and response-contract documentation aligned. Version intentional contract changes and update all related references together.
 - Preserve the meanings of `null`, empty arrays, units, timestamps, and status enums. Do not convert unknown values to zero or translate machine-readable keys/enums.
@@ -67,3 +68,17 @@ These rules apply to every AI-assisted change in this repository. Read this file
 - Add or update tests for service-client isolation, configuration behavior, validation, state transitions, formatting, and user-visible interactions as those features are implemented.
 - Before completing a change, run `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. Do not leave new lint violations.
 - Final updates must state what changed, what was verified (including whether the browser page opened), and any limitations. Never claim a check or browser verification that was not actually completed.
+
+<!-- antislop:start -->
+## Anti-Slop
+
+For UI, copy, accessibility, mobile layout, and code-comment work, read the installed Anti-Slop core (`antislop.md`) from the Anti-Slop plugin in the Codex skill environment, then read the applicable module from the same plugin release:
+
+- UI / visual: `skills/antislop-ui/SKILL.md`
+- Copywriting: `skills/antislop-copywriting/SKILL.md`
+- Accessibility and human factors: `skills/antislop-human/SKILL.md`
+- Responsive and mobile layout: `skills/antislop-layoutmobile/SKILL.md`
+- Code comments: `skills/antislop-code/SKILL.md`
+
+Use the plugin's Two Usage Modes flow before applying Anti-Slop. An explicit mode selected for the current session takes precedence over a saved global preference. If neither sets a mode, ask whether to apply it during implementation or after implementation. Do not treat this project's pointer as a saved global preference. When a selected module is not installed in the current agent environment, report that limitation and do not download or invent its instructions.
+<!-- antislop:end -->

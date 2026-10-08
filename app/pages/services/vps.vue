@@ -21,9 +21,10 @@ let freshnessTimer: ReturnType<typeof setInterval> | undefined
 const liveProcesses = shallowRef<VpsProcess[] | null>(null)
 const processSnapshotAt = ref<string | null>(null)
 const processFetchFailed = ref(false)
+const processFailureReason = ref<'platform' | 'unavailable' | null>(null)
 const processSource = computed(() => liveProcesses.value
   ? processFetchFailed.value ? 'Stale snapshot · Linux /proc update failed' : 'Live · Linux /proc'
-  : 'Demo data · Linux required')
+  : processFailureReason.value === 'platform' ? 'Demo data · Linux required' : processFailureReason.value === 'unavailable' ? 'Demo data · live collector unavailable' : 'Demo data · waiting for collector')
 const chartLabels = computed(() => points.value.map(point => new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).format(new Date(point.timestamp))))
 const collectedAtDate = computed(() => dashboard.value?.collectedAt ? Date.parse(dashboard.value.collectedAt) : Number.NaN)
 const dataAgeSeconds = computed(() => Number.isFinite(collectedAtDate.value) ? Math.max(0, Math.floor((now.value - collectedAtDate.value) / 1000)) : null)
@@ -82,9 +83,11 @@ async function refreshProcesses() {
     liveProcesses.value = response.items
     processSnapshotAt.value = response.collectedAt
     processFetchFailed.value = false
-  } catch {
+  } catch (error) {
     // Keep labeled fixture data on macOS and on hosts where Linux /proc is unavailable.
     processFetchFailed.value = liveProcesses.value !== null
+    const statusCode = (error as { statusCode?: number, status?: number }).statusCode ?? (error as { status?: number }).status
+    processFailureReason.value = statusCode === 501 ? 'platform' : 'unavailable'
   }
 }
 onMounted(() => {
@@ -272,6 +275,10 @@ function formatRate(value: number | null | undefined): string {
   if (value == null) return '—'
   return `${formatBytes(value)}/s`
 }
+
+function formatAlertStart(value: string): string {
+  return new Date(value).toLocaleString('en-US', { timeZone: 'Asia/Jakarta', dateStyle: 'medium', timeStyle: 'short' })
+}
 </script>
 
 <template>
@@ -388,6 +395,85 @@ function formatRate(value: number | null | undefined): string {
         </div>
       </section>
 
+      <section aria-label="Active alerts">
+        <UCard
+          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
+        >
+          <div class="flex items-start gap-3">
+            <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"><UIcon
+              name="i-lucide-clipboard-check"
+              class="size-4"
+            /></span><div>
+              <h2 class="text-sm font-semibold">
+                Active alerts
+              </h2><p class="mt-1 text-xs text-gray-500">
+                Current conditions reported by the host monitor
+              </p>
+            </div><UBadge
+              :color="statusMeta(dashboard.health.status).color"
+              variant="subtle"
+            >
+              {{ dashboard.alerts.length }} {{ dashboard.alerts.length === 1 ? 'alert' : 'alerts' }}
+            </UBadge>
+          </div>
+          <ul
+            v-if="dashboard.alerts.length"
+            class="mt-4 divide-y divide-gray-100 dark:divide-gray-800"
+          >
+            <li
+              v-for="alert in dashboard.alerts"
+              :key="alert.name + alert.target"
+              class="flex items-start gap-3 py-3 first:pt-0 last:pb-0"
+            >
+              <UIcon
+                name="i-lucide-circle-alert"
+                :class="alert.severity === 'critical' ? 'mt-0.5 size-4 shrink-0 text-red-500' : 'mt-0.5 size-4 shrink-0 text-amber-500'"
+                aria-hidden="true"
+              />
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <p class="text-xs font-medium text-gray-800 dark:text-gray-200">
+                    {{ alert.summary }}
+                  </p><UBadge
+                    :color="alert.severity === 'critical' ? 'error' : 'warning'"
+                    variant="subtle"
+                    size="xs"
+                  >
+                    {{ alert.severity }}
+                  </UBadge><UBadge
+                    color="neutral"
+                    variant="outline"
+                    size="xs"
+                  >
+                    {{ alert.state }}
+                  </UBadge>
+                </div>
+                <p class="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                  {{ alert.description }}
+                </p>
+                <p class="mt-1 text-[11px] text-gray-400">
+                  <span v-if="alert.target">{{ alert.target }} · </span>Active since {{ formatAlertStart(alert.activeAt) }}
+                </p>
+              </div>
+            </li>
+          </ul>
+          <p
+            v-else
+            class="mt-4 text-xs leading-5 text-gray-500"
+          >
+            {{ dashboard.health.reasons.join(' ') || 'No active alerts.' }}
+          </p>
+          <div class="mt-5 border-t border-gray-100 pt-4 text-[11px] leading-5 text-gray-500 dark:border-gray-800">
+            <p>CPU, memory, and filesystem alerts require a sustained condition for {{ dashboard.thresholds.cpu.forSeconds === null ? '—' : Math.round(dashboard.thresholds.cpu.forSeconds / 60) }} minutes.</p><p
+              v-if="latest.network.status === 'unknown'"
+              class="mt-1"
+            >
+              {{ latest.network.interfaces.some(iface => iface.capacityBitsPerSecond === null) ? 'Network status is unknown because interface capacity has not been configured.' : 'Network status cannot be determined from the available data.' }}
+            </p>
+          </div>
+        </UCard>
+      </section>
+
       <section
         aria-label="Resource overview"
         class="grid gap-4 xl:grid-cols-2"
@@ -407,13 +493,15 @@ function formatRate(value: number | null | undefined): string {
                 {{ statusMeta(card.status).label }}
               </UBadge>
             </div>
-            <div class="mt-6 grid grid-cols-[11rem_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-6">
-              <VpsDonutChart
-                :segments="card.segments"
-                :center-value="card.centerValue"
-                :chart-label="card.chartLabel"
-                :unit="card.unit"
-              />
+            <div class="mt-6 grid grid-cols-1 items-center gap-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-6">
+              <div class="flex justify-center sm:block">
+                <VpsDonutChart
+                  :segments="card.segments"
+                  :center-value="card.centerValue"
+                  :chart-label="card.chartLabel"
+                  :unit="card.unit"
+                />
+              </div>
               <dl class="min-w-0 space-y-3 text-xs sm:text-sm">
                 <div
                   v-for="detail in card.details"
@@ -903,51 +991,6 @@ function formatRate(value: number | null | undefined): string {
               show-edges
               aria-label="Active process pages"
             />
-          </div>
-        </UCard>
-        <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
-        >
-          <div class="flex items-start gap-3">
-            <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"><UIcon
-              name="i-lucide-clipboard-check"
-              class="size-4"
-            /></span><div>
-              <h2 class="text-sm font-semibold">
-                Health summary
-              </h2><p class="mt-1 text-xs text-gray-500">
-                Reasons for the overall status
-              </p>
-            </div>
-          </div>
-          <ul
-            v-if="dashboard.health.reasons.length"
-            class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
-          >
-            <li
-              v-for="(reason, index) in dashboard.health.reasons"
-              :key="reason"
-              class="flex gap-2.5 text-xs leading-5 text-gray-600 dark:text-gray-300"
-            >
-              <UIcon
-                :name="index === 0 ? 'i-lucide-circle-alert' : 'i-lucide-info'"
-                :class="index === 0 ? 'mt-0.5 size-4 shrink-0 text-red-500' : 'mt-0.5 size-4 shrink-0 text-amber-500'"
-              />{{ reason }}
-            </li>
-          </ul>
-          <p
-            v-else
-            class="mt-4 text-xs leading-5 text-gray-500"
-          >
-            There are no conditions to display based on the available data.
-          </p>
-          <div class="mt-5 border-t border-gray-100 pt-4 text-[11px] leading-5 text-gray-500 dark:border-gray-800">
-            <p>Thresholds apply after a condition persists for {{ dashboard.thresholds.cpu.forSeconds === null ? '—' : Math.round(dashboard.thresholds.cpu.forSeconds / 60) }} minutes.</p><p
-              v-if="latest.network.status === 'unknown'"
-              class="mt-1"
-            >
-              {{ latest.network.interfaces.some(iface => iface.capacityBitsPerSecond === null) ? 'Network status is unknown because interface capacity has not been configured.' : 'Network status cannot be determined from the available data.' }}
-            </p>
           </div>
         </UCard>
       </section>

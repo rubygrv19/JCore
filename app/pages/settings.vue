@@ -71,7 +71,7 @@ function saveConfig() {
     </div>
     <section
       aria-label="Service settings"
-      class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      class="grid gap-4 md:grid-cols-2"
     >
       <UButton
         v-for="service in serviceCards"
@@ -79,7 +79,7 @@ function saveConfig() {
         type="button"
         variant="outline"
         color="neutral"
-        class="h-auto cursor-pointer flex-col items-stretch rounded-xl border-gray-200/80 bg-white p-5 text-left shadow-none transition hover:border-emerald-300 hover:shadow-sm dark:border-gray-800 dark:bg-[#151719] dark:hover:border-emerald-700"
+        class="h-auto cursor-pointer flex-col items-stretch rounded-xl border-gray-200/80 bg-app-sidebar p-5 text-left shadow-none transition hover:border-primary/50 hover:shadow-sm dark:border-gray-800 dark:bg-app-sidebar-dark dark:hover:border-primary/60"
         @click="openConfig(service.key)"
       >
         <span class="mb-5 flex w-full items-start justify-between gap-3">
@@ -134,7 +134,7 @@ function saveConfig() {
                 v-if="selectedServiceKey === 'vps'"
                 class="rounded-lg border border-gray-200/80 bg-gray-50 p-3 text-sm leading-6 text-gray-600 dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-300"
               >
-                The VPS process collector reads Linux /proc from the host running Nuxt. It is unavailable on macOS and other non-Linux hosts.
+                Host metrics are read from the loopback Prometheus endpoint configured by NUXT_VPS_PROMETHEUS_URL. Process details use Linux /proc. Live VPS data requires Nuxt and the collectors to run on Linux; other hosts use demo data.
               </div>
               <UFormField
                 v-else
@@ -174,7 +174,7 @@ function saveConfig() {
                   legend="Service mode"
                   name="service-mode"
                   class="w-full"
-                  :ui="{ fieldset: 'w-full gap-y-2', item: 'w-full cursor-pointer items-start rounded-lg border-red-200 bg-white/80 p-3 transition hover:border-red-300 dark:border-red-900/50 dark:bg-[#151719]/70', container: 'mt-0.5', wrapper: 'min-w-0 flex-1', label: 'flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-100', description: 'mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400' }"
+                  :ui="{ fieldset: 'w-full gap-y-2', item: 'w-full cursor-pointer items-start rounded-lg border-red-200 bg-app-sidebar/80 p-3 transition hover:border-red-300 dark:border-red-900/50 dark:bg-app-sidebar-dark/70', container: 'mt-0.5', wrapper: 'min-w-0 flex-1', label: 'flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-100', description: 'mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400' }"
                   @update:model-value="shutdownConfirmed = false"
                 >
                   <template #label="{ item }">

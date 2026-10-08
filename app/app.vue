@@ -5,7 +5,7 @@ useHead({
 })
 
 useSeoMeta({
-  titleTemplate: '%s — Ruangkerja',
+  titleTemplate: '%s — JCore',
   description: 'Service dashboard and workspace configuration.'
 })
 </script>
