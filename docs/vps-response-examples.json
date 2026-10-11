@@ -1,0 +1,1035 @@
+{
+  "partial": {
+    "schemaVersion": "1.4",
+    "dataMode": "mock",
+    "collectedAt": "2026-09-27T16:00:00.000Z",
+    "source": {
+      "sampledAt": "2026-09-27T16:00:00.000Z",
+      "status": "partial",
+      "missingMetrics": [
+        "cpu"
+      ],
+      "systemdDetailsAvailable": true
+    },
+    "host": {
+      "hostname": "vps-demo-01",
+      "os": "Ubuntu 24.04 LTS",
+      "uptimeSeconds": 604800,
+      "cpuCores": 4
+    },
+    "health": {
+      "status": "unknown",
+      "reasons": [
+        "Unavailable sources: cpu."
+      ]
+    },
+    "alerts": [],
+    "thresholds": {
+      "cpu": {
+        "warningPercent": 80,
+        "criticalPercent": 90,
+        "forSeconds": 300
+      },
+      "memoryAvailable": {
+        "warningBelowPercent": 20,
+        "criticalBelowPercent": 10,
+        "forSeconds": 300
+      },
+      "storageUsed": {
+        "warningPercent": 80,
+        "criticalPercent": 90,
+        "forSeconds": 300
+      }
+    },
+    "current": {
+      "cpu": {
+        "usagePercent": null,
+        "loadAverage": {
+          "1m": 0.84,
+          "5m": 0.78,
+          "15m": 0.64
+        },
+        "status": "unknown"
+      },
+      "memory": {
+        "totalBytes": 8589934592,
+        "availableBytes": 4294967296,
+        "swapTotalBytes": 2147483648,
+        "swapUsedBytes": 536870912,
+        "status": "healthy"
+      },
+      "storage": {
+        "filesystems": [
+          {
+            "mountPoint": "/",
+            "fileSystem": "ext4",
+            "totalBytes": 85899345920,
+            "usedBytes": 42949672960,
+            "inodeUsedPercent": 34,
+            "status": "healthy"
+          },
+          {
+            "mountPoint": "/boot",
+            "fileSystem": "ext4",
+            "totalBytes": 1073741824,
+            "usedBytes": 536870912,
+            "inodeUsedPercent": 12,
+            "status": "healthy"
+          }
+        ],
+        "io": {
+          "readBytesPerSecond": 1835008,
+          "writeBytesPerSecond": 917504
+        },
+        "status": "healthy"
+      },
+      "network": {
+        "interfaces": [
+          {
+            "name": "eth0",
+            "rxBytesPerSecond": 1048576,
+            "txBytesPerSecond": 524288,
+            "rxErrorsPerSecond": 0,
+            "txErrorsPerSecond": 0,
+            "rxDropsPerSecond": 0,
+            "txDropsPerSecond": 0,
+            "capacityBitsPerSecond": null,
+            "status": "unknown"
+          }
+        ],
+        "status": "unknown"
+      },
+      "services": {
+        "active": 4,
+        "failed": 0,
+        "units": [
+          {
+            "name": "nginx.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "HTTP server and reverse proxy",
+            "ports": [
+              {
+                "port": 80,
+                "protocol": "tcp"
+              },
+              {
+                "port": 443,
+                "protocol": "tcp"
+              }
+            ],
+            "pid": 1240,
+            "uptimeSeconds": 604800,
+            "path": "/usr/sbin/nginx",
+            "commandLine": "/usr/sbin/nginx [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "postgresql.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "PostgreSQL database server",
+            "ports": [
+              {
+                "port": 5432,
+                "protocol": "tcp"
+              }
+            ],
+            "pid": 1382,
+            "uptimeSeconds": 604800,
+            "path": "/usr/lib/postgresql/16/bin/postgres",
+            "commandLine": "/usr/lib/postgresql/16/bin/postgres [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "docker.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "Docker application container engine",
+            "ports": [],
+            "pid": 1521,
+            "uptimeSeconds": 604800,
+            "path": "/usr/bin/dockerd",
+            "commandLine": "/usr/bin/dockerd [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "cron.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "Regular background program processing daemon",
+            "ports": [],
+            "pid": 891,
+            "uptimeSeconds": 604800,
+            "path": "/usr/sbin/cron",
+            "commandLine": "/usr/sbin/cron [ARGUMENTS REDACTED]"
+          }
+        ],
+        "status": "healthy"
+      },
+      "processes": {
+        "items": [
+          {
+            "name": "nginx",
+            "pid": 1240,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 0.9,
+            "memoryPercent": 0.8,
+            "description": "HTTP server and reverse proxy",
+            "location": "/usr/sbin/nginx",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/sbin/nginx [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "postgres",
+            "pid": 1382,
+            "state": "running",
+            "user": "postgres",
+            "cpuPercentOfHost": 1.4,
+            "memoryPercent": 4.2,
+            "description": "PostgreSQL database server",
+            "location": "/usr/lib/postgresql/16/bin/postgres",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/lib/postgresql/16/bin/postgres [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "dockerd",
+            "pid": 1521,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 2.1,
+            "memoryPercent": 3.6,
+            "description": "Docker application container engine",
+            "location": "/usr/bin/dockerd",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/bin/dockerd [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "cron",
+            "pid": 891,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 0.1,
+            "memoryPercent": 0.2,
+            "description": "Regular background program processing daemon",
+            "location": "/usr/sbin/cron",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/sbin/cron [ARGUMENTS REDACTED]"
+          }
+        ]
+      }
+    },
+    "history": {
+      "range": "60m",
+      "stepSeconds": 300,
+      "samples": []
+    }
+  },
+  "stale": {
+    "schemaVersion": "1.4",
+    "dataMode": "mock",
+    "collectedAt": "2026-09-27T16:00:00.000Z",
+    "source": {
+      "sampledAt": "2026-09-27T15:58:00.000Z",
+      "status": "stale",
+      "missingMetrics": [],
+      "systemdDetailsAvailable": true
+    },
+    "host": {
+      "hostname": "vps-demo-01",
+      "os": "Ubuntu 24.04 LTS",
+      "uptimeSeconds": 604800,
+      "cpuCores": 4
+    },
+    "health": {
+      "status": "unknown",
+      "reasons": [
+        "The latest exporter samples are at least 60 seconds old."
+      ]
+    },
+    "alerts": [],
+    "thresholds": {
+      "cpu": {
+        "warningPercent": 80,
+        "criticalPercent": 90,
+        "forSeconds": 300
+      },
+      "memoryAvailable": {
+        "warningBelowPercent": 20,
+        "criticalBelowPercent": 10,
+        "forSeconds": 300
+      },
+      "storageUsed": {
+        "warningPercent": 80,
+        "criticalPercent": 90,
+        "forSeconds": 300
+      }
+    },
+    "current": {
+      "cpu": {
+        "usagePercent": 42,
+        "loadAverage": {
+          "1m": 0.84,
+          "5m": 0.78,
+          "15m": 0.64
+        },
+        "status": "healthy"
+      },
+      "memory": {
+        "totalBytes": 8589934592,
+        "availableBytes": 4294967296,
+        "swapTotalBytes": 2147483648,
+        "swapUsedBytes": 536870912,
+        "status": "healthy"
+      },
+      "storage": {
+        "filesystems": [
+          {
+            "mountPoint": "/",
+            "fileSystem": "ext4",
+            "totalBytes": 85899345920,
+            "usedBytes": 42949672960,
+            "inodeUsedPercent": 34,
+            "status": "healthy"
+          },
+          {
+            "mountPoint": "/boot",
+            "fileSystem": "ext4",
+            "totalBytes": 1073741824,
+            "usedBytes": 536870912,
+            "inodeUsedPercent": 12,
+            "status": "healthy"
+          }
+        ],
+        "io": {
+          "readBytesPerSecond": 1835008,
+          "writeBytesPerSecond": 917504
+        },
+        "status": "healthy"
+      },
+      "network": {
+        "interfaces": [
+          {
+            "name": "eth0",
+            "rxBytesPerSecond": 1048576,
+            "txBytesPerSecond": 524288,
+            "rxErrorsPerSecond": 0,
+            "txErrorsPerSecond": 0,
+            "rxDropsPerSecond": 0,
+            "txDropsPerSecond": 0,
+            "capacityBitsPerSecond": null,
+            "status": "unknown"
+          }
+        ],
+        "status": "unknown"
+      },
+      "services": {
+        "active": 4,
+        "failed": 0,
+        "units": [
+          {
+            "name": "nginx.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "HTTP server and reverse proxy",
+            "ports": [
+              {
+                "port": 80,
+                "protocol": "tcp"
+              },
+              {
+                "port": 443,
+                "protocol": "tcp"
+              }
+            ],
+            "pid": 1240,
+            "uptimeSeconds": 604800,
+            "path": "/usr/sbin/nginx",
+            "commandLine": "/usr/sbin/nginx [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "postgresql.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "PostgreSQL database server",
+            "ports": [
+              {
+                "port": 5432,
+                "protocol": "tcp"
+              }
+            ],
+            "pid": 1382,
+            "uptimeSeconds": 604800,
+            "path": "/usr/lib/postgresql/16/bin/postgres",
+            "commandLine": "/usr/lib/postgresql/16/bin/postgres [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "docker.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "Docker application container engine",
+            "ports": [],
+            "pid": 1521,
+            "uptimeSeconds": 604800,
+            "path": "/usr/bin/dockerd",
+            "commandLine": "/usr/bin/dockerd [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "cron.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "Regular background program processing daemon",
+            "ports": [],
+            "pid": 891,
+            "uptimeSeconds": 604800,
+            "path": "/usr/sbin/cron",
+            "commandLine": "/usr/sbin/cron [ARGUMENTS REDACTED]"
+          }
+        ],
+        "status": "healthy"
+      },
+      "processes": {
+        "items": [
+          {
+            "name": "nginx",
+            "pid": 1240,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 0.9,
+            "memoryPercent": 0.8,
+            "description": "HTTP server and reverse proxy",
+            "location": "/usr/sbin/nginx",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/sbin/nginx [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "postgres",
+            "pid": 1382,
+            "state": "running",
+            "user": "postgres",
+            "cpuPercentOfHost": 1.4,
+            "memoryPercent": 4.2,
+            "description": "PostgreSQL database server",
+            "location": "/usr/lib/postgresql/16/bin/postgres",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/lib/postgresql/16/bin/postgres [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "dockerd",
+            "pid": 1521,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 2.1,
+            "memoryPercent": 3.6,
+            "description": "Docker application container engine",
+            "location": "/usr/bin/dockerd",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/bin/dockerd [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "cron",
+            "pid": 891,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 0.1,
+            "memoryPercent": 0.2,
+            "description": "Regular background program processing daemon",
+            "location": "/usr/sbin/cron",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/sbin/cron [ARGUMENTS REDACTED]"
+          }
+        ]
+      }
+    },
+    "history": {
+      "range": "60m",
+      "stepSeconds": 300,
+      "samples": []
+    }
+  },
+  "pending": {
+    "schemaVersion": "1.4",
+    "dataMode": "mock",
+    "collectedAt": "2026-09-27T16:00:00.000Z",
+    "source": {
+      "sampledAt": "2026-09-27T16:00:00.000Z",
+      "status": "complete",
+      "missingMetrics": [],
+      "systemdDetailsAvailable": true
+    },
+    "host": {
+      "hostname": "vps-demo-01",
+      "os": "Ubuntu 24.04 LTS",
+      "uptimeSeconds": 604800,
+      "cpuCores": 4
+    },
+    "health": {
+      "status": "healthy",
+      "reasons": []
+    },
+    "alerts": [
+      {
+        "name": "VpsCpuCritical",
+        "resource": "cpu",
+        "severity": "critical",
+        "state": "pending",
+        "summary": "CPU usage is critical",
+        "description": "CPU usage has stayed at or above 90% for 5 minutes.",
+        "activeAt": "2026-09-27T15:59:50.000Z",
+        "value": 95,
+        "target": null
+      }
+    ],
+    "thresholds": {
+      "cpu": {
+        "warningPercent": 80,
+        "criticalPercent": 90,
+        "forSeconds": 300
+      },
+      "memoryAvailable": {
+        "warningBelowPercent": 20,
+        "criticalBelowPercent": 10,
+        "forSeconds": 300
+      },
+      "storageUsed": {
+        "warningPercent": 80,
+        "criticalPercent": 90,
+        "forSeconds": 300
+      }
+    },
+    "current": {
+      "cpu": {
+        "usagePercent": 95,
+        "loadAverage": {
+          "1m": 0.84,
+          "5m": 0.78,
+          "15m": 0.64
+        },
+        "status": "healthy"
+      },
+      "memory": {
+        "totalBytes": 8589934592,
+        "availableBytes": 4294967296,
+        "swapTotalBytes": 2147483648,
+        "swapUsedBytes": 536870912,
+        "status": "healthy"
+      },
+      "storage": {
+        "filesystems": [
+          {
+            "mountPoint": "/",
+            "fileSystem": "ext4",
+            "totalBytes": 85899345920,
+            "usedBytes": 42949672960,
+            "inodeUsedPercent": 34,
+            "status": "healthy"
+          },
+          {
+            "mountPoint": "/boot",
+            "fileSystem": "ext4",
+            "totalBytes": 1073741824,
+            "usedBytes": 536870912,
+            "inodeUsedPercent": 12,
+            "status": "healthy"
+          }
+        ],
+        "io": {
+          "readBytesPerSecond": 1835008,
+          "writeBytesPerSecond": 917504
+        },
+        "status": "healthy"
+      },
+      "network": {
+        "interfaces": [
+          {
+            "name": "eth0",
+            "rxBytesPerSecond": 1048576,
+            "txBytesPerSecond": 524288,
+            "rxErrorsPerSecond": 0,
+            "txErrorsPerSecond": 0,
+            "rxDropsPerSecond": 0,
+            "txDropsPerSecond": 0,
+            "capacityBitsPerSecond": null,
+            "status": "unknown"
+          }
+        ],
+        "status": "unknown"
+      },
+      "services": {
+        "active": 4,
+        "failed": 0,
+        "units": [
+          {
+            "name": "nginx.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "HTTP server and reverse proxy",
+            "ports": [
+              {
+                "port": 80,
+                "protocol": "tcp"
+              },
+              {
+                "port": 443,
+                "protocol": "tcp"
+              }
+            ],
+            "pid": 1240,
+            "uptimeSeconds": 604800,
+            "path": "/usr/sbin/nginx",
+            "commandLine": "/usr/sbin/nginx [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "postgresql.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "PostgreSQL database server",
+            "ports": [
+              {
+                "port": 5432,
+                "protocol": "tcp"
+              }
+            ],
+            "pid": 1382,
+            "uptimeSeconds": 604800,
+            "path": "/usr/lib/postgresql/16/bin/postgres",
+            "commandLine": "/usr/lib/postgresql/16/bin/postgres [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "docker.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "Docker application container engine",
+            "ports": [],
+            "pid": 1521,
+            "uptimeSeconds": 604800,
+            "path": "/usr/bin/dockerd",
+            "commandLine": "/usr/bin/dockerd [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "cron.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "Regular background program processing daemon",
+            "ports": [],
+            "pid": 891,
+            "uptimeSeconds": 604800,
+            "path": "/usr/sbin/cron",
+            "commandLine": "/usr/sbin/cron [ARGUMENTS REDACTED]"
+          }
+        ],
+        "status": "healthy"
+      },
+      "processes": {
+        "items": [
+          {
+            "name": "nginx",
+            "pid": 1240,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 0.9,
+            "memoryPercent": 0.8,
+            "description": "HTTP server and reverse proxy",
+            "location": "/usr/sbin/nginx",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/sbin/nginx [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "postgres",
+            "pid": 1382,
+            "state": "running",
+            "user": "postgres",
+            "cpuPercentOfHost": 1.4,
+            "memoryPercent": 4.2,
+            "description": "PostgreSQL database server",
+            "location": "/usr/lib/postgresql/16/bin/postgres",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/lib/postgresql/16/bin/postgres [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "dockerd",
+            "pid": 1521,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 2.1,
+            "memoryPercent": 3.6,
+            "description": "Docker application container engine",
+            "location": "/usr/bin/dockerd",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/bin/dockerd [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "cron",
+            "pid": 891,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 0.1,
+            "memoryPercent": 0.2,
+            "description": "Regular background program processing daemon",
+            "location": "/usr/sbin/cron",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/sbin/cron [ARGUMENTS REDACTED]"
+          }
+        ]
+      }
+    },
+    "history": {
+      "range": "60m",
+      "stepSeconds": 300,
+      "samples": []
+    }
+  },
+  "firing": {
+    "schemaVersion": "1.4",
+    "dataMode": "mock",
+    "collectedAt": "2026-09-27T16:00:00.000Z",
+    "source": {
+      "sampledAt": "2026-09-27T16:00:00.000Z",
+      "status": "complete",
+      "missingMetrics": [],
+      "systemdDetailsAvailable": true
+    },
+    "host": {
+      "hostname": "vps-demo-01",
+      "os": "Ubuntu 24.04 LTS",
+      "uptimeSeconds": 604800,
+      "cpuCores": 4
+    },
+    "health": {
+      "status": "critical",
+      "reasons": [
+        "CPU usage has stayed at or above 90% for 5 minutes."
+      ]
+    },
+    "alerts": [
+      {
+        "name": "VpsCpuCritical",
+        "resource": "cpu",
+        "severity": "critical",
+        "state": "firing",
+        "summary": "CPU usage is critical",
+        "description": "CPU usage has stayed at or above 90% for 5 minutes.",
+        "activeAt": "2026-09-27T15:50:00.000Z",
+        "value": 95,
+        "target": null
+      }
+    ],
+    "thresholds": {
+      "cpu": {
+        "warningPercent": 80,
+        "criticalPercent": 90,
+        "forSeconds": 300
+      },
+      "memoryAvailable": {
+        "warningBelowPercent": 20,
+        "criticalBelowPercent": 10,
+        "forSeconds": 300
+      },
+      "storageUsed": {
+        "warningPercent": 80,
+        "criticalPercent": 90,
+        "forSeconds": 300
+      }
+    },
+    "current": {
+      "cpu": {
+        "usagePercent": 95,
+        "loadAverage": {
+          "1m": 0.84,
+          "5m": 0.78,
+          "15m": 0.64
+        },
+        "status": "critical"
+      },
+      "memory": {
+        "totalBytes": 8589934592,
+        "availableBytes": 4294967296,
+        "swapTotalBytes": 2147483648,
+        "swapUsedBytes": 536870912,
+        "status": "healthy"
+      },
+      "storage": {
+        "filesystems": [
+          {
+            "mountPoint": "/",
+            "fileSystem": "ext4",
+            "totalBytes": 85899345920,
+            "usedBytes": 42949672960,
+            "inodeUsedPercent": 34,
+            "status": "healthy"
+          },
+          {
+            "mountPoint": "/boot",
+            "fileSystem": "ext4",
+            "totalBytes": 1073741824,
+            "usedBytes": 536870912,
+            "inodeUsedPercent": 12,
+            "status": "healthy"
+          }
+        ],
+        "io": {
+          "readBytesPerSecond": 1835008,
+          "writeBytesPerSecond": 917504
+        },
+        "status": "healthy"
+      },
+      "network": {
+        "interfaces": [
+          {
+            "name": "eth0",
+            "rxBytesPerSecond": 1048576,
+            "txBytesPerSecond": 524288,
+            "rxErrorsPerSecond": 0,
+            "txErrorsPerSecond": 0,
+            "rxDropsPerSecond": 0,
+            "txDropsPerSecond": 0,
+            "capacityBitsPerSecond": null,
+            "status": "unknown"
+          }
+        ],
+        "status": "unknown"
+      },
+      "services": {
+        "active": 4,
+        "failed": 0,
+        "units": [
+          {
+            "name": "nginx.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "HTTP server and reverse proxy",
+            "ports": [
+              {
+                "port": 80,
+                "protocol": "tcp"
+              },
+              {
+                "port": 443,
+                "protocol": "tcp"
+              }
+            ],
+            "pid": 1240,
+            "uptimeSeconds": 604800,
+            "path": "/usr/sbin/nginx",
+            "commandLine": "/usr/sbin/nginx [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "postgresql.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "PostgreSQL database server",
+            "ports": [
+              {
+                "port": 5432,
+                "protocol": "tcp"
+              }
+            ],
+            "pid": 1382,
+            "uptimeSeconds": 604800,
+            "path": "/usr/lib/postgresql/16/bin/postgres",
+            "commandLine": "/usr/lib/postgresql/16/bin/postgres [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "docker.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "Docker application container engine",
+            "ports": [],
+            "pid": 1521,
+            "uptimeSeconds": 604800,
+            "path": "/usr/bin/dockerd",
+            "commandLine": "/usr/bin/dockerd [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "cron.service",
+            "actualState": "active",
+            "expectedState": "active",
+            "since": "2026-09-20T16:00:00.000Z",
+            "status": "healthy",
+            "description": "Regular background program processing daemon",
+            "ports": [],
+            "pid": 891,
+            "uptimeSeconds": 604800,
+            "path": "/usr/sbin/cron",
+            "commandLine": "/usr/sbin/cron [ARGUMENTS REDACTED]"
+          }
+        ],
+        "status": "healthy"
+      },
+      "processes": {
+        "items": [
+          {
+            "name": "nginx",
+            "pid": 1240,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 0.9,
+            "memoryPercent": 0.8,
+            "description": "HTTP server and reverse proxy",
+            "location": "/usr/sbin/nginx",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/sbin/nginx [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "postgres",
+            "pid": 1382,
+            "state": "running",
+            "user": "postgres",
+            "cpuPercentOfHost": 1.4,
+            "memoryPercent": 4.2,
+            "description": "PostgreSQL database server",
+            "location": "/usr/lib/postgresql/16/bin/postgres",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/lib/postgresql/16/bin/postgres [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "dockerd",
+            "pid": 1521,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 2.1,
+            "memoryPercent": 3.6,
+            "description": "Docker application container engine",
+            "location": "/usr/bin/dockerd",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/bin/dockerd [ARGUMENTS REDACTED]"
+          },
+          {
+            "name": "cron",
+            "pid": 891,
+            "state": "running",
+            "user": "root",
+            "cpuPercentOfHost": 0.1,
+            "memoryPercent": 0.2,
+            "description": "Regular background program processing daemon",
+            "location": "/usr/sbin/cron",
+            "startedAt": "2026-09-20T16:00:00.000Z",
+            "commandLine": "/usr/sbin/cron [ARGUMENTS REDACTED]"
+          }
+        ]
+      }
+    },
+    "history": {
+      "range": "60m",
+      "stepSeconds": 300,
+      "samples": []
+    }
+  },
+  "empty": {
+    "schemaVersion": "1.4",
+    "dataMode": "mock",
+    "collectedAt": "2026-09-27T16:00:00.000Z",
+    "source": {
+      "sampledAt": "2026-09-27T16:00:00.000Z",
+      "status": "partial",
+      "missingMetrics": [
+        "filesystem",
+        "network",
+        "systemd"
+      ],
+      "systemdDetailsAvailable": false
+    },
+    "host": {
+      "hostname": "vps-demo-01",
+      "os": "Ubuntu 24.04 LTS",
+      "uptimeSeconds": 604800,
+      "cpuCores": 4
+    },
+    "health": {
+      "status": "unknown",
+      "reasons": [
+        "Filesystem, network, and systemd data are unavailable."
+      ]
+    },
+    "alerts": [],
+    "thresholds": {
+      "cpu": {
+        "warningPercent": 80,
+        "criticalPercent": 90,
+        "forSeconds": 300
+      },
+      "memoryAvailable": {
+        "warningBelowPercent": 20,
+        "criticalBelowPercent": 10,
+        "forSeconds": 300
+      },
+      "storageUsed": {
+        "warningPercent": 80,
+        "criticalPercent": 90,
+        "forSeconds": 300
+      }
+    },
+    "current": {
+      "cpu": {
+        "usagePercent": 42,
+        "loadAverage": {
+          "1m": 0.84,
+          "5m": 0.78,
+          "15m": 0.64
+        },
+        "status": "healthy"
+      },
+      "memory": {
+        "totalBytes": 8589934592,
+        "availableBytes": 4294967296,
+        "swapTotalBytes": 2147483648,
+        "swapUsedBytes": 536870912,
+        "status": "healthy"
+      },
+      "storage": {
+        "filesystems": [],
+        "io": {
+          "readBytesPerSecond": 1835008,
+          "writeBytesPerSecond": 917504
+        },
+        "status": "unknown"
+      },
+      "network": {
+        "interfaces": [],
+        "status": "unknown"
+      },
+      "services": {
+        "active": null,
+        "failed": null,
+        "units": [],
+        "status": "unknown"
+      },
+      "processes": {
+        "items": []
+      }
+    },
+    "history": {
+      "range": "60m",
+      "stepSeconds": 300,
+      "samples": []
+    }
+  }
+}

@@ -12,7 +12,7 @@ export function parseVpsProcessesResponse(value: unknown): VpsProcessesResponse 
   return value as VpsProcessesResponse
 }
 
-export async function fetchVpsProcesses(): Promise<VpsProcessesResponse> {
-  const response: unknown = await $fetch('/api/vps/processes')
+export async function fetchVpsProcesses(signal?: AbortSignal): Promise<VpsProcessesResponse> {
+  const response: unknown = await $fetch('/api/vps/processes', { signal, timeout: 20_000, retry: 0 })
   return parseVpsProcessesResponse(response)
 }

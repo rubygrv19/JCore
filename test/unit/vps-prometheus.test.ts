@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { collectVpsDashboard, normalizePrometheusAlerts, statusForAlert } from '../../server/utils/vps-dashboard'
+import { collectVpsDashboard, normalizePrometheusAlerts, statusForAlert, statusForHealth } from '../../server/utils/vps-dashboard'
 
 describe('VPS Prometheus integration', () => {
   it('accepts current pending and firing alerts and ignores unrelated or malformed alerts', () => {
@@ -58,6 +58,11 @@ describe('VPS Prometheus integration', () => {
     expect(statusForAlert(alerts, 'storage', '/', true)).toBe('critical')
     expect(statusForAlert(alerts, 'storage', '/boot', true)).toBe('healthy')
     expect(statusForAlert([], 'cpu', null, false)).toBe('unknown')
+    const pending = alerts.map(alert => ({ ...alert, state: 'pending' as const }))
+    expect(statusForAlert(pending, 'storage', '/', true)).toBe('healthy')
+    expect(statusForHealth(pending, true, false)).toBe('healthy')
+    expect(statusForHealth([], false, false)).toBe('unknown')
+    expect(statusForHealth([], true, true)).toBe('critical')
   })
 
   it('rejects non-loopback Prometheus URLs before making a request', async () => {

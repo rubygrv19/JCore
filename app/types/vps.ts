@@ -6,6 +6,12 @@ export interface VpsDashboardResponse {
   schemaVersion: string
   dataMode: 'mock' | 'live'
   collectedAt: string | null
+  source: {
+    sampledAt: string | null
+    status: 'complete' | 'partial' | 'stale' | 'unavailable'
+    missingMetrics: string[]
+    systemdDetailsAvailable: boolean
+  }
   host: {
     hostname: string | null
     os: string | null

@@ -1,11 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:dashboard-minimal:vps-dashboard:1.3",
-  "title": "VPS dashboard response 1.3",
+  "$id": "urn:jcore:vps-dashboard:1.4",
+  "title": "VPS dashboard response 1.4",
   "type": "object",
-  "required": ["schemaVersion", "dataMode", "collectedAt", "host", "health", "alerts", "thresholds", "current", "history"],
+  "required": ["schemaVersion", "dataMode", "collectedAt", "source", "host", "health", "alerts", "thresholds", "current", "history"],
   "properties": {
-    "schemaVersion": { "const": "1.3" },
+    "schemaVersion": { "const": "1.4" },
+    "source": {
+      "type": "object",
+      "required": ["sampledAt", "status", "missingMetrics", "systemdDetailsAvailable"],
+      "properties": {
+        "sampledAt": { "$ref": "#/$defs/nullableDateTime" },
+        "status": { "enum": ["complete", "partial", "stale", "unavailable"] },
+        "missingMetrics": { "type": "array", "items": { "type": "string" } },
+        "systemdDetailsAvailable": { "type": "boolean" }
+      }
+    },
     "dataMode": { "enum": ["mock", "live"] },
     "collectedAt": { "$ref": "#/$defs/nullableDateTime" },
     "host": {

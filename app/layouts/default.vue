@@ -1,5 +1,15 @@
 <script setup lang="ts">
+import type { VpsDashboardResponse } from '~/types/vps'
+
 const route = useRoute()
+const { data: vpsSnapshot } = useNuxtData<VpsDashboardResponse>('vps-dashboard')
+const workspaceNotice = computed(() => route.path === '/services/vps'
+  ? vpsSnapshot.value?.dataMode === 'live'
+    ? { title: 'Live VPS metrics', text: 'Source availability and sample age are shown on this page.' }
+    : vpsSnapshot.value?.dataMode === 'mock'
+      ? { title: 'Demo VPS data', text: 'Live collection requires a Linux host. These values are samples.' }
+      : { title: 'VPS monitoring', text: 'Waiting for a validated metrics response.' }
+  : { title: 'JCore workspace', text: 'Service settings are development-only until backend persistence is available.' })
 
 const serviceLinks = [
   { label: 'VPS', to: '/services/vps' },
@@ -88,7 +98,7 @@ watch(() => route.path, (path) => {
           class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-2 py-1"
           @click="closeMobileNavigation"
         >
-          <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-white">
+          <span class="grid size-9 shrink-0 place-items-center rounded-none bg-primary text-white">
             <UIcon
               name="i-lucide-panels-top-left"
               class="size-5"
@@ -107,7 +117,7 @@ watch(() => route.path, (path) => {
         />
       </template>
 
-      <p class="px-3 text-[10px] font-semibold tracking-[.16em] text-muted uppercase">
+      <p class="px-3 text-xs font-semibold text-muted">
         Menu
       </p>
       <UNavigationMenu
@@ -115,36 +125,36 @@ watch(() => route.path, (path) => {
         :items="navigationItems"
         orientation="vertical"
         type="multiple"
-        variant="pill"
+        variant="link"
         color="primary"
         class="w-full"
         :ui="{
           list: 'gap-1',
           item: 'w-full',
-          link: 'w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm font-medium',
+          link: 'w-full cursor-pointer rounded-none px-3 py-2.5 text-sm font-medium',
           childList: 'ml-5 border-l border-default pl-3',
-          childLink: 'cursor-pointer rounded-md px-3 py-2 text-[13px]'
+          childLink: 'cursor-pointer rounded-none px-3 py-2 text-[13px]'
         }"
       />
 
       <template #footer>
-        <div class="rounded-xl border border-default bg-muted p-4">
+        <div class="border border-default bg-muted p-4">
           <div class="mb-2 flex items-center gap-2 text-xs font-semibold">
             <UIcon
               name="i-lucide-sparkles"
               class="size-4 text-primary"
               aria-hidden="true"
-            />Demo workspace
+            />{{ workspaceNotice.title }}
           </div>
           <p class="text-xs leading-5 text-muted">
-            Values on this page are sample data.
+            {{ workspaceNotice.text }}
           </p>
         </div>
         <div class="mt-2 flex min-w-0 items-center gap-3 px-1 py-2">
           <UAvatar
             :text="accountEmail.slice(0, 2).toUpperCase()"
             size="sm"
-            class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white"
+            class="bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-white"
           />
           <div class="min-w-0 flex-1">
             <p class="truncate text-xs font-semibold">
@@ -168,7 +178,7 @@ watch(() => route.path, (path) => {
     </USidebar>
 
     <div class="min-w-0 flex-1">
-      <header class="sticky top-0 z-10 border-b border-default bg-app-sidebar/95 backdrop-blur-md dark:bg-app-sidebar-dark/95">
+      <header class="sticky top-0 z-10 border-b border-default bg-app-sidebar dark:bg-app-sidebar-dark">
         <div class="flex h-16 items-center gap-3 px-4 sm:px-8">
           <UButton
             icon="i-lucide-menu"
@@ -191,7 +201,7 @@ watch(() => route.path, (path) => {
             <UAvatar
               :text="accountInitials"
               size="xs"
-              class="ml-1 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white lg:hidden"
+              class="ml-1 bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-white lg:hidden"
             />
           </div>
         </div>

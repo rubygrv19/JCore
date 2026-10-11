@@ -43,12 +43,16 @@ export function calculateHostCpuPercent(processDelta: number | null, hostDelta: 
 }
 
 export function redactCommandLine(commandLine: string): string | null {
-  const normalized = commandLine.replace(/\0/g, ' ').replace(/\s+/g, ' ').trim()
-  if (!normalized) return null
-  return normalized
-    .replace(/(--?(?:password|passwd|token|secret|api[-_]?key|authorization|credential|client[-_]?secret)(?:\s+|=))([^\s]+)/gi, '$1[REDACTED]')
-    .replace(/\b(password|passwd|token|secret|api[-_]?key|authorization|credential|client[-_]?secret)=([^\s]+)/gi, '$1=[REDACTED]')
-    .replace(/(https?:\/\/)[^\s/@:]+:[^\s/@]+@/gi, '$1[REDACTED]@')
+  const args = commandLine.includes('\0') ? commandLine.split('\0').filter(Boolean) : commandLine.trim().split(/\s+/)
+  if (!args[0]) return null
+  // argv values are untrusted: even unnamed arguments and unknown flags can contain secrets.
+  const executable = /^[\w./+-]+$/.test(args[0]) ? args[0] : '[EXECUTABLE REDACTED]'
+  return args.length > 1 ? `${executable} [ARGUMENTS REDACTED]` : executable
+}
+
+export function processStartedAt(bootSeconds: number, startTicks: number, ticksPerSecond: number | null): string | null {
+  if (!ticksPerSecond || ![bootSeconds, startTicks, ticksPerSecond].every(Number.isFinite) || bootSeconds <= 0 || startTicks < 0 || ticksPerSecond <= 0) return null
+  return new Date((bootSeconds + startTicks / ticksPerSecond) * 1000).toISOString()
 }
 
 function readProcessUser(status: string, users: Map<string, string>): string | null {
@@ -97,43 +101,28 @@ function parseMemoryTotalBytes(meminfo: string): number | null {
   return Number.isFinite(kib) && kib > 0 ? kib * 1024 : null
 }
 
-async function readStartedAt(startTicks: number, ticksPerSecond: number | null): Promise<string | null> {
-  if (!ticksPerSecond) return null
-  try {
-    const [bootLine, uptimeLine] = await Promise.all([
-      readFile('/proc/stat', 'utf8').then(text => text.match(/^btime\s+(\d+)/m)?.[1]),
-      readFile('/proc/uptime', 'utf8').then(text => text.trim().split(/\s+/)[0])
-    ])
-    const bootTime = Number(bootLine)
-    const uptimeSeconds = Number(uptimeLine)
-    if (![bootTime, uptimeSeconds].every(Number.isFinite)) return null
-    const elapsedAtStart = uptimeSeconds - startTicks / ticksPerSecond
-    return new Date((bootTime + elapsedAtStart) * 1000).toISOString()
-  } catch {
-    return null
-  }
-}
-
-export async function collectLinuxProcesses(): Promise<VpsProcess[]> {
-  const [entries, meminfo, users, hostTicks, ticksPerSecond] = await Promise.all([
+async function collectProcesses(): Promise<VpsProcess[]> {
+  const [entries, meminfo, users, hostTicks, ticksPerSecond, bootSeconds] = await Promise.all([
     readdir('/proc', { withFileTypes: true }),
     readFile('/proc/meminfo', 'utf8'),
     readUserMap(),
     readHostCpuTicks(),
-    getTicksPerSecond()
+    getTicksPerSecond(),
+    readFile('/proc/stat', 'utf8').then(text => Number(text.match(/^btime\s+(\d+)/m)?.[1]))
   ])
   const memoryTotalBytes = parseMemoryTotalBytes(meminfo)
   const hostDelta = hostTicks !== null && previousHostTicks !== undefined ? hostTicks - previousHostTicks : null
   const nextPreviousCpuTicks = new Map<number, { ticks: number, startTicks: number }>()
-  const processes = await Promise.all(entries
-    .filter(entry => entry.isDirectory() && /^\d+$/.test(entry.name))
-    .map(async (entry): Promise<VpsProcess | null> => {
+  const processes: Array<VpsProcess | null> = []
+  const pids = entries.filter(entry => entry.isDirectory() && /^\d+$/.test(entry.name))
+  for (let offset = 0; offset < pids.length; offset += 25) {
+    processes.push(...await Promise.all(pids.slice(offset, offset + 25).map(async (entry): Promise<VpsProcess | null> => {
       const pid = Number(entry.name)
       try {
         const [statText, status, cmdline] = await Promise.all([
           readFile(`/proc/${entry.name}/stat`, 'utf8'),
           readFile(`/proc/${entry.name}/status`, 'utf8'),
-          readFile(`/proc/${entry.name}/cmdline`)
+          readFile(`/proc/${entry.name}/cmdline`).catch(() => null)
         ])
         const stat = parseProcStat(statText)
         if (!stat) return null
@@ -159,16 +148,31 @@ export async function collectLinuxProcesses(): Promise<VpsProcess[]> {
           memoryPercent: rssBytes !== null && memoryTotalBytes ? Math.min(100, rssBytes / memoryTotalBytes * 100) : null,
           description: null,
           location,
-          startedAt: await readStartedAt(stat.startTicks, ticksPerSecond),
-          commandLine: redactCommandLine(cmdline.toString('utf8'))
+          startedAt: processStartedAt(bootSeconds, stat.startTicks, ticksPerSecond),
+          commandLine: cmdline ? redactCommandLine(cmdline.toString('utf8')) : null
         }
       } catch {
         // A process can exit or become inaccessible while /proc is being read.
         return null
       }
-    }))
+    })))
+  }
   previousCpuTicks.clear()
   for (const [pid, sample] of nextPreviousCpuTicks) previousCpuTicks.set(pid, sample)
   previousHostTicks = hostTicks ?? undefined
   return processes.filter((process): process is VpsProcess => process !== null)
+}
+
+let pendingSnapshot: Promise<VpsProcess[]> | undefined
+let snapshot: VpsProcess[] | undefined
+let snapshotAt = 0
+
+export async function collectLinuxProcesses(): Promise<VpsProcess[]> {
+  if (snapshot && Date.now() - snapshotAt < 1000) return snapshot
+  pendingSnapshot ??= collectProcesses().then((items) => {
+    snapshot = items
+    snapshotAt = Date.now()
+    return items
+  }).finally(() => { pendingSnapshot = undefined })
+  return pendingSnapshot
 }

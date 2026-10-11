@@ -5,31 +5,45 @@ import type { VpsProcess } from '~/types/vps-processes'
 import { formatBytes, formatProcessPercent, formatProcessStartedAt, formatServicePorts, formatUptime, getActiveProcesses, paginateItems, percent, VPS_STATUS_META } from '~/utils/vps-status'
 import { useVpsDashboard } from '~/utils/vps-client'
 import { fetchVpsProcesses } from '~/utils/vps-processes-client'
+import { startPolling } from '~/utils/polling'
 
 type VpsServiceUnit = VpsDashboardResponse['current']['services']['units'][number]
 
 useSeoMeta({ title: 'VPS' })
 
-const { data, error, refresh } = await useVpsDashboard()
-const dashboard = computed(() => data.value)
+const { data, error, refresh, pending } = await useVpsDashboard()
+const lastSnapshot = shallowRef(data.value)
+watch(data, (value) => {
+  if (value) lastSnapshot.value = value
+})
+const dashboard = computed(() => data.value ?? lastSnapshot.value)
 const latest = computed(() => dashboard.value?.current)
 const points = computed(() => dashboard.value?.history.samples ?? [])
 const processPage = ref(1)
 const processPageSize = 10
 const now = ref(Date.now())
-let freshnessTimer: ReturnType<typeof setInterval> | undefined
+let clockTimer: ReturnType<typeof setInterval> | undefined
+let stopDashboardPolling: (() => void) | undefined
+let stopProcessPolling: (() => void) | undefined
 const liveProcesses = shallowRef<VpsProcess[] | null>(null)
 const processSnapshotAt = ref<string | null>(null)
 const processFetchFailed = ref(false)
 const processFailureReason = ref<'platform' | 'unavailable' | null>(null)
 const processSource = computed(() => liveProcesses.value
   ? processFetchFailed.value ? 'Stale snapshot · Linux /proc update failed' : 'Live · Linux /proc'
-  : processFailureReason.value === 'platform' ? 'Demo data · Linux required' : processFailureReason.value === 'unavailable' ? 'Demo data · live collector unavailable' : 'Demo data · waiting for collector')
+  : processFailureReason.value === 'platform' && dashboard.value?.dataMode === 'mock' ? 'Demo data · Linux required' : processFailureReason.value === 'unavailable' ? 'Process collector unavailable · retrying automatically' : 'Waiting for the process collector')
 const chartLabels = computed(() => points.value.map(point => new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).format(new Date(point.timestamp))))
-const collectedAtDate = computed(() => dashboard.value?.collectedAt ? Date.parse(dashboard.value.collectedAt) : Number.NaN)
+const collectedAtDate = computed(() => dashboard.value?.source.sampledAt ? Date.parse(dashboard.value.source.sampledAt) : Number.NaN)
 const dataAgeSeconds = computed(() => Number.isFinite(collectedAtDate.value) ? Math.max(0, Math.floor((now.value - collectedAtDate.value) / 1000)) : null)
-const isDataStale = computed(() => dashboard.value?.dataMode === 'live' && dataAgeSeconds.value !== null && dataAgeSeconds.value >= 30)
+const isDataStale = computed(() => dashboard.value?.dataMode === 'live' && (Boolean(error.value) || dashboard.value.source.status === 'stale' || (dataAgeSeconds.value !== null && dataAgeSeconds.value >= 60)))
 const collectedAtLabel = computed(() => dashboard.value?.collectedAt ? new Date(dashboard.value.collectedAt).toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }) : 'Time unavailable')
+const colorMode = useColorMode()
+const isDark = computed(() => colorMode.value === 'dark')
+const chartPalette = computed(() => ({
+  used: isDark.value ? '#f4f4f5' : '#18181b',
+  available: isDark.value ? '#3f3f46' : '#d4d4d8',
+  secondary: isDark.value ? '#a1a1aa' : '#52525b'
+}))
 const freshnessLabel = computed(() => {
   const age = dataAgeSeconds.value
   if (age === null) return 'Collection time unavailable'
@@ -39,7 +53,7 @@ const freshnessLabel = computed(() => {
 })
 const statusMeta = (value: VpsStatus) => ({
   ...VPS_STATUS_META[value],
-  hex: value === 'healthy' ? '#10b981' : value === 'warning' ? '#f59e0b' : value === 'critical' ? '#ef4444' : '#9ca3af'
+  hex: chartPalette.value.used
 })
 const memoryUsedPercent = computed(() => {
   const memory = latest.value?.memory
@@ -63,27 +77,18 @@ const processPageCount = computed(() => Math.max(1, Math.ceil(processItems.value
 const processPageItems = computed(() => paginateItems(processItems.value, processPage.value, processPageSize))
 const expandedServiceRows = ref<Record<string, boolean>>({})
 const expandedProcessRows = ref<Record<string, boolean>>({})
-watch(processItems, () => {
-  processPage.value = 1
-})
 watch(processPageCount, (pageCount) => {
   processPage.value = Math.min(processPage.value, pageCount)
 })
-watch(() => dashboard.value?.dataMode, (mode, _previousMode, onCleanup) => {
-  if (mode !== 'live') return
-  freshnessTimer = setInterval(() => {
-    now.value = Date.now()
-    void refresh()
-  }, 10_000)
-  onCleanup(() => clearInterval(freshnessTimer))
-})
-async function refreshProcesses() {
+async function refreshProcesses(signal: AbortSignal) {
   try {
-    const response = await fetchVpsProcesses()
+    const response = await fetchVpsProcesses(signal)
+    if (signal.aborted) return
     liveProcesses.value = response.items
     processSnapshotAt.value = response.collectedAt
     processFetchFailed.value = false
   } catch (error) {
+    if (signal.aborted) return
     // Keep labeled fixture data on macOS and on hosts where Linux /proc is unavailable.
     processFetchFailed.value = liveProcesses.value !== null
     const statusCode = (error as { statusCode?: number, status?: number }).statusCode ?? (error as { status?: number }).status
@@ -91,11 +96,16 @@ async function refreshProcesses() {
   }
 }
 onMounted(() => {
-  void refreshProcesses()
-  freshnessTimer = setInterval(() => void refreshProcesses(), 10_000)
+  clockTimer = setInterval(() => {
+    now.value = Date.now()
+  }, 1000)
+  stopDashboardPolling = startPolling(signal => refresh({ signal, dedupe: 'defer' }), 10_000, false)
+  stopProcessPolling = startPolling(refreshProcesses)
 })
 onBeforeUnmount(() => {
-  if (freshnessTimer) clearInterval(freshnessTimer)
+  clearInterval(clockTimer)
+  stopDashboardPolling?.()
+  stopProcessPolling?.()
 })
 const serviceColumns: TableColumn<VpsServiceUnit>[] = [
   { id: 'expand', header: '', size: 48, enableSorting: false },
@@ -103,6 +113,18 @@ const serviceColumns: TableColumn<VpsServiceUnit>[] = [
   { accessorKey: 'actualState', header: 'State' },
   { accessorKey: 'expectedState', header: 'Expected state' },
   { accessorKey: 'status', header: 'Status' }
+]
+const filesystemColumns: TableColumn<VpsDashboardResponse['current']['storage']['filesystems'][number]>[] = [
+  { accessorKey: 'mountPoint', header: 'Mount point' },
+  { accessorKey: 'fileSystem', header: 'File system' },
+  { id: 'used', header: 'Used' },
+  { accessorKey: 'inodeUsedPercent', header: 'Inodes used' }
+]
+const networkColumns: TableColumn<VpsDashboardResponse['current']['network']['interfaces'][number]>[] = [
+  { accessorKey: 'name', header: 'Interface' },
+  { id: 'traffic', header: 'RX / TX' },
+  { id: 'errors', header: 'Errors /s' },
+  { id: 'drops', header: 'Drops /s' }
 ]
 const processColumns: TableColumn<VpsProcess>[] = [
   { id: 'expand', header: '', size: 48, enableSorting: false },
@@ -114,11 +136,11 @@ const processColumns: TableColumn<VpsProcess>[] = [
   { id: 'memory', accessorKey: 'memoryPercent', header: 'Memory', size: 120 },
   { id: 'description', accessorKey: 'description', header: 'Description', size: 320 }
 ]
-const processStateMeta: Record<VpsProcessState, { label: string, color: 'success' | 'neutral' | 'warning' | 'error' }> = {
-  running: { label: 'Running', color: 'success' },
+const processStateMeta: Record<VpsProcessState, { label: string, color: 'neutral' }> = {
+  running: { label: 'Running', color: 'neutral' },
   sleeping: { label: 'Sleeping', color: 'neutral' },
-  stopped: { label: 'Stopped', color: 'warning' },
-  zombie: { label: 'Zombie', color: 'error' },
+  stopped: { label: 'Stopped', color: 'neutral' },
+  zombie: { label: 'Zombie', color: 'neutral' },
   unknown: { label: 'Unknown', color: 'neutral' }
 }
 const sampleCount = computed(() => points.value.length)
@@ -148,11 +170,11 @@ const overviewCards = computed(() => {
         ? []
         : [
             { label: 'Used', value: cpuUsed, color: statusMeta(cpu.status).hex },
-            { label: 'Available', value: Math.max(0, 100 - cpuUsed), color: '#e5e7eb' }
+            { label: 'Available', value: Math.max(0, 100 - cpuUsed), color: chartPalette.value.available }
           ],
       details: [
         { label: 'Used', value: percent(cpu.usagePercent), color: statusMeta(cpu.status).hex },
-        { label: 'Available', value: cpu.usagePercent === null ? '—' : percent(100 - cpuUsed), color: '#e5e7eb' }
+        { label: 'Available', value: cpu.usagePercent === null ? '—' : percent(100 - cpuUsed), color: chartPalette.value.available }
       ],
       total: { label: 'CPU cores', value: dashboard.value.host.cpuCores === null ? '—' : `${dashboard.value.host.cpuCores} cores` },
       footerRows: [{ label: 'Load average · 1 / 5 / 15m', value: `${cpu.loadAverage['1m'] ?? '—'} / ${cpu.loadAverage['5m'] ?? '—'} / ${cpu.loadAverage['15m'] ?? '—'}` }],
@@ -169,11 +191,11 @@ const overviewCards = computed(() => {
         ? []
         : [
             { label: 'Used', value: memoryUsed, color: statusMeta(memory.status).hex },
-            { label: 'Available', value: Math.max(0, 100 - memoryUsed), color: '#e5e7eb' }
+            { label: 'Available', value: Math.max(0, 100 - memoryUsed), color: chartPalette.value.available }
           ],
       details: [
         { label: 'Used', value: formatBytes(memory.totalBytes === null || memory.availableBytes === null ? null : memory.totalBytes - memory.availableBytes), color: statusMeta(memory.status).hex },
-        { label: 'Available', value: formatBytes(memory.availableBytes), color: '#e5e7eb' }
+        { label: 'Available', value: formatBytes(memory.availableBytes), color: chartPalette.value.available }
       ],
       total: { label: 'Total memory', value: formatBytes(memory.totalBytes) },
       footerRows: [{ label: 'Swap used', value: `${formatBytes(memory.swapUsedBytes)} / ${formatBytes(memory.swapTotalBytes)} · ${percent(swapUsedPercent.value)}` }],
@@ -190,11 +212,11 @@ const overviewCards = computed(() => {
         ? []
         : [
             { label: 'Used', value: diskUsed, color: statusMeta(latest.value.storage.status).hex },
-            { label: 'Available', value: Math.max(0, 100 - diskUsed), color: '#e5e7eb' }
+            { label: 'Available', value: Math.max(0, 100 - diskUsed), color: chartPalette.value.available }
           ],
       details: [
         { label: 'Used', value: formatBytes(storage?.usedBytes ?? null), color: statusMeta(latest.value.storage.status).hex },
-        { label: 'Available', value: formatBytes(storage?.totalBytes == null || storage.usedBytes === null ? null : storage.totalBytes - storage.usedBytes), color: '#e5e7eb' }
+        { label: 'Available', value: formatBytes(storage?.totalBytes == null || storage.usedBytes === null ? null : storage.totalBytes - storage.usedBytes), color: chartPalette.value.available }
       ],
       total: { label: `Total · ${storage?.mountPoint ?? '—'}`, value: formatBytes(storage?.totalBytes ?? null) },
       footerRows: [{ label: 'Inodes used', value: percent(storage?.inodeUsedPercent ?? null) }],
@@ -210,12 +232,12 @@ const overviewCards = computed(() => {
       segments: rx === null || tx === null
         ? []
         : [
-            { label: 'Inbound · RX', value: rx, color: '#0ea5e9' },
-            { label: 'Outbound · TX', value: tx, color: '#8b5cf6' }
+            { label: 'Inbound · RX', value: rx, color: chartPalette.value.used },
+            { label: 'Outbound · TX', value: tx, color: chartPalette.value.secondary }
           ],
       details: [
-        { label: 'Inbound · RX', value: formatRate(iface?.rxBytesPerSecond), color: '#0ea5e9' },
-        { label: 'Outbound · TX', value: formatRate(iface?.txBytesPerSecond), color: '#8b5cf6' }
+        { label: 'Inbound · RX', value: formatRate(iface?.rxBytesPerSecond), color: chartPalette.value.used },
+        { label: 'Outbound · TX', value: formatRate(iface?.txBytesPerSecond), color: chartPalette.value.secondary }
       ],
       total: { label: 'Interface', value: iface?.name ?? '—' },
       footerRows: [
@@ -237,7 +259,7 @@ const charts = computed(() => [
     description: 'CPU utilization over the selected range',
     unit: 'percent' as const,
     ariaLabel: 'CPU utilization chart',
-    datasets: [{ label: 'Utilization', color: '#10b981', values: points.value.map(point => point.cpuUsagePercent) }]
+    datasets: [{ label: 'Utilization', color: chartPalette.value.used, values: points.value.map(point => point.cpuUsagePercent) }]
   },
   {
     title: 'Memory & swap',
@@ -245,8 +267,8 @@ const charts = computed(() => [
     unit: 'percent' as const,
     ariaLabel: 'Available memory and swap chart',
     datasets: [
-      { label: 'Memory available', color: '#0ea5e9', values: points.value.map(point => point.memoryAvailablePercent) },
-      { label: 'Swap used', color: '#a78bfa', values: points.value.map(point => point.swapUsedPercent) }
+      { label: 'Memory available', color: chartPalette.value.used, values: points.value.map(point => point.memoryAvailablePercent) },
+      { label: 'Swap used', color: chartPalette.value.secondary, values: points.value.map(point => point.swapUsedPercent) }
     ]
   },
   {
@@ -255,8 +277,8 @@ const charts = computed(() => [
     unit: 'rate' as const,
     ariaLabel: 'Disk read and write activity chart',
     datasets: [
-      { label: 'Read', color: '#0ea5e9', values: points.value.map(point => point.diskReadBytesPerSecond) },
-      { label: 'Write', color: '#f59e0b', values: points.value.map(point => point.diskWriteBytesPerSecond) }
+      { label: 'Read', color: chartPalette.value.used, values: points.value.map(point => point.diskReadBytesPerSecond) },
+      { label: 'Write', color: chartPalette.value.secondary, values: points.value.map(point => point.diskWriteBytesPerSecond) }
     ]
   },
   {
@@ -265,8 +287,8 @@ const charts = computed(() => [
     unit: 'rate' as const,
     ariaLabel: 'Network inbound and outbound traffic chart',
     datasets: [
-      { label: 'RX', color: '#10b981', values: points.value.map(point => point.networkRxBytesPerSecond) },
-      { label: 'TX', color: '#f97316', values: points.value.map(point => point.networkTxBytesPerSecond) }
+      { label: 'RX', color: chartPalette.value.used, values: points.value.map(point => point.networkRxBytesPerSecond) },
+      { label: 'TX', color: chartPalette.value.secondary, values: points.value.map(point => point.networkTxBytesPerSecond) }
     ]
   }
 ])
@@ -282,14 +304,14 @@ function formatAlertStart(value: string): string {
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1440px] space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-    <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+  <div class="mx-auto max-w-[1440px] space-y-8 px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
+    <div class="flex flex-col justify-between gap-4 border-b border-gray-300 pb-6 dark:border-gray-700 sm:flex-row sm:items-start">
       <div>
         <div class="mb-2 flex flex-wrap items-center gap-2">
           <UBadge
+            v-if="dashboard"
             :color="dashboard?.dataMode === 'mock' ? 'info' : 'success'"
             variant="subtle"
-            class="rounded-full"
           >
             {{ dashboard?.dataMode === 'mock' ? 'Demo data' : 'Live VPS data' }}
           </UBadge>
@@ -297,7 +319,6 @@ function formatAlertStart(value: string): string {
             v-if="dashboard"
             :color="statusMeta(dashboard.health.status).color"
             variant="subtle"
-            class="rounded-full"
           >
             <UIcon
               :name="statusMeta(dashboard.health.status).icon"
@@ -313,24 +334,24 @@ function formatAlertStart(value: string): string {
             Stale data
           </UBadge>
         </div>
-        <h1 class="text-2xl font-semibold tracking-tight sm:text-[28px]">
+        <h1 class="text-3xl font-bold tracking-[-0.035em] sm:text-4xl">
           VPS
         </h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <p class="mt-1 text-sm text-muted dark:text-muted">
           Host resources and systemd units in one view.
         </p>
       </div>
       <div
         v-if="dashboard"
-        class="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400"
+        class="flex flex-wrap gap-2 text-xs text-muted dark:text-muted"
       >
-        <span class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 dark:border-gray-800 dark:bg-[#151719]">
+        <span class="inline-flex items-center gap-1.5 border-b border-gray-300 px-1 py-2 dark:border-gray-700">
           <UIcon
             name="i-lucide-server"
             class="size-3.5"
           />{{ dashboard.host.hostname }}
         </span>
-        <span class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 dark:border-gray-800 dark:bg-[#151719]">
+        <span class="inline-flex items-center gap-1.5 border-b border-gray-300 px-1 py-2 dark:border-gray-700">
           <UIcon
             name="i-lucide-activity"
             class="size-3.5"
@@ -341,9 +362,9 @@ function formatAlertStart(value: string): string {
 
     <UCard
       v-if="!dashboard && !error"
-      class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
+      class="rounded-none border-gray-200/80 shadow-none dark:border-gray-800"
     >
-      <div class="flex items-center gap-3 text-sm text-gray-500">
+      <div class="flex items-center gap-3 text-sm text-muted">
         <UIcon
           name="i-lucide-loader-circle"
           class="size-4 animate-spin"
@@ -351,45 +372,61 @@ function formatAlertStart(value: string): string {
       </div>
     </UCard>
     <UCard
-      v-else-if="error"
-      class="rounded-xl border-red-200 shadow-none dark:border-red-900"
+      v-else-if="error && !dashboard"
+      class="rounded-none border-gray-400 shadow-none dark:border-gray-600"
     >
       <div class="flex items-start gap-3">
         <UIcon
           name="i-lucide-circle-alert"
-          class="mt-0.5 size-5 text-red-600"
+          class="mt-0.5 size-5 text-gray-700 dark:text-gray-200"
         /><div>
           <h2 class="text-sm font-semibold">
             Unable to load VPS data
-          </h2><p class="mt-1 text-sm text-gray-500">
-            Check the mock response file or API connection.
+          </h2><p class="mt-1 text-sm text-muted">
+            The metrics source is unavailable. Retrying automatically every 10 seconds.
           </p>
+          <UButton
+            label="Retry now"
+            color="neutral"
+            variant="outline"
+            :loading="pending"
+            class="mt-3 cursor-pointer"
+            @click="refresh()"
+          />
         </div>
       </div>
     </UCard>
 
     <template v-else-if="dashboard && latest">
+      <UAlert
+        v-if="error || (dashboard.dataMode === 'live' && dashboard.source.status !== 'complete')"
+        color="neutral"
+        variant="outline"
+        icon="i-lucide-triangle-alert"
+        :title="error ? 'Update failed · showing the last snapshot' : `Data source: ${dashboard.source.status}`"
+        :description="error ? 'Retrying automatically. Displayed values may be out of date.' : dashboard.health.reasons.join(' ')"
+      />
       <section
         aria-label="Host information"
         class="grid grid-cols-2 gap-x-4 gap-y-4 border-y border-gray-200 py-4 dark:border-gray-800 sm:grid-cols-4"
       >
         <div>
-          <span class="text-xs text-gray-500 dark:text-gray-400">Hostname</span><p class="mt-1 text-sm font-medium">
+          <span class="text-xs text-muted dark:text-muted">Hostname</span><p class="mt-1 text-sm font-medium">
             {{ dashboard.host.hostname ?? '—' }}
           </p>
         </div>
         <div>
-          <span class="text-xs text-gray-500 dark:text-gray-400">Uptime</span><p class="mt-1 text-sm font-medium">
+          <span class="text-xs text-muted dark:text-muted">Uptime</span><p class="mt-1 text-sm font-medium">
             {{ formatUptime(dashboard.host.uptimeSeconds) }}
           </p>
         </div>
         <div>
-          <span class="text-xs text-gray-500 dark:text-gray-400">CPU cores</span><p class="mt-1 text-sm font-medium">
+          <span class="text-xs text-muted dark:text-muted">CPU cores</span><p class="mt-1 text-sm font-medium">
             {{ dashboard.host.cpuCores ?? '—' }}
           </p>
         </div>
         <div>
-          <span class="text-xs text-gray-500 dark:text-gray-400">Load average · 1 / 5 / 15m</span><p class="mt-1 text-sm font-medium">
+          <span class="text-xs text-muted dark:text-muted">Load average · 1 / 5 / 15m</span><p class="mt-1 text-sm font-medium">
             {{ latest.cpu.loadAverage['1m'] ?? '—' }} / {{ latest.cpu.loadAverage['5m'] ?? '—' }} / {{ latest.cpu.loadAverage['15m'] ?? '—' }}
           </p>
         </div>
@@ -397,16 +434,16 @@ function formatAlertStart(value: string): string {
 
       <section aria-label="Active alerts">
         <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
+          class="rounded-none border-gray-200/80 shadow-none dark:border-gray-800"
         >
           <div class="flex items-start gap-3">
-            <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"><UIcon
+            <span class="grid size-9 shrink-0 place-items-center rounded-none bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"><UIcon
               name="i-lucide-clipboard-check"
               class="size-4"
             /></span><div>
               <h2 class="text-sm font-semibold">
                 Active alerts
-              </h2><p class="mt-1 text-xs text-gray-500">
+              </h2><p class="mt-1 text-xs text-muted">
                 Current conditions reported by the host monitor
               </p>
             </div><UBadge
@@ -426,8 +463,8 @@ function formatAlertStart(value: string): string {
               class="flex items-start gap-3 py-3 first:pt-0 last:pb-0"
             >
               <UIcon
-                name="i-lucide-circle-alert"
-                :class="alert.severity === 'critical' ? 'mt-0.5 size-4 shrink-0 text-red-500' : 'mt-0.5 size-4 shrink-0 text-amber-500'"
+                :name="alert.state === 'pending' ? 'i-lucide-clock' : alert.severity === 'critical' ? 'i-lucide-circle-x' : 'i-lucide-triangle-alert'"
+                :class="alert.severity === 'critical' ? 'mt-0.5 size-4 shrink-0 text-gray-950 dark:text-white' : 'mt-0.5 size-4 shrink-0 text-muted dark:text-muted'"
                 aria-hidden="true"
               />
               <div class="min-w-0 flex-1">
@@ -448,10 +485,10 @@ function formatAlertStart(value: string): string {
                     {{ alert.state }}
                   </UBadge>
                 </div>
-                <p class="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
-                  {{ alert.description }}
+                <p class="mt-1 text-xs leading-5 text-muted dark:text-muted">
+                  {{ alert.state === 'pending' ? 'Threshold crossed; waiting for the required duration before firing.' : alert.description }}
                 </p>
-                <p class="mt-1 text-[11px] text-gray-400">
+                <p class="mt-1 text-xs text-muted">
                   <span v-if="alert.target">{{ alert.target }} · </span>Active since {{ formatAlertStart(alert.activeAt) }}
                 </p>
               </div>
@@ -459,11 +496,11 @@ function formatAlertStart(value: string): string {
           </ul>
           <p
             v-else
-            class="mt-4 text-xs leading-5 text-gray-500"
+            class="mt-4 text-xs leading-5 text-muted"
           >
             {{ dashboard.health.reasons.join(' ') || 'No active alerts.' }}
           </p>
-          <div class="mt-5 border-t border-gray-100 pt-4 text-[11px] leading-5 text-gray-500 dark:border-gray-800">
+          <div class="mt-5 border-t border-gray-100 pt-4 text-[11px] leading-5 text-muted dark:border-gray-800">
             <p>CPU, memory, and filesystem alerts require a sustained condition for {{ dashboard.thresholds.cpu.forSeconds === null ? '—' : Math.round(dashboard.thresholds.cpu.forSeconds / 60) }} minutes.</p><p
               v-if="latest.network.status === 'unknown'"
               class="mt-1"
@@ -481,7 +518,7 @@ function formatAlertStart(value: string): string {
         <UCard
           v-for="card in overviewCards"
           :key="card.title"
-          class="h-full rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
+          class="h-full rounded-none border-gray-200/80 shadow-none dark:border-gray-800"
         >
           <div class="flex h-full flex-col">
             <div class="flex items-center justify-between gap-2">
@@ -490,6 +527,11 @@ function formatAlertStart(value: string): string {
                 variant="subtle"
                 size="sm"
               >
+                <UIcon
+                  :name="statusMeta(card.status).icon"
+                  class="mr-1 size-3.5"
+                  aria-hidden="true"
+                />
                 {{ statusMeta(card.status).label }}
               </UBadge>
             </div>
@@ -508,7 +550,7 @@ function formatAlertStart(value: string): string {
                   :key="detail.label"
                   class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1"
                 >
-                  <dt class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                  <dt class="flex items-center gap-2 text-muted dark:text-muted">
                     <span
                       class="size-2 shrink-0 rounded-full"
                       :style="{ backgroundColor: detail.color }"
@@ -521,7 +563,7 @@ function formatAlertStart(value: string): string {
                   </dd>
                 </div>
                 <div class="flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 pt-3 dark:border-gray-800">
-                  <dt class="text-[10px] tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                  <dt class="text-[10px] tracking-wide text-muted uppercase dark:text-muted">
                     {{ card.total.label }}
                   </dt>
                   <dd class="ml-auto font-medium text-gray-800 tabular-nums dark:text-gray-200">
@@ -537,7 +579,7 @@ function formatAlertStart(value: string): string {
                   :key="row.label"
                   class="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs"
                 >
-                  <span class="text-gray-500 dark:text-gray-400">{{ row.label }}</span>
+                  <span class="text-muted dark:text-muted">{{ row.label }}</span>
                   <span class="ml-auto font-medium text-gray-800 tabular-nums dark:text-gray-200">{{ row.value }}</span>
                 </div>
               </div>
@@ -549,7 +591,7 @@ function formatAlertStart(value: string): string {
                 size="xs"
                 class="mt-3"
               />
-              <p class="mt-auto pt-3 text-xs leading-5 text-gray-500 dark:text-gray-400">
+              <p class="mt-auto pt-3 text-xs leading-5 text-muted dark:text-muted">
                 {{ card.footnote }}
               </p>
             </div>
@@ -565,13 +607,12 @@ function formatAlertStart(value: string): string {
           <div>
             <h2 class="text-base font-semibold tracking-tight">
               Resource trends
-            </h2><p class="mt-1 text-xs text-gray-500">
+            </h2><p class="mt-1 text-xs text-muted">
               Range {{ dashboard.history.range }} · {{ Math.round(dashboard.history.stepSeconds / 60) }}-minute interval · {{ sampleCount }} samples{{ dashboard.dataMode === 'mock' ? ' (demo)' : '' }}
             </p>
           </div><UBadge
             :color="dashboard.dataMode === 'mock' ? 'neutral' : isDataStale ? 'error' : 'success'"
             variant="subtle"
-            class="rounded-full"
             :aria-label="dashboard.dataMode === 'mock' ? `Demo snapshot collected ${collectedAtLabel}` : freshnessLabel"
           >
             {{ dashboard.dataMode === 'mock' ? `Demo snapshot · ${collectedAtLabel}` : freshnessLabel }}
@@ -584,12 +625,12 @@ function formatAlertStart(value: string): string {
           <UCard
             v-for="chart in charts"
             :key="chart.title"
-            class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
+            class="rounded-none border-gray-200/80 shadow-none dark:border-gray-800"
           >
             <div class="mb-3">
               <h3 class="text-sm font-semibold">
                 {{ chart.title }}
-              </h3><p class="mt-1 text-xs text-gray-500">
+              </h3><p class="mt-1 text-xs text-muted">
                 {{ chart.description }}
               </p>
             </div>
@@ -615,13 +656,13 @@ function formatAlertStart(value: string): string {
         class="grid gap-4 xl:grid-cols-2"
       >
         <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
+          class="rounded-none border-gray-200/80 shadow-none dark:border-gray-800"
         >
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-sm font-semibold">
                 Filesystem
-              </h2><p class="mt-1 text-xs text-gray-500">
+              </h2><p class="mt-1 text-xs text-muted">
                 Capacity and inodes by mount point
               </p>
             </div><UBadge
@@ -632,63 +673,42 @@ function formatAlertStart(value: string): string {
             </UBadge>
           </div>
           <div class="mt-4 overflow-x-auto">
-            <table class="w-full min-w-[520px] text-left text-xs">
-              <thead class="border-y border-gray-100 text-[10px] uppercase tracking-wide text-gray-400 dark:border-gray-800">
-                <tr>
-                  <th class="px-3 py-3 font-medium">
-                    Mount point
-                  </th><th class="px-3 py-3 font-medium">
-                    File system
-                  </th><th class="px-3 py-3 font-medium">
-                    Used
-                  </th><th class="px-3 py-3 text-right font-medium">
-                    Inode
-                  </th>
-                </tr>
-              </thead><tbody>
-                <tr
-                  v-for="filesystem in latest.storage.filesystems"
-                  :key="filesystem.mountPoint"
-                  class="border-b border-gray-100 last:border-0 dark:border-gray-800"
-                >
-                  <td class="px-3 py-3 font-medium">
-                    {{ filesystem.mountPoint }}
-                  </td><td class="px-3 py-3 text-gray-500">
-                    {{ filesystem.fileSystem }}
-                  </td><td class="px-3 py-3">
-                    <div class="flex items-center gap-2">
-                      <span>{{ percent(filesystem.totalBytes && filesystem.usedBytes !== null ? filesystem.usedBytes / filesystem.totalBytes * 100 : null) }}</span><UBadge
-                        :color="statusMeta(filesystem.status).color"
-                        variant="subtle"
-                        size="xs"
-                      >
-                        {{ statusMeta(filesystem.status).label }}
-                      </UBadge>
-                    </div><span class="mt-1 block text-[10px] text-gray-500">{{ formatBytes(filesystem.usedBytes) }} / {{ formatBytes(filesystem.totalBytes) }}</span>
-                  </td><td class="px-3 py-3 text-right text-gray-500">
-                    {{ percent(filesystem.inodeUsedPercent) }}
-                  </td>
-                </tr><tr v-if="!latest.storage.filesystems.length">
-                  <td
-                    colspan="4"
-                    class="px-3 py-8 text-center text-gray-500"
+            <UTable
+              :data="latest.storage.filesystems"
+              :columns="filesystemColumns"
+              empty="Filesystem data is unavailable."
+              class="min-w-[520px]"
+              :ui="{ th: 'text-xs text-default', td: 'text-xs' }"
+            >
+              <template #used-cell="{ row }">
+                <div class="flex items-center gap-2">
+                  <span>{{ percent(row.original.totalBytes && row.original.usedBytes !== null ? row.original.usedBytes / row.original.totalBytes * 100 : null) }}</span>
+                  <UBadge
+                    color="neutral"
+                    variant="subtle"
+                    size="xs"
+                    :icon="statusMeta(row.original.status).icon"
                   >
-                    Filesystem data is unavailable.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    {{ statusMeta(row.original.status).label }}
+                  </UBadge>
+                </div>
+                <span class="mt-1 block text-xs text-muted">{{ formatBytes(row.original.usedBytes) }} / {{ formatBytes(row.original.totalBytes) }}</span>
+              </template>
+              <template #inodeUsedPercent-cell="{ row }">
+                {{ percent(row.original.inodeUsedPercent) }}
+              </template>
+            </UTable>
           </div>
         </UCard>
 
         <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
+          class="rounded-none border-gray-200/80 shadow-none dark:border-gray-800"
         >
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-sm font-semibold">
                 Network interfaces
-              </h2><p class="mt-1 text-xs text-gray-500">
+              </h2><p class="mt-1 text-xs text-muted">
                 RX/TX and errors by interface
               </p>
             </div><UBadge
@@ -699,55 +719,39 @@ function formatAlertStart(value: string): string {
             </UBadge>
           </div>
           <div class="mt-4 overflow-x-auto">
-            <table class="w-full min-w-[470px] text-left text-xs">
-              <thead class="border-y border-gray-100 text-[10px] uppercase tracking-wide text-gray-400 dark:border-gray-800">
-                <tr>
-                  <th class="px-3 py-3 font-medium">
-                    Interface
-                  </th><th class="px-3 py-3 font-medium">
-                    RX / TX
-                  </th><th class="px-3 py-3 font-medium">
-                    Errors
-                  </th><th class="px-3 py-3 text-right font-medium">
-                    Drops
-                  </th>
-                </tr>
-              </thead><tbody>
-                <tr
-                  v-for="iface in latest.network.interfaces"
-                  :key="iface.name"
-                  class="border-b border-gray-100 last:border-0 dark:border-gray-800"
+            <UTable
+              :data="latest.network.interfaces"
+              :columns="networkColumns"
+              empty="Interface data is unavailable."
+              class="min-w-[470px]"
+              :ui="{ th: 'text-xs text-default', td: 'text-xs' }"
+            >
+              <template #name-cell="{ row }">
+                {{ row.original.name }}
+                <UBadge
+                  color="neutral"
+                  variant="subtle"
+                  size="xs"
+                  class="ml-2"
+                  :icon="statusMeta(row.original.status).icon"
                 >
-                  <td class="px-3 py-3 font-medium">
-                    {{ iface.name }}<UBadge
-                      :color="statusMeta(iface.status).color"
-                      variant="subtle"
-                      size="xs"
-                      class="ml-2"
-                    >
-                      {{ statusMeta(iface.status).label }}
-                    </UBadge>
-                  </td><td class="px-3 py-3 text-gray-500">
-                    ↓ {{ formatRate(iface.rxBytesPerSecond) }}<br>↑ {{ formatRate(iface.txBytesPerSecond) }}
-                  </td><td class="px-3 py-3 text-gray-500">
-                    {{ iface.rxErrorsPerSecond ?? '—' }} / {{ iface.txErrorsPerSecond ?? '—' }}
-                  </td><td class="px-3 py-3 text-right text-gray-500">
-                    {{ iface.rxDropsPerSecond ?? '—' }} / {{ iface.txDropsPerSecond ?? '—' }}
-                  </td>
-                </tr><tr v-if="!latest.network.interfaces.length">
-                  <td
-                    colspan="4"
-                    class="px-3 py-8 text-center text-gray-500"
-                  >
-                    Interface data is unavailable.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  {{ statusMeta(row.original.status).label }}
+                </UBadge>
+              </template>
+              <template #traffic-cell="{ row }">
+                ↓ {{ formatRate(row.original.rxBytesPerSecond) }}<br>↑ {{ formatRate(row.original.txBytesPerSecond) }}
+              </template>
+              <template #errors-cell="{ row }">
+                {{ row.original.rxErrorsPerSecond ?? '—' }} / {{ row.original.txErrorsPerSecond ?? '—' }}
+              </template>
+              <template #drops-cell="{ row }">
+                {{ row.original.rxDropsPerSecond ?? '—' }} / {{ row.original.txDropsPerSecond ?? '—' }}
+              </template>
+            </UTable>
           </div>
           <p
             v-if="latest.network.status === 'unknown' && latest.network.interfaces.some(iface => iface.capacityBitsPerSecond === null)"
-            class="py-3 text-[11px] text-gray-500"
+            class="py-3 text-[11px] text-muted"
           >
             Capacity status requires the provider's bandwidth limit.
           </p>
@@ -756,14 +760,14 @@ function formatAlertStart(value: string): string {
 
       <section class="space-y-4">
         <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
+          class="rounded-none border-gray-200/80 shadow-none dark:border-gray-800"
         >
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-sm font-semibold">
                 Services · systemd
-              </h2><p class="mt-1 text-xs text-gray-500">
-                Unit status compared with the expected state
+              </h2><p class="mt-1 text-xs text-muted">
+                Unit status compared with the configured expected state
               </p>
             </div><UBadge
               :color="statusMeta(latest.services.status).color"
@@ -801,6 +805,7 @@ function formatAlertStart(value: string): string {
               <template #status-cell="{ row }">
                 <UBadge
                   :color="statusMeta(row.original.status).color"
+                  :icon="statusMeta(row.original.status).icon"
                   variant="subtle"
                   size="xs"
                 >
@@ -808,10 +813,10 @@ function formatAlertStart(value: string): string {
                 </UBadge>
               </template>
               <template #expanded="{ row }">
-                <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-900/50 sm:p-5">
+                <div class="rounded-none bg-gray-50 p-4 dark:bg-gray-900/50 sm:p-5">
                   <dl class="grid gap-y-3 text-xs">
                     <div>
-                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      <dt class="text-xs font-medium uppercase tracking-wide text-muted">
                         Description
                       </dt>
                       <dd class="mt-1 text-gray-700 dark:text-gray-300">
@@ -819,7 +824,7 @@ function formatAlertStart(value: string): string {
                       </dd>
                     </div>
                     <div>
-                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      <dt class="text-xs font-medium uppercase tracking-wide text-muted">
                         Port
                       </dt>
                       <dd class="mt-1 text-gray-700 dark:text-gray-300">
@@ -827,7 +832,7 @@ function formatAlertStart(value: string): string {
                       </dd>
                     </div>
                     <div>
-                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      <dt class="text-xs font-medium uppercase tracking-wide text-muted">
                         PID
                       </dt>
                       <dd class="mt-1 font-mono text-gray-700 dark:text-gray-300">
@@ -835,7 +840,7 @@ function formatAlertStart(value: string): string {
                       </dd>
                     </div>
                     <div>
-                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      <dt class="text-xs font-medium uppercase tracking-wide text-muted">
                         Uptime
                       </dt>
                       <dd class="mt-1 text-gray-700 dark:text-gray-300">
@@ -843,7 +848,7 @@ function formatAlertStart(value: string): string {
                       </dd>
                     </div>
                     <div>
-                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      <dt class="text-xs font-medium uppercase tracking-wide text-muted">
                         Path
                       </dt>
                       <dd class="mt-1 break-all font-mono text-gray-700 dark:text-gray-300">
@@ -851,7 +856,7 @@ function formatAlertStart(value: string): string {
                       </dd>
                     </div>
                     <div>
-                      <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                      <dt class="text-xs font-medium uppercase tracking-wide text-muted">
                         Command Line
                       </dt>
                       <dd class="mt-1 break-all font-mono text-gray-700 dark:text-gray-300">
@@ -863,22 +868,28 @@ function formatAlertStart(value: string): string {
               </template>
             </UTable>
           </div>
+          <p
+            v-if="dashboard.dataMode === 'live'"
+            class="mt-4 text-xs leading-5 text-muted"
+          >
+            Expected states are configured by the administrator. Unavailable details reflect host permissions or an inactive process. Ports show listeners owned by the main process. Command arguments are hidden.
+          </p>
         </UCard>
         <UCard
-          class="rounded-xl border-gray-200/80 shadow-none dark:border-gray-800"
+          class="rounded-none border-gray-200/80 shadow-none dark:border-gray-800"
         >
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-sm font-semibold">
                 Active processes
-              </h2><p class="mt-1 text-xs text-gray-500">
+              </h2><p class="mt-1 text-xs text-muted">
                 {{ processSource }}<span v-if="processSnapshotAt"> · Updated {{ new Date(processSnapshotAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Jakarta' }) }}</span>
               </p>
             </div><UBadge
               :color="liveProcesses ? processFetchFailed ? 'warning' : 'success' : 'neutral'"
               :variant="liveProcesses ? 'subtle' : 'outline'"
             >
-              {{ liveProcesses ? processFetchFailed ? 'Stale' : 'Live' : 'Demo' }} · {{ processItems.length }} processes
+              {{ liveProcesses ? processFetchFailed ? 'Stale' : 'Live' : dashboard.dataMode === 'mock' ? 'Demo' : 'Unavailable' }} · {{ processItems.length }} processes
             </UBadge>
           </div>
           <div class="mt-4 overflow-x-auto">
@@ -927,18 +938,18 @@ function formatAlertStart(value: string): string {
                 <span>{{ row.original.user ?? '—' }}</span>
               </template>
               <template #cpu-cell="{ row }">
-                <span class="font-medium tabular-nums text-sky-600 dark:text-sky-400">{{ formatProcessPercent(row.original.cpuPercentOfHost) }}</span>
+                <span class="font-medium tabular-nums text-gray-900 dark:text-gray-100">{{ formatProcessPercent(row.original.cpuPercentOfHost) }}</span>
               </template>
               <template #memory-cell="{ row }">
                 <span class="font-medium tabular-nums">{{ formatProcessPercent(row.original.memoryPercent) }}</span>
               </template>
               <template #description-cell="{ row }">
-                <span class="block max-w-80 truncate text-gray-500">{{ row.original.description ?? '—' }}</span>
+                <span class="block max-w-80 truncate text-muted">{{ row.original.description ?? '—' }}</span>
               </template>
               <template #expanded="{ row }">
-                <dl class="grid gap-3 rounded-lg bg-gray-50 p-4 text-xs dark:bg-gray-900/50 sm:p-5">
+                <dl class="grid gap-3 rounded-none bg-gray-50 p-4 text-xs dark:bg-gray-900/50 sm:p-5">
                   <div class="grid grid-cols-[8rem_minmax(0,1fr)] gap-4">
-                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                    <dt class="text-xs font-medium uppercase tracking-wide text-muted">
                       Location
                     </dt>
                     <dd class="break-all font-mono text-gray-700 dark:text-gray-300">
@@ -946,7 +957,7 @@ function formatAlertStart(value: string): string {
                     </dd>
                   </div>
                   <div class="grid grid-cols-[8rem_minmax(0,1fr)] gap-4">
-                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                    <dt class="text-xs font-medium uppercase tracking-wide text-muted">
                       Description
                     </dt>
                     <dd class="text-gray-700 dark:text-gray-300">
@@ -954,7 +965,7 @@ function formatAlertStart(value: string): string {
                     </dd>
                   </div>
                   <div class="grid grid-cols-[8rem_minmax(0,1fr)] gap-4">
-                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                    <dt class="text-xs font-medium uppercase tracking-wide text-muted">
                       Start time
                     </dt>
                     <dd class="text-gray-700 dark:text-gray-300">
@@ -962,7 +973,7 @@ function formatAlertStart(value: string): string {
                     </dd>
                   </div>
                   <div class="grid grid-cols-[8rem_minmax(0,1fr)] gap-4">
-                    <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                    <dt class="text-xs font-medium uppercase tracking-wide text-muted">
                       Full command
                     </dt>
                     <dd class="break-all font-mono text-gray-700 dark:text-gray-300">
@@ -978,7 +989,7 @@ function formatAlertStart(value: string): string {
             class="mt-4 flex flex-col items-center justify-between gap-3 border-t border-gray-100 pt-4 dark:border-gray-800 sm:flex-row"
           >
             <p
-              class="text-xs text-gray-500"
+              class="text-xs text-muted"
               aria-live="polite"
             >
               Showing {{ (processPage - 1) * processPageSize + 1 }}–{{ Math.min(processPage * processPageSize, processItems.length) }} of {{ processItems.length }} processes

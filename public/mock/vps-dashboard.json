@@ -1,7 +1,13 @@
 {
-  "schemaVersion": "1.3",
+  "schemaVersion": "1.4",
   "dataMode": "mock",
   "collectedAt": "2026-09-27T16:00:00.000Z",
+  "source": {
+    "sampledAt": "2026-09-27T16:00:00.000Z",
+    "status": "complete",
+    "missingMetrics": [],
+    "systemdDetailsAvailable": true
+  },
   "host": {
     "hostname": "vps-demo-01",
     "os": "Ubuntu 24.04 LTS",
@@ -17,19 +23,65 @@
     ]
   },
   "alerts": [
-    { "name": "VpsSystemdUnitFailed", "resource": "services", "severity": "critical", "state": "firing", "summary": "myapp.service has failed", "description": "myapp.service failed even though it is expected to be active.", "activeAt": "2026-09-27T15:42:00.000Z", "value": 1, "target": "myapp.service" },
-    { "name": "VpsMemoryWarning", "resource": "memory", "severity": "warning", "state": "firing", "summary": "Available memory is low", "description": "Available memory is below the warning threshold.", "activeAt": "2026-09-27T15:55:00.000Z", "value": 16, "target": null },
-    { "name": "VpsFilesystemWarning", "resource": "storage", "severity": "warning", "state": "firing", "summary": "Filesystem / is filling up", "description": "Filesystem / is above the warning threshold.", "activeAt": "2026-09-27T15:55:00.000Z", "value": 85, "target": "/" }
+    {
+      "name": "VpsSystemdUnitFailed",
+      "resource": "services",
+      "severity": "critical",
+      "state": "firing",
+      "summary": "myapp.service has failed",
+      "description": "myapp.service failed even though it is expected to be active.",
+      "activeAt": "2026-09-27T15:42:00.000Z",
+      "value": 1,
+      "target": "myapp.service"
+    },
+    {
+      "name": "VpsMemoryWarning",
+      "resource": "memory",
+      "severity": "warning",
+      "state": "firing",
+      "summary": "Available memory is low",
+      "description": "Available memory is below the warning threshold.",
+      "activeAt": "2026-09-27T15:55:00.000Z",
+      "value": 16,
+      "target": null
+    },
+    {
+      "name": "VpsFilesystemWarning",
+      "resource": "storage",
+      "severity": "warning",
+      "state": "firing",
+      "summary": "Filesystem / is filling up",
+      "description": "Filesystem / is above the warning threshold.",
+      "activeAt": "2026-09-27T15:55:00.000Z",
+      "value": 85,
+      "target": "/"
+    }
   ],
   "thresholds": {
-    "cpu": { "warningPercent": 80, "criticalPercent": 90, "forSeconds": 300 },
-    "memoryAvailable": { "warningBelowPercent": 20, "criticalBelowPercent": 10, "forSeconds": 300 },
-    "storageUsed": { "warningPercent": 80, "criticalPercent": 90, "forSeconds": 300 }
+    "cpu": {
+      "warningPercent": 80,
+      "criticalPercent": 90,
+      "forSeconds": 300
+    },
+    "memoryAvailable": {
+      "warningBelowPercent": 20,
+      "criticalBelowPercent": 10,
+      "forSeconds": 300
+    },
+    "storageUsed": {
+      "warningPercent": 80,
+      "criticalPercent": 90,
+      "forSeconds": 300
+    }
   },
   "current": {
     "cpu": {
       "usagePercent": 42,
-      "loadAverage": { "1m": 0.84, "5m": 0.78, "15m": 0.64 },
+      "loadAverage": {
+        "1m": 0.84,
+        "5m": 0.78,
+        "15m": 0.64
+      },
       "status": "healthy"
     },
     "memory": {
@@ -41,15 +93,42 @@
     },
     "storage": {
       "filesystems": [
-        { "mountPoint": "/", "fileSystem": "ext4", "totalBytes": 85899345920, "usedBytes": 73014444032, "inodeUsedPercent": 34, "status": "warning" },
-        { "mountPoint": "/boot", "fileSystem": "ext4", "totalBytes": 1073741824, "usedBytes": 483183820, "inodeUsedPercent": 12, "status": "healthy" }
+        {
+          "mountPoint": "/",
+          "fileSystem": "ext4",
+          "totalBytes": 85899345920,
+          "usedBytes": 73014444032,
+          "inodeUsedPercent": 34,
+          "status": "warning"
+        },
+        {
+          "mountPoint": "/boot",
+          "fileSystem": "ext4",
+          "totalBytes": 1073741824,
+          "usedBytes": 483183820,
+          "inodeUsedPercent": 12,
+          "status": "healthy"
+        }
       ],
-      "io": { "readBytesPerSecond": 1835008, "writeBytesPerSecond": 917504 },
+      "io": {
+        "readBytesPerSecond": 1835008,
+        "writeBytesPerSecond": 917504
+      },
       "status": "warning"
     },
     "network": {
       "interfaces": [
-        { "name": "eth0", "rxBytesPerSecond": 1048576, "txBytesPerSecond": 524288, "rxErrorsPerSecond": 0, "txErrorsPerSecond": 0, "rxDropsPerSecond": 0, "txDropsPerSecond": 0, "capacityBitsPerSecond": null, "status": "unknown" }
+        {
+          "name": "eth0",
+          "rxBytesPerSecond": 1048576,
+          "txBytesPerSecond": 524288,
+          "rxErrorsPerSecond": 0,
+          "txErrorsPerSecond": 0,
+          "rxDropsPerSecond": 0,
+          "txDropsPerSecond": 0,
+          "capacityBitsPerSecond": null,
+          "status": "unknown"
+        }
       ],
       "status": "unknown"
     },
@@ -57,20 +136,138 @@
       "active": 4,
       "failed": 1,
       "units": [
-        { "name": "nginx.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T16:00:00.000Z", "status": "healthy", "description": "HTTP server and reverse proxy", "ports": [{ "port": 80, "protocol": "tcp" }, { "port": 443, "protocol": "tcp" }], "pid": 1240, "uptimeSeconds": 604800, "path": "/usr/sbin/nginx", "commandLine": "/usr/sbin/nginx -g daemon off;" },
-        { "name": "postgresql.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T16:00:00.000Z", "status": "healthy", "description": "PostgreSQL database server", "ports": [{ "port": 5432, "protocol": "tcp" }], "pid": 1382, "uptimeSeconds": 604800, "path": "/usr/lib/postgresql/16/bin/postgres", "commandLine": "/usr/lib/postgresql/16/bin/postgres -D /var/lib/postgresql/16/main" },
-        { "name": "docker.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T16:00:00.000Z", "status": "healthy", "description": "Docker application container engine", "ports": [], "pid": 1521, "uptimeSeconds": 604800, "path": "/usr/bin/dockerd", "commandLine": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock" },
-        { "name": "cron.service", "actualState": "active", "expectedState": "active", "since": "2026-09-20T16:00:00.000Z", "status": "healthy", "description": "Regular background program processing daemon", "ports": [], "pid": 891, "uptimeSeconds": 604800, "path": "/usr/sbin/cron", "commandLine": "/usr/sbin/cron -f -P" },
-        { "name": "myapp.service", "actualState": "failed", "expectedState": "active", "since": "2026-09-27T15:42:00.000Z", "status": "critical", "description": "Demo application service", "ports": [{ "port": 3000, "protocol": "tcp" }], "pid": null, "uptimeSeconds": null, "path": "/opt/demo/myapp", "commandLine": "/opt/demo/myapp --serve" }
+        {
+          "name": "nginx.service",
+          "actualState": "active",
+          "expectedState": "active",
+          "since": "2026-09-20T16:00:00.000Z",
+          "status": "healthy",
+          "description": "HTTP server and reverse proxy",
+          "ports": [
+            {
+              "port": 80,
+              "protocol": "tcp"
+            },
+            {
+              "port": 443,
+              "protocol": "tcp"
+            }
+          ],
+          "pid": 1240,
+          "uptimeSeconds": 604800,
+          "path": "/usr/sbin/nginx",
+          "commandLine": "/usr/sbin/nginx [ARGUMENTS REDACTED]"
+        },
+        {
+          "name": "postgresql.service",
+          "actualState": "active",
+          "expectedState": "active",
+          "since": "2026-09-20T16:00:00.000Z",
+          "status": "healthy",
+          "description": "PostgreSQL database server",
+          "ports": [
+            {
+              "port": 5432,
+              "protocol": "tcp"
+            }
+          ],
+          "pid": 1382,
+          "uptimeSeconds": 604800,
+          "path": "/usr/lib/postgresql/16/bin/postgres",
+          "commandLine": "/usr/lib/postgresql/16/bin/postgres [ARGUMENTS REDACTED]"
+        },
+        {
+          "name": "docker.service",
+          "actualState": "active",
+          "expectedState": "active",
+          "since": "2026-09-20T16:00:00.000Z",
+          "status": "healthy",
+          "description": "Docker application container engine",
+          "ports": [],
+          "pid": 1521,
+          "uptimeSeconds": 604800,
+          "path": "/usr/bin/dockerd",
+          "commandLine": "/usr/bin/dockerd [ARGUMENTS REDACTED]"
+        },
+        {
+          "name": "cron.service",
+          "actualState": "active",
+          "expectedState": "active",
+          "since": "2026-09-20T16:00:00.000Z",
+          "status": "healthy",
+          "description": "Regular background program processing daemon",
+          "ports": [],
+          "pid": 891,
+          "uptimeSeconds": 604800,
+          "path": "/usr/sbin/cron",
+          "commandLine": "/usr/sbin/cron [ARGUMENTS REDACTED]"
+        },
+        {
+          "name": "myapp.service",
+          "actualState": "failed",
+          "expectedState": "active",
+          "since": "2026-09-27T15:42:00.000Z",
+          "status": "critical",
+          "description": "Demo application service",
+          "ports": null,
+          "pid": null,
+          "uptimeSeconds": null,
+          "path": null,
+          "commandLine": null
+        }
       ],
       "status": "critical"
     },
     "processes": {
       "items": [
-        { "name": "nginx", "pid": 1240, "state": "running", "user": "root", "cpuPercentOfHost": 0.9, "memoryPercent": 0.8, "description": "HTTP server and reverse proxy", "location": "/usr/sbin/nginx", "startedAt": "2026-09-20T16:00:00.000Z", "commandLine": "/usr/sbin/nginx -g daemon off;" },
-        { "name": "postgres", "pid": 1382, "state": "running", "user": "postgres", "cpuPercentOfHost": 1.4, "memoryPercent": 4.2, "description": "PostgreSQL database server", "location": "/usr/lib/postgresql/16/bin/postgres", "startedAt": "2026-09-20T16:00:00.000Z", "commandLine": "/usr/lib/postgresql/16/bin/postgres -D /var/lib/postgresql/16/main" },
-        { "name": "dockerd", "pid": 1521, "state": "running", "user": "root", "cpuPercentOfHost": 2.1, "memoryPercent": 3.6, "description": "Docker application container engine", "location": "/usr/bin/dockerd", "startedAt": "2026-09-20T16:00:00.000Z", "commandLine": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock" },
-        { "name": "cron", "pid": 891, "state": "running", "user": "root", "cpuPercentOfHost": 0.1, "memoryPercent": 0.2, "description": "Regular background program processing daemon", "location": "/usr/sbin/cron", "startedAt": "2026-09-20T16:00:00.000Z", "commandLine": "/usr/sbin/cron -f -P" }
+        {
+          "name": "nginx",
+          "pid": 1240,
+          "state": "running",
+          "user": "root",
+          "cpuPercentOfHost": 0.9,
+          "memoryPercent": 0.8,
+          "description": "HTTP server and reverse proxy",
+          "location": "/usr/sbin/nginx",
+          "startedAt": "2026-09-20T16:00:00.000Z",
+          "commandLine": "/usr/sbin/nginx [ARGUMENTS REDACTED]"
+        },
+        {
+          "name": "postgres",
+          "pid": 1382,
+          "state": "running",
+          "user": "postgres",
+          "cpuPercentOfHost": 1.4,
+          "memoryPercent": 4.2,
+          "description": "PostgreSQL database server",
+          "location": "/usr/lib/postgresql/16/bin/postgres",
+          "startedAt": "2026-09-20T16:00:00.000Z",
+          "commandLine": "/usr/lib/postgresql/16/bin/postgres [ARGUMENTS REDACTED]"
+        },
+        {
+          "name": "dockerd",
+          "pid": 1521,
+          "state": "running",
+          "user": "root",
+          "cpuPercentOfHost": 2.1,
+          "memoryPercent": 3.6,
+          "description": "Docker application container engine",
+          "location": "/usr/bin/dockerd",
+          "startedAt": "2026-09-20T16:00:00.000Z",
+          "commandLine": "/usr/bin/dockerd [ARGUMENTS REDACTED]"
+        },
+        {
+          "name": "cron",
+          "pid": 891,
+          "state": "running",
+          "user": "root",
+          "cpuPercentOfHost": 0.1,
+          "memoryPercent": 0.2,
+          "description": "Regular background program processing daemon",
+          "location": "/usr/sbin/cron",
+          "startedAt": "2026-09-20T16:00:00.000Z",
+          "commandLine": "/usr/sbin/cron [ARGUMENTS REDACTED]"
+        }
       ]
     }
   },
@@ -78,18 +275,126 @@
     "range": "60m",
     "stepSeconds": 300,
     "samples": [
-      { "timestamp": "2026-09-27T15:05:00.000Z", "cpuUsagePercent": 30, "memoryAvailablePercent": 23, "swapUsedPercent": 17, "diskReadBytesPerSecond": 550000, "diskWriteBytesPerSecond": 390000, "networkRxBytesPerSecond": 700000, "networkTxBytesPerSecond": 350000 },
-      { "timestamp": "2026-09-27T15:10:00.000Z", "cpuUsagePercent": 36, "memoryAvailablePercent": 22, "swapUsedPercent": 18, "diskReadBytesPerSecond": 620000, "diskWriteBytesPerSecond": 430000, "networkRxBytesPerSecond": 760000, "networkTxBytesPerSecond": 390000 },
-      { "timestamp": "2026-09-27T15:15:00.000Z", "cpuUsagePercent": 33, "memoryAvailablePercent": 22, "swapUsedPercent": 19, "diskReadBytesPerSecond": 480000, "diskWriteBytesPerSecond": 520000, "networkRxBytesPerSecond": 810000, "networkTxBytesPerSecond": 410000 },
-      { "timestamp": "2026-09-27T15:20:00.000Z", "cpuUsagePercent": 41, "memoryAvailablePercent": 21, "swapUsedPercent": 19, "diskReadBytesPerSecond": 790000, "diskWriteBytesPerSecond": 610000, "networkRxBytesPerSecond": 900000, "networkTxBytesPerSecond": 430000 },
-      { "timestamp": "2026-09-27T15:25:00.000Z", "cpuUsagePercent": 38, "memoryAvailablePercent": 21, "swapUsedPercent": 20, "diskReadBytesPerSecond": 880000, "diskWriteBytesPerSecond": 740000, "networkRxBytesPerSecond": 980000, "networkTxBytesPerSecond": 470000 },
-      { "timestamp": "2026-09-27T15:30:00.000Z", "cpuUsagePercent": 49, "memoryAvailablePercent": 20, "swapUsedPercent": 21, "diskReadBytesPerSecond": 920000, "diskWriteBytesPerSecond": 800000, "networkRxBytesPerSecond": 1100000, "networkTxBytesPerSecond": 510000 },
-      { "timestamp": "2026-09-27T15:35:00.000Z", "cpuUsagePercent": 45, "memoryAvailablePercent": 19, "swapUsedPercent": 21, "diskReadBytesPerSecond": 1010000, "diskWriteBytesPerSecond": 890000, "networkRxBytesPerSecond": 1180000, "networkTxBytesPerSecond": 550000 },
-      { "timestamp": "2026-09-27T15:40:00.000Z", "cpuUsagePercent": 54, "memoryAvailablePercent": 18, "swapUsedPercent": 22, "diskReadBytesPerSecond": 1250000, "diskWriteBytesPerSecond": 980000, "networkRxBytesPerSecond": 1260000, "networkTxBytesPerSecond": 610000 },
-      { "timestamp": "2026-09-27T15:45:00.000Z", "cpuUsagePercent": 47, "memoryAvailablePercent": 18, "swapUsedPercent": 23, "diskReadBytesPerSecond": 1430000, "diskWriteBytesPerSecond": 1100000, "networkRxBytesPerSecond": 1350000, "networkTxBytesPerSecond": 640000 },
-      { "timestamp": "2026-09-27T15:50:00.000Z", "cpuUsagePercent": 51, "memoryAvailablePercent": 17, "swapUsedPercent": 24, "diskReadBytesPerSecond": 1580000, "diskWriteBytesPerSecond": 1170000, "networkRxBytesPerSecond": 1420000, "networkTxBytesPerSecond": 670000 },
-      { "timestamp": "2026-09-27T15:55:00.000Z", "cpuUsagePercent": 46, "memoryAvailablePercent": 16, "swapUsedPercent": 24, "diskReadBytesPerSecond": 1660000, "diskWriteBytesPerSecond": 1250000, "networkRxBytesPerSecond": 1510000, "networkTxBytesPerSecond": 700000 },
-      { "timestamp": "2026-09-27T16:00:00.000Z", "cpuUsagePercent": 42, "memoryAvailablePercent": 16, "swapUsedPercent": 25, "diskReadBytesPerSecond": 1835008, "diskWriteBytesPerSecond": 917504, "networkRxBytesPerSecond": 1048576, "networkTxBytesPerSecond": 524288 }
+      {
+        "timestamp": "2026-09-27T15:05:00.000Z",
+        "cpuUsagePercent": 30,
+        "memoryAvailablePercent": 23,
+        "swapUsedPercent": 17,
+        "diskReadBytesPerSecond": 550000,
+        "diskWriteBytesPerSecond": 390000,
+        "networkRxBytesPerSecond": 700000,
+        "networkTxBytesPerSecond": 350000
+      },
+      {
+        "timestamp": "2026-09-27T15:10:00.000Z",
+        "cpuUsagePercent": 36,
+        "memoryAvailablePercent": 22,
+        "swapUsedPercent": 18,
+        "diskReadBytesPerSecond": 620000,
+        "diskWriteBytesPerSecond": 430000,
+        "networkRxBytesPerSecond": 760000,
+        "networkTxBytesPerSecond": 390000
+      },
+      {
+        "timestamp": "2026-09-27T15:15:00.000Z",
+        "cpuUsagePercent": 33,
+        "memoryAvailablePercent": 22,
+        "swapUsedPercent": 19,
+        "diskReadBytesPerSecond": 480000,
+        "diskWriteBytesPerSecond": 520000,
+        "networkRxBytesPerSecond": 810000,
+        "networkTxBytesPerSecond": 410000
+      },
+      {
+        "timestamp": "2026-09-27T15:20:00.000Z",
+        "cpuUsagePercent": 41,
+        "memoryAvailablePercent": 21,
+        "swapUsedPercent": 19,
+        "diskReadBytesPerSecond": 790000,
+        "diskWriteBytesPerSecond": 610000,
+        "networkRxBytesPerSecond": 900000,
+        "networkTxBytesPerSecond": 430000
+      },
+      {
+        "timestamp": "2026-09-27T15:25:00.000Z",
+        "cpuUsagePercent": 38,
+        "memoryAvailablePercent": 21,
+        "swapUsedPercent": 20,
+        "diskReadBytesPerSecond": 880000,
+        "diskWriteBytesPerSecond": 740000,
+        "networkRxBytesPerSecond": 980000,
+        "networkTxBytesPerSecond": 470000
+      },
+      {
+        "timestamp": "2026-09-27T15:30:00.000Z",
+        "cpuUsagePercent": 49,
+        "memoryAvailablePercent": 20,
+        "swapUsedPercent": 21,
+        "diskReadBytesPerSecond": 920000,
+        "diskWriteBytesPerSecond": 800000,
+        "networkRxBytesPerSecond": 1100000,
+        "networkTxBytesPerSecond": 510000
+      },
+      {
+        "timestamp": "2026-09-27T15:35:00.000Z",
+        "cpuUsagePercent": 45,
+        "memoryAvailablePercent": 19,
+        "swapUsedPercent": 21,
+        "diskReadBytesPerSecond": 1010000,
+        "diskWriteBytesPerSecond": 890000,
+        "networkRxBytesPerSecond": 1180000,
+        "networkTxBytesPerSecond": 550000
+      },
+      {
+        "timestamp": "2026-09-27T15:40:00.000Z",
+        "cpuUsagePercent": 54,
+        "memoryAvailablePercent": 18,
+        "swapUsedPercent": 22,
+        "diskReadBytesPerSecond": 1250000,
+        "diskWriteBytesPerSecond": 980000,
+        "networkRxBytesPerSecond": 1260000,
+        "networkTxBytesPerSecond": 610000
+      },
+      {
+        "timestamp": "2026-09-27T15:45:00.000Z",
+        "cpuUsagePercent": 47,
+        "memoryAvailablePercent": 18,
+        "swapUsedPercent": 23,
+        "diskReadBytesPerSecond": 1430000,
+        "diskWriteBytesPerSecond": 1100000,
+        "networkRxBytesPerSecond": 1350000,
+        "networkTxBytesPerSecond": 640000
+      },
+      {
+        "timestamp": "2026-09-27T15:50:00.000Z",
+        "cpuUsagePercent": 51,
+        "memoryAvailablePercent": 17,
+        "swapUsedPercent": 24,
+        "diskReadBytesPerSecond": 1580000,
+        "diskWriteBytesPerSecond": 1170000,
+        "networkRxBytesPerSecond": 1420000,
+        "networkTxBytesPerSecond": 670000
+      },
+      {
+        "timestamp": "2026-09-27T15:55:00.000Z",
+        "cpuUsagePercent": 46,
+        "memoryAvailablePercent": 16,
+        "swapUsedPercent": 24,
+        "diskReadBytesPerSecond": 1660000,
+        "diskWriteBytesPerSecond": 1250000,
+        "networkRxBytesPerSecond": 1510000,
+        "networkTxBytesPerSecond": 700000
+      },
+      {
+        "timestamp": "2026-09-27T16:00:00.000Z",
+        "cpuUsagePercent": 42,
+        "memoryAvailablePercent": 16,
+        "swapUsedPercent": 25,
+        "diskReadBytesPerSecond": 1835008,
+        "diskWriteBytesPerSecond": 917504,
+        "networkRxBytesPerSecond": 1048576,
+        "networkTxBytesPerSecond": 524288
+      }
     ]
   }
 }

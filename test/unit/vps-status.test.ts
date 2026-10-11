@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { formatBytes, formatProcessPercent, formatProcessStartedAt, formatServicePorts, formatUptime, percent, sortProcessesByCpu, VPS_STATUS_META } from '../../app/utils/vps-status'
 
 describe('VPS dashboard formatting and state labels', () => {
-  it('uses consistent semantic colors and labels for each health state', () => {
-    expect(VPS_STATUS_META.healthy).toMatchObject({ label: 'Healthy', color: 'success' })
-    expect(VPS_STATUS_META.warning).toMatchObject({ label: 'Warning', color: 'warning' })
-    expect(VPS_STATUS_META.critical).toMatchObject({ label: 'Critical', color: 'error' })
+  it('uses consistent monochrome colors and distinct labels for each health state', () => {
+    expect(VPS_STATUS_META.healthy).toMatchObject({ label: 'Healthy', color: 'neutral' })
+    expect(VPS_STATUS_META.warning).toMatchObject({ label: 'Warning', color: 'neutral' })
+    expect(VPS_STATUS_META.critical).toMatchObject({ label: 'Critical', color: 'neutral' })
     expect(VPS_STATUS_META.unknown).toMatchObject({ label: 'Unknown', color: 'neutral' })
   })
 

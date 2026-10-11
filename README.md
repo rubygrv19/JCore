@@ -1,4 +1,4 @@
-# Dashboard Minimal
+# JCore
 
 A multi-page dashboard built with Nuxt 4, Nuxt UI, Nuxt Fonts (Inter), Nuxt Icon, Nuxt Image, and Pinia. The VPS page reads live Linux host metrics through a same-origin Nuxt server endpoint connected to loopback Prometheus and Node Exporter. On macOS and Windows, it uses clearly labeled fixture data for development. Settings remain mock configuration held only in browser memory; external service APIs are not connected.
 
@@ -32,6 +32,10 @@ See [AGENTS.md](./AGENTS.md) for project rules and the AI-assisted development w
 The dashboard pages require an authenticated administrator session. `POST /api/auth/login` validates the configured credentials and issues an encrypted HttpOnly cookie session; private API routes also check that session server-side. The session secret is `NUXT_SESSION_PASSWORD` and must be set to a unique value of at least 32 characters in production.
 
 The VPS snapshot endpoint is `GET /api/vps/dashboard`. It returns resource metrics, 60-minute trends, current systemd states, and Prometheus pending/firing alerts. On non-Linux systems it returns HTTP 501 and the UI loads the validated demo fixture. The process endpoint is `GET /api/vps/processes`; on Linux it reads `/proc`, and on other systems the UI continues to show explicitly labeled demo processes. See [the dashboard response contract](./docs/vps-response-contract.md) and [the process snapshot contract](./docs/vps-processes.schema.json).
+
+The application admits at most 10 sign-in attempts per minute across all clients of one Node process, returning HTTP 429 and Retry-After when exhausted. This bounded in-memory guard resets on process restart. For multiple instances, use a shared limiter at the trusted reverse proxy. The app does not trust client-supplied forwarding headers for throttling.
+
+See [the Ubuntu verification checklist](./ops/vps/VERIFY.md) before treating telemetry as production-ready. Build on Linux: a macOS `.output` contains platform-specific image binaries and must not be copied to Ubuntu.
 
 ## Linux VPS metrics
 

@@ -1,16 +1,21 @@
 import { describe, expect, it } from 'vitest'
 import fixture from '../../public/mock/vps-dashboard.json'
+import examples from '../../docs/vps-response-examples.json'
 import { parseVpsDashboardResponse } from '../../app/utils/vps-response'
 import { getActiveProcesses, paginateItems } from '../../app/utils/vps-status'
 
 describe('VPS backend reference fixture', () => {
+  it.each(Object.entries(examples))('validates the complete %s response example', (_name, response) => {
+    expect(parseVpsDashboardResponse(response)).toEqual(response)
+  })
+
   it('matches the published response schema', () => {
     expect(parseVpsDashboardResponse(fixture)).toEqual(fixture)
     expect(() => parseVpsDashboardResponse({ ...fixture, current: null })).toThrow('VPS response does not match the data contract.')
   })
 
   it('keeps process CPU values within host capacity and includes dashboard alert records', () => {
-    expect(fixture.schemaVersion).toBe('1.3')
+    expect(fixture.schemaVersion).toBe('1.4')
     expect(fixture.dataMode).toBe('mock')
     expect(fixture.alerts).toHaveLength(3)
     expect(fixture.alerts.some(alert => alert.resource === 'services' && alert.target === 'myapp.service')).toBe(true)

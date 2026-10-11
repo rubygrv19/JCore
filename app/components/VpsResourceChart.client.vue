@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Chart as ChartJS, CategoryScale, Filler, LinearScale, LineElement, PointElement, Tooltip, type ChartData, type ChartOptions, type TooltipItem } from 'chart.js'
+import { Chart as ChartJS, CategoryScale, Filler, Legend, LinearScale, LineElement, PointElement, Tooltip, type ChartData, type ChartOptions, type TooltipItem } from 'chart.js'
 import { Line } from 'vue-chartjs'
 
-ChartJS.register(CategoryScale, Filler, LinearScale, LineElement, PointElement, Tooltip)
+ChartJS.register(CategoryScale, Filler, Legend, LinearScale, LineElement, PointElement, Tooltip)
 
 const props = defineProps<{
   labels: string[]
@@ -16,15 +16,19 @@ const isDark = computed(() => colorMode.value === 'dark')
 const prefersReducedMotion = import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const data = computed<ChartData<'line'>>(() => ({
   labels: props.labels,
-  datasets: props.datasets.map(series => ({
+  datasets: props.datasets.map((series, index) => ({
     label: series.label,
     data: series.values,
     borderColor: series.color,
     backgroundColor: `${series.color}1a`,
     fill: props.datasets.length === 1,
     tension: 0.34,
+    borderDash: index === 0 ? [] : [6, 4],
     pointRadius: 0,
     pointHoverRadius: 4,
+    pointStyle: index === 0 ? 'circle' : 'rectRot',
+    pointHoverBackgroundColor: series.color,
+    pointHoverBorderColor: isDark.value ? '#090909' : '#ffffff',
     borderWidth: 2,
     spanGaps: false
   }))
