@@ -40,9 +40,11 @@ async function signIn() {
     const statusCode = (error as { statusCode?: number, status?: number }).statusCode
       ?? (error as { status?: number }).status
 
-    errorMessage.value = statusCode === 503
-      ? 'Sign-in is not configured. Ask the administrator to configure the server credentials.'
-      : 'Email address or password is incorrect.'
+    errorMessage.value = statusCode === 429
+      ? 'Too many sign-in attempts. Wait one minute and try again.'
+      : statusCode === 503
+        ? 'Sign-in is not configured. Ask the administrator to configure the server credentials.'
+        : statusCode === 401 ? 'Email address or password is incorrect.' : 'Sign-in is temporarily unavailable. Please try again.'
     password.value = ''
   } finally {
     isSubmitting.value = false
@@ -52,12 +54,12 @@ async function signIn() {
 
 <template>
   <main class="flex min-h-svh flex-col bg-app-canvas text-gray-900 dark:bg-app-canvas-dark dark:text-white">
-    <header class="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8 sm:py-6">
+    <header class="mx-auto flex w-full max-w-7xl items-center justify-between border-b border-gray-300 px-5 py-5 dark:border-gray-700 sm:px-8 sm:py-6">
       <NuxtLink
         to="/login"
-        class="inline-flex min-h-11 cursor-pointer items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+        class="inline-flex min-h-11 cursor-pointer items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
       >
-        <span class="grid size-9 place-items-center rounded-xl bg-primary text-white">
+        <span class="grid size-9 place-items-center rounded-none bg-primary text-white">
           <UIcon
             name="i-lucide-panels-top-left"
             class="size-5"
@@ -74,19 +76,24 @@ async function signIn() {
       />
     </header>
 
-    <section class="flex flex-1 items-center justify-center px-5 py-8 sm:px-8 sm:py-12">
-      <div class="w-full max-w-md">
-        <div class="mb-6 text-center">
-          <h1 class="text-3xl font-semibold tracking-tight sm:text-[2rem]">
+    <section class="mx-auto grid w-full max-w-7xl flex-1 items-center gap-10 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-6">
+        <div class="max-w-2xl">
+          <p class="mb-5 text-sm font-semibold text-muted dark:text-muted">
+            JCore / Administrator access
+          </p>
+          <h1 class="text-4xl font-bold tracking-[-0.045em] sm:text-5xl lg:text-6xl">
             Sign in to JCore
           </h1>
-          <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400">
+          <p class="mt-5 max-w-lg text-base leading-7 text-gray-600 dark:text-muted">
             Use your administrator account to access the service dashboard.
           </p>
         </div>
+      </div>
 
+      <div class="lg:col-span-5 lg:col-start-8">
         <UCard
-          class="rounded-2xl border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-app-sidebar-dark"
+          class="rounded-none border-gray-300 bg-white shadow-none dark:border-gray-700 dark:bg-app-sidebar-dark"
           :ui="{ body: 'p-5 sm:p-7' }"
         >
           <UAlert
@@ -161,7 +168,7 @@ async function signIn() {
       </div>
     </section>
 
-    <footer class="px-5 pb-5 text-center text-xs text-gray-500 dark:text-gray-500 sm:pb-6">
+    <footer class="mx-auto w-full max-w-7xl border-t border-gray-300 px-5 py-4 text-xs text-muted dark:border-gray-700 dark:text-muted sm:px-8">
       JCore · Service dashboard
     </footer>
   </main>

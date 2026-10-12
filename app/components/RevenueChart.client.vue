@@ -14,14 +14,14 @@ const data = computed(() => ({
   datasets: [{
     label: 'Revenue',
     data: revenue,
-    borderColor: '#10b981',
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderColor: isDark.value ? '#f4f4f5' : '#18181b',
+    backgroundColor: isDark.value ? 'rgba(244, 244, 245, 0.12)' : 'rgba(24, 24, 27, 0.1)',
     fill: true,
     tension: 0.38,
     pointRadius: 0,
     pointHoverRadius: 5,
-    pointHoverBackgroundColor: '#10b981',
-    pointHoverBorderColor: isDark.value ? '#151719' : '#ffffff',
+    pointHoverBackgroundColor: isDark.value ? '#f4f4f5' : '#18181b',
+    pointHoverBorderColor: isDark.value ? '#121212' : '#ffffff',
     pointHoverBorderWidth: 3
   }]
 }))

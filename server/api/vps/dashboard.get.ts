@@ -10,8 +10,8 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const { vpsPrometheusUrl } = useRuntimeConfig()
-    return parseVpsDashboardResponse(await collectVpsDashboard(vpsPrometheusUrl))
+    const { vpsPrometheusUrl, vpsExpectedServices } = useRuntimeConfig()
+    return parseVpsDashboardResponse(await collectVpsDashboard(vpsPrometheusUrl, new Date(), vpsExpectedServices))
   } catch {
     throw createError({ statusCode: 503, statusMessage: 'The VPS metrics source is unavailable.' })
   }

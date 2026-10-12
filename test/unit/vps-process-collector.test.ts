@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateHostCpuPercent, mapProcState, parseProcStat, redactCommandLine } from '../../server/utils/vps-processes'
+import { calculateHostCpuPercent, mapProcState, parseProcStat, processStartedAt, redactCommandLine } from '../../server/utils/vps-processes'
 import { parseVpsProcessesResponse } from '../../app/utils/vps-processes-client'
 
 describe('Linux process collector parsers', () => {
@@ -25,9 +25,25 @@ describe('Linux process collector parsers', () => {
 
   it('redacts common credential arguments and returns null for empty command lines', () => {
     expect(redactCommandLine('agent --api-key topsecret --password=hidden TOKEN=abc https://user:pass@example.com')).toBe(
-      'agent --api-key [REDACTED] --password=[REDACTED] TOKEN=[REDACTED] https://[REDACTED]@example.com'
+      'agent [ARGUMENTS REDACTED]'
     )
     expect(redactCommandLine('\0\0')).toBeNull()
+  })
+
+  it('never exposes positional, header, spaced, database URL, or unknown option values', () => {
+    for (const value of [
+      'curl\0-H\0Authorization: Bearer PRIVATE_TOKEN\0https://example.test\0',
+      'worker\0--password\0two word PRIVATE_PASSWORD\0',
+      'worker\0--database-url=postgres://user:PRIVATE_PASSWORD@localhost/db\0',
+      'worker\0-pPRIVATE_PASSWORD\0',
+      'worker\0PRIVATE_PASSWORD\0'
+    ]) expect(redactCommandLine(value)).not.toContain('PRIVATE_')
+    expect(redactCommandLine('/usr/bin/worker\0')).toBe('/usr/bin/worker')
+  })
+
+  it('converts process start ticks to time since boot, not process age', () => {
+    expect(processStartedAt(1_700_000_000, 60_000, 100)).toBe(new Date(1_700_000_600_000).toISOString())
+    expect(processStartedAt(1_700_000_000, 60_000, null)).toBeNull()
   })
 })
 

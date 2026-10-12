@@ -1,9 +1,9 @@
 import type { VpsStatus } from '~/types/vps'
 
-export const VPS_STATUS_META: Record<VpsStatus, { label: string, color: 'success' | 'warning' | 'error' | 'neutral', icon: string }> = {
-  healthy: { label: 'Healthy', color: 'success', icon: 'i-lucide-circle-check' },
-  warning: { label: 'Warning', color: 'warning', icon: 'i-lucide-triangle-alert' },
-  critical: { label: 'Critical', color: 'error', icon: 'i-lucide-circle-x' },
+export const VPS_STATUS_META: Record<VpsStatus, { label: string, color: 'neutral', icon: string }> = {
+  healthy: { label: 'Healthy', color: 'neutral', icon: 'i-lucide-circle-check' },
+  warning: { label: 'Warning', color: 'neutral', icon: 'i-lucide-triangle-alert' },
+  critical: { label: 'Critical', color: 'neutral', icon: 'i-lucide-circle-x' },
   unknown: { label: 'Unknown', color: 'neutral', icon: 'i-lucide-circle-help' }
 }
 

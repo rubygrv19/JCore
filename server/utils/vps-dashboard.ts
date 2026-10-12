@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { $fetch } from 'ofetch'
 import type { VpsDashboardResponse, VpsStatus } from '~/types/vps'
+import { collectSystemdUnits, parseServiceExpectations } from './vps-systemd'
 
 interface PromSeries {
   metric: Record<string, string>
@@ -26,6 +27,7 @@ const filesystemFilter = '{fstype!~"autofs|binfmt_misc|bpf|cgroup.*|configfs|deb
 const networkFilter = '{device!~"lo|docker.*|veth.*|br.*"}'
 
 const currentQueries = {
+  sampledAt: 'min(timestamp({__name__=~"node_cpu_seconds_total|node_memory_MemTotal_bytes|node_memory_MemAvailable_bytes|node_filesystem_size_bytes|node_network_receive_bytes_total",job="node-exporter"}))',
   up: 'up{job="node-exporter"}',
   uname: 'node_uname_info',
   boot: 'node_boot_time_seconds',
@@ -83,7 +85,7 @@ function seriesValue(series: PromSeries | undefined): number | null {
 }
 
 export function statusForAlert(alerts: VpsDashboardResponse['alerts'], resource: VpsDashboardResponse['alerts'][number]['resource'], target: string | null, hasValue: boolean): VpsStatus {
-  const matches = alerts.filter(alert => alert.resource === resource && (target === null || alert.target === target))
+  const matches = alerts.filter(alert => alert.state === 'firing' && alert.resource === resource && (target === null || alert.target === target))
   if (matches.some(alert => alert.severity === 'critical')) return 'critical'
   if (matches.some(alert => alert.severity === 'warning')) return 'warning'
   return hasValue ? 'healthy' : 'unknown'
@@ -93,10 +95,10 @@ function seriesKey(labels: Record<string, string>): string {
   return [labels.instance, labels.mountpoint, labels.fstype, labels.device].join('|')
 }
 
-function statusForHealth(alerts: VpsDashboardResponse['alerts'], hasMetrics: boolean, collectorDown: boolean): VpsStatus {
+export function statusForHealth(alerts: VpsDashboardResponse['alerts'], hasMetrics: boolean, collectorDown: boolean): VpsStatus {
   if (collectorDown) return 'critical'
-  if (alerts.some(alert => alert.severity === 'critical')) return 'critical'
-  if (alerts.some(alert => alert.severity === 'warning')) return 'warning'
+  if (alerts.some(alert => alert.state === 'firing' && alert.severity === 'critical')) return 'critical'
+  if (alerts.some(alert => alert.state === 'firing' && alert.severity === 'warning')) return 'warning'
   return hasMetrics ? 'healthy' : 'unknown'
 }
 
@@ -136,7 +138,8 @@ async function getOsName(): Promise<string | null> {
   }
 }
 
-export async function collectVpsDashboard(prometheusUrl: string, collectedAt = new Date()): Promise<VpsDashboardResponse> {
+export async function collectVpsDashboard(prometheusUrl: string, collectedAt = new Date(), expectedServices = '{}'): Promise<VpsDashboardResponse> {
+  const expectations = parseServiceExpectations(expectedServices)
   const base = new URL(prometheusUrl)
   if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password || base.search || base.hash || !['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname)) {
     throw new Error('Prometheus must use a credential-free loopback URL.')
@@ -231,7 +234,7 @@ export async function collectVpsDashboard(prometheusUrl: string, collectedAt = n
     const state = item.metric.state
     if (name && state) unitsByName.set(name, state)
   }
-  const units = [...unitsByName.entries()].map(([name, actualState]) => ({
+  const fallbackUnits = [...unitsByName.entries()].map(([name, actualState]) => ({
     name,
     actualState,
     expectedState: 'unknown' as const,
@@ -244,6 +247,7 @@ export async function collectVpsDashboard(prometheusUrl: string, collectedAt = n
     path: null,
     commandLine: null
   })).sort((a, b) => a.name.localeCompare(b.name))
+  const { units, available: systemdAvailable } = await collectSystemdUnits(fallbackUnits, expectations, collectedAt)
   const activeServices = units.filter(unit => unit.actualState === 'active').length
   const failedServices = units.filter(unit => unit.actualState === 'failed').length
   const load = (key: 'load1' | 'load5' | 'load15') => getValue(key)
@@ -275,19 +279,35 @@ export async function collectVpsDashboard(prometheusUrl: string, collectedAt = n
   const memoryStatus = statusForAlert(alerts, 'memory', null, memoryAvailableBytes !== null && memoryTotalBytes !== null)
   const cpuStatus = statusForAlert(alerts, 'cpu', null, cpuUsagePercent !== null)
   const filesystemStatus = statusForAlert(alerts, 'storage', null, filesystems.some(filesystem => filesystem.usedBytes !== null))
-  const serviceStatus = failedServices > 0 ? 'critical' as const : 'unknown' as const
-  const metricsAvailable = [cpuUsagePercent, memoryTotalBytes, memoryAvailableBytes, filesystems.length ? 1 : null, interfaces.length ? 1 : null].some(value => value !== null)
-  const healthStatus = statusForHealth(alerts, metricsAvailable, collectorDown)
-  const healthReasons = alerts.map(alert => alert.description)
+  const serviceStatus = units.some(unit => unit.status === 'critical') ? 'critical' as const : units.length && units.every(unit => unit.status === 'healthy') ? 'healthy' as const : 'unknown' as const
+  const missingMetrics = [
+    ['exporter', getValue('up')], ['cpu', cpuUsagePercent], ['memoryTotal', memoryTotalBytes], ['memoryAvailable', memoryAvailableBytes],
+    ['filesystem', filesystems.length && filesystems.every(item => item.usedBytes !== null) ? 1 : null],
+    ['network', interfaces.length && interfaces.every(item => item.rxBytesPerSecond !== null && item.txBytesPerSecond !== null) ? 1 : null],
+    ['systemd', systemdAvailable ? 1 : null]
+  ].filter(([, value]) => value === null).map(([name]) => String(name))
+  const sampleSeconds = getValue('sampledAt')
+  const sampledAt = sampleSeconds !== null && sampleSeconds > 0 ? new Date(sampleSeconds * 1000).toISOString() : null
+  const stale = sampleSeconds !== null && collectedAt.getTime() / 1000 - sampleSeconds >= 60
+  if (!sampledAt) missingMetrics.push('sampleTimestamp')
+  const sourceStatus = collectorDown ? 'unavailable' : stale ? 'stale' : missingMetrics.length ? 'partial' : 'complete'
+  const healthStatus = serviceStatus === 'critical' ? 'critical' : statusForHealth(alerts, sourceStatus === 'complete', collectorDown)
+  const healthReasons = alerts.filter(alert => alert.state === 'firing').map(alert => alert.description)
+  if (missingMetrics.length) healthReasons.push(`Unavailable sources: ${missingMetrics.join(', ')}.`)
+  if (stale) healthReasons.push('The latest exporter samples are at least 60 seconds old.')
+  for (const unit of units.filter(unit => unit.status === 'critical')) {
+    healthReasons.push(`${unit.name}: ${unit.actualState}; expected ${unit.expectedState}.`)
+  }
   if (collectorDown && !healthReasons.includes('Prometheus cannot scrape the local Node Exporter.')) healthReasons.unshift('Prometheus cannot scrape the local Node Exporter.')
   if (healthStatus === 'unknown' && healthReasons.length === 0) healthReasons.push('Host metrics are not available from the configured collector.')
 
   const uname = current.uname[0]?.metric
 
   return {
-    schemaVersion: '1.3',
+    schemaVersion: '1.4',
     dataMode: 'live',
     collectedAt: collectedAt.toISOString(),
+    source: { sampledAt, status: sourceStatus, missingMetrics, systemdDetailsAvailable: systemdAvailable },
     host: {
       hostname: uname?.nodename ?? null,
       os: os ?? (uname?.sysname && uname.release ? `${uname.sysname} ${uname.release}` : null),
