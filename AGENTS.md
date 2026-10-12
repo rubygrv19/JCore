@@ -6,13 +6,13 @@ These rules apply to every AI-assisted change in this repository. Read this file
 
 - Use English for all user-facing text across the application: navigation, headings, labels, descriptions, buttons, forms, status names, charts, tooltips, empty/loading/error states, confirmation text, accessibility labels, and metadata.
 - Keep the product's proper name and technical terms unchanged. Use `en-US` for user-facing date, time, number, and relative-time formatting; keep the `Asia/Jakarta` time zone unless the user changes it.
-- Human-readable text returned by a service API, including descriptions and health reasons, must also be English. Do not silently translate or invent backend data in the browser.
+- Generated service API descriptions, health reasons, and errors must also be English. Preserve original external content such as GitHub commit messages, repository descriptions, file names, and patches in its source language. Do not silently translate or invent backend data in the browser.
 - Do not invent product behavior, API contracts, endpoints, payloads, credentials, or data presented as real. Ask the user when a missing decision materially affects behavior or architecture.
 - Use clearly labeled mock data while a service or API is unavailable. Never present mock values as live data.
 - Keep service-specific behavior and configuration isolated. VPS, Timeshit, Code Review, and Quota Tracker may use different API base URLs.
-- Service API requests are made directly from the browser. Each service API must allow the dashboard origin through CORS. The approved VPS telemetry exception uses same-origin Nuxt server endpoints to read the host-local Prometheus API; keep Prometheus and Node Exporter bound to loopback and do not expose them directly to the browser.
-- The backend/database owns persisted service configuration. Until that backend is specified and available, configuration is mock and non-persistent; do not persist it in localStorage or invent a backend schema.
-- Never put API secrets or private credentials in browser state, client-visible runtime config, or mock data. Redact secrets from command lines before returning telemetry. Ask before designing authentication or credential storage.
+- Direct browser requests to external service APIs require CORS for the dashboard origin. Approved exceptions use same-origin Nuxt endpoints: VPS reads the host-local Prometheus API and Timeshit reads GitHub with its PAT held only on the server. Keep Prometheus and Node Exporter bound to loopback. Never send a GitHub PAT to an arbitrary service Base URL.
+- The backend/database owns persisted service configuration. The approved Timeshit implementation persists its encrypted PAT, minimal connection metadata, and tracked repository selection in SQLite. Other unspecified backend configuration remains mock and non-persistent; do not persist it in localStorage or invent its backend schema.
+- Never put saved API secrets or private credentials in global browser state, client-visible runtime config, session cookies, or mock data. A user-entered Timeshit PAT may exist temporarily in the local Settings form draft for submission; clear it on success/close and never return a saved PAT through an API. Redact secrets from telemetry command lines. Ask before introducing a credential model beyond the approved Timeshit design.
 - Authentication is approved for one administrator configured only through server environment variables. Never add real credentials or session secrets to source, `.env.example`, client runtime config, browser state, or mock data. Guard every dashboard page with the global route middleware and every private server API route with `requireUserSession(event)`; middleware alone does not protect API routes.
 
 ## Required stack and Nuxt conventions
@@ -30,11 +30,14 @@ These rules apply to every AI-assisted change in this repository. Read this file
 ## API and data rules
 
 - Create an independent fetch client for each service, configured with that service's own base URL. Never route all services through one mutable global base URL.
+- Timeshit defaults to same-origin Nuxt endpoints. Preserve the per-service Base URL concept and distinguish it from the server's fixed GitHub API origin. External Timeshit backend support requires its own documented API/authentication contract; do not silently activate it or forward the PAT to it.
 - Keep API access behind service-specific client functions; UI code must not construct endpoint URLs ad hoc.
-- Until the user supplies API documentation or confirms a contract, implement only the agreed mock path and base URL configuration. The approved VPS collector reads Linux `/proc` through a Nuxt server endpoint; approved host metrics and current alerts come from the host-local Prometheus API through a separate Nuxt server endpoint. Expose only the documented snapshots. Do not guess endpoints, authentication, request/response shapes, retries, or business rules for other services.
+- Until the user supplies API documentation or confirms a contract, implement only the agreed mock path and base URL configuration. VPS has approved Linux `/proc` and host-local Prometheus collectors through Nuxt server endpoints. Timeshit has an approved server-side GitHub integration plan in `docs/timeshit-implementation-plan.md`; implement only when execution is requested and finalize its response contract first. Do not guess endpoints, authentication, response shapes, retries, or business rules for unspecified services.
 - Validate and normalize base URLs before use. Validate API responses at runtime against the documented contract before rendering them.
 - Keep the mock JSON, JSON Schema, TypeScript types, tests, and response-contract documentation aligned. Version intentional contract changes and update all related references together.
 - Preserve the meanings of `null`, empty arrays, units, timestamps, and status enums. Do not convert unknown values to zero or translate machine-readable keys/enums.
+- For Timeshit, derive commit authorship from the server-verified GitHub account, use all current remote branch histories of tracked repositories, deduplicate `(repositoryId, fullSha)`, and group by `authoredAt` in `Asia/Jakarta`. Respect the single fine-grained PAT's actual scope. Identity validation alone does not prove repository permissions; incomplete collection must expose coverage and must not appear as complete zero activity.
+- Keep private Timeshit connection/SQLite/crypto code in `server/`, shared contracts and pure utilities in `shared/`, and UI state in `app/`. Use built-in `node:crypto` with a stable private environment key for authenticated PAT encryption; keep the SQLite database outside public/build output directories and Git.
 - Provide clear loading, success, empty, stale-data, and error states. Keep errors useful without exposing credentials or sensitive payloads.
 
 ## UI, language, and accessibility
@@ -59,6 +62,7 @@ These rules apply to every AI-assisted change in this repository. Read this file
 
 ## Git and deployment
 
+- Use `development` for ongoing project work. Switch to and synchronize this branch before starting changes; use another branch only when the user explicitly requests it. Preserve any existing local work when switching or synchronizing.
 - Work locally first. Do not commit, push, publish, or deploy unless the user explicitly asks.
 - Do not discard, reset, or overwrite unrelated uncommitted work. Mention pre-existing changes when they affect the requested work.
 
