@@ -1,42 +1,77 @@
 # JCore
 
-A multi-page dashboard built with Nuxt 4, Nuxt UI, Nuxt Fonts (Inter), Nuxt Icon, Nuxt Image, and Pinia. The VPS page reads live Linux host metrics through a same-origin Nuxt server endpoint connected to loopback Prometheus and Node Exporter. On macOS and Windows, it uses clearly labeled fixture data for development. Settings remain mock configuration held only in browser memory; external service APIs are not connected.
+JCore is a personal, single-administrator service dashboard built with Nuxt 4 and Nuxt UI. Its visual direction is monochrome Swiss Style / International Typographic Style, with Inter typography and real Chart.js visualizations.
 
-Routes are defined in `app/pages/`: Dashboard (`/`), Settings (`/settings`), and services (`/services/:service`). Run the Nuxt Node server for the process endpoint; static generation does not include the collector.
+## Current capabilities
 
-## Development
+| Area | Existing behavior |
+| --- | --- |
+| Authentication | Server-configured administrator, sealed cookie session, protected dashboard routes and VPS APIs |
+| VPS | One local Linux host: CPU, memory/swap, filesystem/inodes, disk I/O, network, systemd, processes, and current alerts |
+| macOS / Windows | Development UI with labeled VPS fixtures; native live collectors are not implemented |
+| Dashboard | Coming Soon page |
+| Settings | Per-service draft configuration in Pinia memory; no backend persistence |
+| Timeshit | Coming Soon page; [approved implementation plan](docs/timeshit-implementation-plan.md), execution pending |
+| Code Review / Quota Tracker | Coming Soon pages; external integrations are not implemented |
+
+VPS telemetry comes from same-origin Nuxt endpoints, loopback Prometheus/Node Exporter, and Linux OS inspection. Settings does not connect an external VPS API. A configured Base URL for another service is currently a validated draft, not an active integration.
+
+## Start locally
+
+Use Node 22 (the current CI baseline) and the pnpm release declared in `package.json` (`pnpm@12.5.1`). Exact dependency resolution is recorded in `pnpm-lock.yaml`.
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 cp .env.example .env
-# Set NUXT_AUTH_ADMIN_EMAIL, NUXT_AUTH_ADMIN_PASSWORD, and NUXT_SESSION_PASSWORD in .env
+```
+
+Set these in the ignored `.env` before signing in:
+
+- `NUXT_AUTH_ADMIN_EMAIL`: a valid administrator email.
+- `NUXT_AUTH_ADMIN_PASSWORD`: a unique password of 15 to 1024 characters.
+- `NUXT_SESSION_PASSWORD`: a unique random secret of at least 32 characters.
+
+There are no bundled login credentials. Never commit real values. Then run:
+
+```bash
 pnpm dev
 ```
 
-Sign-in uses one administrator account configured on the server. Set a valid email, a unique password of at least 15 characters, and a session secret of at least 32 characters. Do not commit `.env`; use the deployment platform's secret manager for production. The login screen reports an unavailable configuration until all three values are set.
-
-Open the local address printed by Nuxt.
+Open the loopback URL printed by Nuxt and sign in at `/login`. macOS/Windows use labeled demo VPS data. For live Linux metrics, follow the [Ubuntu operations guide](ops/vps/VERIFY.md).
 
 ## Commands
 
-- `pnpm dev` — start the development server
-- `pnpm build` — build the Nuxt Node server in `.output/`
-- `pnpm start` — run the built server on `127.0.0.1` only
-- `pnpm preview` — preview the production build
-- `pnpm typecheck` — check TypeScript types
-- `pnpm lint` — run ESLint
-- `pnpm test` — run tests in `test/unit/` and `test/nuxt/`
+| Command | Purpose |
+| --- | --- |
+| `pnpm dev` | Development server bound to `127.0.0.1` |
+| `pnpm test` | Vitest unit and Nuxt-aware tests |
+| `pnpm typecheck` | Nuxt TypeScript check |
+| `pnpm lint` | ESLint |
+| `pnpm build` | Nuxt Node server build in `.output/` |
+| `pnpm start` | Built server bound to `127.0.0.1` by `scripts/start-local.mjs` |
+| `pnpm preview` | Nuxt production preview; the custom loopback start wrapper does not apply |
+| `pnpm generate` | Static generation tooling only; unsuitable for this app's auth and host APIs |
 
-See [AGENTS.md](./AGENTS.md) for project rules and the AI-assisted development workflow. See [the VPS response contract](./docs/vps-response-contract.md) for the VPS mock API shape.
+Production Node startup does not automatically load `.env`. Provide runtime variables through the service manager or deployment environment. Build on the target OS; do not copy a macOS `.output` to Ubuntu because image tooling includes platform-specific binaries.
 
-The dashboard pages require an authenticated administrator session. `POST /api/auth/login` validates the configured credentials and issues an encrypted HttpOnly cookie session; private API routes also check that session server-side. The session secret is `NUXT_SESSION_PASSWORD` and must be set to a unique value of at least 32 characters in production.
+## Documentation
 
-The VPS snapshot endpoint is `GET /api/vps/dashboard`. It returns resource metrics, 60-minute trends, current systemd states, and Prometheus pending/firing alerts. On non-Linux systems it returns HTTP 501 and the UI loads the validated demo fixture. The process endpoint is `GET /api/vps/processes`; on Linux it reads `/proc`, and on other systems the UI continues to show explicitly labeled demo processes. See [the dashboard response contract](./docs/vps-response-contract.md) and [the process snapshot contract](./docs/vps-processes.schema.json).
+Start with the [documentation index](docs/README.md). It separates existing behavior, approved plans, and release checks that still require a real Linux host.
 
-The application admits at most 10 sign-in attempts per minute across all clients of one Node process, returning HTTP 429 and Retry-After when exhausted. This bounded in-memory guard resets on process restart. For multiple instances, use a shared limiter at the trusted reverse proxy. The app does not trust client-supplied forwarding headers for throttling.
+| Document | Read it for |
+| --- | --- |
+| [AGENTS.md](AGENTS.md) | Mandatory project rules and AI workflow |
+| [Architecture](docs/architecture.md) | Routes, directory ownership, data flow, current limitations |
+| [Development](docs/development.md) | Setup, tests, change recipes, documentation maintenance |
+| [Security and configuration](docs/security-and-configuration.md) | Environment variables, login/session behavior, trust boundaries |
+| [DESIGN.md](DESIGN.md) | Swiss Style, Nuxt UI usage, theme, spacing, charts, accessibility |
+| [VPS contract](docs/vps-response-contract.md) | Endpoint semantics, schema/fixtures, metrics and UI behavior |
+| [Ubuntu operations](ops/vps/VERIFY.md) | Collectors, host permissions, verification, troubleshooting |
+| [Timeshit plan](docs/timeshit-implementation-plan.md) | Approved future GitHub/PAT integration |
+| [References](docs/references.md) | Official Nuxt, UI, auth, chart, monitoring, and GitHub sources |
 
-See [the Ubuntu verification checklist](./ops/vps/VERIFY.md) before treating telemetry as production-ready. Build on Linux: a macOS `.output` contains platform-specific image binaries and must not be copied to Ubuntu.
+## Working agreement
 
-## Linux VPS metrics
+Work on `development`, preserve local changes, and verify the affected flow before handoff. Commit, push, merge, and deployment each require the user's authorization for that action. See [the development workflow](docs/development.md).
 
-The collector stack is defined in [`ops/vps/`](./ops/vps/). On the Ubuntu host, start the local exporters and Prometheus with `docker compose -f ops/vps/compose.yaml up -d`. Both HTTP listeners bind to `127.0.0.1`; keep them private. Configure Nuxt with `NUXT_VPS_PROMETHEUS_URL=http://127.0.0.1:9090`, then build and run Nuxt on that same host with `pnpm build && pnpm start`. The built app also binds to loopback; access policy and remote exposure are outside this local-only setup.
+This documentation describes source behavior. It does not certify that a VPS, domain, proxy, or collector deployment has passed verification.

@@ -2,16 +2,23 @@
 
 These rules apply to every AI-assisted change in this repository. Read this file before planning or editing.
 
+## Documentation entry points
+
+- Start with `docs/README.md` for the documentation map and known implementation boundaries. Read `docs/architecture.md` for existing data flow, `docs/development.md` for change recipes, and `docs/security-and-configuration.md` before touching auth, secrets, runtime variables, or host access.
+- `DESIGN.md` defines the approved monochrome Swiss Style / International Typographic Style, component usage, spacing, responsive layout, charts, and accessibility rules. Follow it for every UI change; do not restore earlier colored status experiments.
+- `docs/vps-response-contract.md` and its schemas/examples define the VPS contract. `ops/vps/VERIFY.md` defines real Ubuntu release checks. `docs/timeshit-implementation-plan.md` is approved future scope, not implemented functionality.
+- Use `docs/references.md` for official source links, including Nuxt's Working with AI guidance. Verify installed versions/types before applying online examples. Do not claim MCP/plugin availability without inspecting the current environment.
+
 ## Product rules
 
 - Use English for all user-facing text across the application: navigation, headings, labels, descriptions, buttons, forms, status names, charts, tooltips, empty/loading/error states, confirmation text, accessibility labels, and metadata.
 - Keep the product's proper name and technical terms unchanged. Use `en-US` for user-facing date, time, number, and relative-time formatting; keep the `Asia/Jakarta` time zone unless the user changes it.
-- Generated service API descriptions, health reasons, and errors must also be English. Preserve original external content such as GitHub commit messages, repository descriptions, file names, and patches in its source language. Do not silently translate or invent backend data in the browser.
+- Generated service API descriptions, health reasons, and errors must also be English. Preserve original external content such as OS/systemd descriptions, GitHub commit messages, repository descriptions, file names, and patches in its source language. Do not silently translate or invent backend data in the browser.
 - Do not invent product behavior, API contracts, endpoints, payloads, credentials, or data presented as real. Ask the user when a missing decision materially affects behavior or architecture.
 - Use clearly labeled mock data while a service or API is unavailable. Never present mock values as live data.
 - Keep service-specific behavior and configuration isolated. VPS, Timeshit, Code Review, and Quota Tracker may use different API base URLs.
-- Direct browser requests to external service APIs require CORS for the dashboard origin. Approved exceptions use same-origin Nuxt endpoints: VPS reads the host-local Prometheus API and Timeshit reads GitHub with its PAT held only on the server. Keep Prometheus and Node Exporter bound to loopback. Never send a GitHub PAT to an arbitrary service Base URL.
-- The backend/database owns persisted service configuration. The approved Timeshit implementation persists its encrypted PAT, minimal connection metadata, and tracked repository selection in SQLite. Other unspecified backend configuration remains mock and non-persistent; do not persist it in localStorage or invent its backend schema.
+- Direct browser requests to external service APIs require CORS for the dashboard origin. VPS uses same-origin Nuxt endpoints to read the host-local Prometheus API. The approved future Timeshit integration will use same-origin Nuxt endpoints with its GitHub PAT held only on the server. Keep Prometheus and Node Exporter bound to loopback. Never send a GitHub PAT to an arbitrary service Base URL.
+- The backend/database owns persisted service configuration. The approved future Timeshit implementation will persist its encrypted PAT, minimal connection metadata, and tracked repository selection in SQLite; it is not implemented yet. Current Settings configuration remains in-memory and non-persistent; do not persist it in localStorage or invent an unspecified backend schema.
 - Never put saved API secrets or private credentials in global browser state, client-visible runtime config, session cookies, or mock data. A user-entered Timeshit PAT may exist temporarily in the local Settings form draft for submission; clear it on success/close and never return a saved PAT through an API. Redact secrets from telemetry command lines. Ask before introducing a credential model beyond the approved Timeshit design.
 - Authentication is approved for one administrator configured only through server environment variables. Never add real credentials or session secrets to source, `.env.example`, client runtime config, browser state, or mock data. Guard every dashboard page with the global route middleware and every private server API route with `requireUserSession(event)`; middleware alone does not protect API routes.
 
@@ -56,9 +63,19 @@ These rules apply to every AI-assisted change in this repository. Read this file
 3. For broad or ambiguous work, summarize the scope and provide a concrete plan first. If the user approves it, execute the approved work without asking for approval again. Ask only when a material product or architecture decision remains unresolved; continue independent work meanwhile.
 4. Verify uncertain Nuxt, Nuxt UI, or library APIs against official documentation or installed project types/source. Do not guess component props or framework behavior.
 5. Make the smallest complete change that fulfills the request. Update implementation, mock data, schema/contracts, docs, and tests together when they describe the same behavior.
-6. Run the relevant unit tests, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. Fix regressions introduced by the change; report unrelated existing failures separately.
+6. For application changes, run the relevant unit tests, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. Fix regressions introduced by the change; report unrelated existing failures separately. Use the documentation-only verification below when no application behavior changes.
 7. For a substantial UI or routing change, start or use the local app, open the affected route in a browser, and verify it loads and renders the expected content. Check responsive behavior when layout changes.
 8. Review the final diff and search again for untranslated or inconsistent user-facing text. Confirm the result is local and state whether any commit, push, or deployment occurred.
+
+For documentation-only changes, verify source accuracy, local links/anchors, referenced paths, commands and schema/example consistency. Application tests/build/browser checks apply when application behavior changes or the user requests those checks; do not report past checks as a fresh run.
+
+## Documentation maintenance
+
+- Update documentation in the same change as the behavior it describes. Use the ownership table in `docs/README.md`; keep one canonical explanation and link to it from other guides.
+- Separate existing behavior, approved plans, recommendations and host checks not yet performed. Never turn an approved plan, public fixture or successful mocked test into a claim of production readiness.
+- For contract changes, update schema, types, validator, mock fixture, scenario examples, tests and prose together. Check source timestamps, units, nulls and availability semantics.
+- Record unresolved limits in `docs/README.md` and the relevant service/runbook document. Remove obsolete limits only after implementation and verification.
+- Keep documentation portable: use repository-relative links inside Markdown, environment variable names without real values, and official references. Do not include private host credentials, machine-specific plugin cache paths or fabricated deployment evidence.
 
 ## Git and deployment
 
@@ -70,7 +87,7 @@ These rules apply to every AI-assisted change in this repository. Read this file
 
 - Unit tests are required for application logic and behavior changes. Use Vitest and `@nuxt/test-utils` for Nuxt-aware tests; keep tests focused on observable behavior and avoid snapshot-only coverage.
 - Add or update tests for service-client isolation, configuration behavior, validation, state transitions, formatting, and user-visible interactions as those features are implemented.
-- Before completing a change, run `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. Do not leave new lint violations.
+- Before completing application changes, run `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. For documentation-only changes, use the documentation verification described above. Do not leave new lint violations.
 - Final updates must state what changed, what was verified (including whether the browser page opened), and any limitations. Never claim a check or browser verification that was not actually completed.
 
 <!-- antislop:start -->

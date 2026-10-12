@@ -5,6 +5,8 @@
 - **Implementation:** Not started
 - **Reference review:** October 12, 2026
 
+Related guides: [documentation index](README.md), [existing architecture](architecture.md), [security/configuration](security-and-configuration.md), [UI design system](../DESIGN.md), and [official reference catalog](references.md). This plan grants scope for implementation; it does not add running endpoints or storage.
+
 ## 1. Goal
 
 Build the Timeshit service so the signed-in JCore administrator can connect one GitHub account, browse repositories and their Git history, review commit changes, prepare a daily commit digest, and view a daily commit heatmap.
@@ -34,7 +36,7 @@ Add GitHub connection settings without silently removing the existing per-servic
 
 The external Timeshit backend path remains unimplemented until its API and authentication contract are specified. Retain the existing Base URL draft, clearly identify the active same-origin backend, and do not send credentials to an arbitrary URL entered in that field. Do not imply that an external URL has been connected or persisted. Keep the other services' configuration behavior scoped to their existing contracts.
 
-Update `AGENTS.md` alongside this plan to record the approved Timeshit server/persistence exceptions and the source-content language rule. These are implementation permissions, not a claim that live Timeshit integration already exists.
+`AGENTS.md` records the approved Timeshit server/persistence exceptions and source-content language rule. These are implementation permissions, not a claim that live Timeshit integration already exists. Keep the plan and current-capability documentation synchronized as phases are completed.
 
 ## 4. Proposed architecture
 
