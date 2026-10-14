@@ -1,0 +1,367 @@
+{
+  "_note": "Synthetic test data only. These fixtures validate the implemented activity contract and must not be presented as live GitHub collection evidence.",
+  "start": {
+    "expectedGeneration": "11111111-1111-4111-8111-111111111111",
+    "expectedSelectionRevision": "22222222-2222-4222-8222-222222222222",
+    "range": {
+      "startDate": "2026-10-12",
+      "endDate": "2026-10-12",
+      "timeZone": "Asia/Jakarta"
+    }
+  },
+  "resume": {
+    "continuation": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "expectedRevision": 1
+  },
+  "snapshots": {
+    "partial": {
+      "schemaVersion": "1.0",
+      "collectionId": "33333333-3333-4333-8333-333333333333",
+      "revision": 1,
+      "generation": "11111111-1111-4111-8111-111111111111",
+      "selectionRevision": "22222222-2222-4222-8222-222222222222",
+      "account": {
+        "id": 7,
+        "login": "example-user"
+      },
+      "range": {
+        "startDate": "2026-10-12",
+        "endDate": "2026-10-12",
+        "timeZone": "Asia/Jakarta"
+      },
+      "status": "partial",
+      "startedAt": "2026-10-13T00:00:00Z",
+      "updatedAt": "2026-10-13T00:00:05Z",
+      "expiresAt": "2026-10-13T00:30:00Z",
+      "continuation": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "retryAfterSeconds": null,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "coverage": [
+        {
+          "repositoryId": 123,
+          "owner": "example",
+          "name": "demo",
+          "status": "scanning",
+          "branchDiscoveryComplete": true,
+          "branchesDiscovered": 2,
+          "branchesCompleted": 1,
+          "commitsScanned": 100,
+          "failure": null
+        }
+      ],
+      "items": [
+        {
+          "repositoryId": 123,
+          "commit": {
+            "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "htmlUrl": "https://github.com/example/demo/commit/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "message": "Document read-only history API\n\nClarify pagination and source timestamps.",
+            "title": "Document read-only history API",
+            "body": "Clarify pagination and source timestamps.",
+            "authorLogin": "example-user",
+            "authorName": "Example User",
+            "authoredAt": "2026-10-12T03:00:00Z",
+            "committerName": "Example User",
+            "committedAt": "2026-10-13T03:00:00Z"
+          }
+        }
+      ]
+    },
+    "complete": {
+      "schemaVersion": "1.0",
+      "collectionId": "33333333-3333-4333-8333-333333333333",
+      "revision": 2,
+      "generation": "11111111-1111-4111-8111-111111111111",
+      "selectionRevision": "22222222-2222-4222-8222-222222222222",
+      "account": {
+        "id": 7,
+        "login": "example-user"
+      },
+      "range": {
+        "startDate": "2026-10-12",
+        "endDate": "2026-10-12",
+        "timeZone": "Asia/Jakarta"
+      },
+      "status": "complete",
+      "startedAt": "2026-10-13T00:00:00Z",
+      "updatedAt": "2026-10-13T00:00:05Z",
+      "expiresAt": "2026-10-13T00:30:00Z",
+      "continuation": null,
+      "retryAfterSeconds": null,
+      "partialReasons": [],
+      "coverage": [
+        {
+          "repositoryId": 123,
+          "owner": "example",
+          "name": "demo",
+          "status": "complete",
+          "branchDiscoveryComplete": true,
+          "branchesDiscovered": 2,
+          "branchesCompleted": 2,
+          "commitsScanned": 100,
+          "failure": null
+        }
+      ],
+      "items": [
+        {
+          "repositoryId": 123,
+          "commit": {
+            "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "htmlUrl": "https://github.com/example/demo/commit/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "message": "Document read-only history API\n\nClarify pagination and source timestamps.",
+            "title": "Document read-only history API",
+            "body": "Clarify pagination and source timestamps.",
+            "authorLogin": "example-user",
+            "authorName": "Example User",
+            "authoredAt": "2026-10-12T03:00:00Z",
+            "committerName": "Example User",
+            "committedAt": "2026-10-13T03:00:00Z"
+          }
+        }
+      ]
+    },
+    "completeEmpty": {
+      "schemaVersion": "1.0",
+      "collectionId": "33333333-3333-4333-8333-333333333333",
+      "revision": 2,
+      "generation": "11111111-1111-4111-8111-111111111111",
+      "selectionRevision": "22222222-2222-4222-8222-222222222222",
+      "account": {
+        "id": 7,
+        "login": "example-user"
+      },
+      "range": {
+        "startDate": "2026-10-12",
+        "endDate": "2026-10-12",
+        "timeZone": "Asia/Jakarta"
+      },
+      "status": "complete",
+      "startedAt": "2026-10-13T00:00:00Z",
+      "updatedAt": "2026-10-13T00:00:05Z",
+      "expiresAt": "2026-10-13T00:30:00Z",
+      "continuation": null,
+      "retryAfterSeconds": null,
+      "partialReasons": [],
+      "coverage": [
+        {
+          "repositoryId": 123,
+          "owner": "example",
+          "name": "demo",
+          "status": "complete",
+          "branchDiscoveryComplete": true,
+          "branchesDiscovered": 0,
+          "branchesCompleted": 0,
+          "commitsScanned": 0,
+          "failure": null
+        }
+      ],
+      "items": []
+    },
+    "rateLimited": {
+      "schemaVersion": "1.0",
+      "collectionId": "33333333-3333-4333-8333-333333333333",
+      "revision": 1,
+      "generation": "11111111-1111-4111-8111-111111111111",
+      "selectionRevision": "22222222-2222-4222-8222-222222222222",
+      "account": {
+        "id": 7,
+        "login": "example-user"
+      },
+      "range": {
+        "startDate": "2026-10-12",
+        "endDate": "2026-10-12",
+        "timeZone": "Asia/Jakarta"
+      },
+      "status": "partial",
+      "startedAt": "2026-10-13T00:00:00Z",
+      "updatedAt": "2026-10-13T00:00:05Z",
+      "expiresAt": "2026-10-13T00:30:00Z",
+      "continuation": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "retryAfterSeconds": 60,
+      "partialReasons": [
+        "rate-limited"
+      ],
+      "coverage": [
+        {
+          "repositoryId": 123,
+          "owner": "example",
+          "name": "demo",
+          "status": "scanning",
+          "branchDiscoveryComplete": true,
+          "branchesDiscovered": 2,
+          "branchesCompleted": 1,
+          "commitsScanned": 100,
+          "failure": null
+        }
+      ],
+      "items": [
+        {
+          "repositoryId": 123,
+          "commit": {
+            "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "htmlUrl": "https://github.com/example/demo/commit/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "message": "Document read-only history API\n\nClarify pagination and source timestamps.",
+            "title": "Document read-only history API",
+            "body": "Clarify pagination and source timestamps.",
+            "authorLogin": "example-user",
+            "authorName": "Example User",
+            "authoredAt": "2026-10-12T03:00:00Z",
+            "committerName": "Example User",
+            "committedAt": "2026-10-13T03:00:00Z"
+          }
+        }
+      ]
+    },
+    "failedRepository": {
+      "schemaVersion": "1.0",
+      "collectionId": "33333333-3333-4333-8333-333333333333",
+      "revision": 1,
+      "generation": "11111111-1111-4111-8111-111111111111",
+      "selectionRevision": "22222222-2222-4222-8222-222222222222",
+      "account": {
+        "id": 7,
+        "login": "example-user"
+      },
+      "range": {
+        "startDate": "2026-10-12",
+        "endDate": "2026-10-12",
+        "timeZone": "Asia/Jakarta"
+      },
+      "status": "partial",
+      "startedAt": "2026-10-13T00:00:00Z",
+      "updatedAt": "2026-10-13T00:00:05Z",
+      "expiresAt": "2026-10-13T00:30:00Z",
+      "continuation": null,
+      "retryAfterSeconds": null,
+      "partialReasons": [
+        "repository-unavailable"
+      ],
+      "coverage": [
+        {
+          "repositoryId": 123,
+          "owner": "example",
+          "name": "demo",
+          "status": "failed",
+          "branchDiscoveryComplete": true,
+          "branchesDiscovered": 2,
+          "branchesCompleted": 1,
+          "commitsScanned": 100,
+          "failure": "restricted"
+        }
+      ],
+      "items": [
+        {
+          "repositoryId": 123,
+          "commit": {
+            "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "htmlUrl": "https://github.com/example/demo/commit/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "message": "Document read-only history API\n\nClarify pagination and source timestamps.",
+            "title": "Document read-only history API",
+            "body": "Clarify pagination and source timestamps.",
+            "authorLogin": "example-user",
+            "authorName": "Example User",
+            "authoredAt": "2026-10-12T03:00:00Z",
+            "committerName": "Example User",
+            "committedAt": "2026-10-13T03:00:00Z"
+          }
+        }
+      ]
+    },
+    "capacityLimited": {
+      "schemaVersion": "1.0",
+      "collectionId": "33333333-3333-4333-8333-333333333333",
+      "revision": 1,
+      "generation": "11111111-1111-4111-8111-111111111111",
+      "selectionRevision": "22222222-2222-4222-8222-222222222222",
+      "account": {
+        "id": 7,
+        "login": "example-user"
+      },
+      "range": {
+        "startDate": "2026-10-12",
+        "endDate": "2026-10-12",
+        "timeZone": "Asia/Jakarta"
+      },
+      "status": "partial",
+      "startedAt": "2026-10-13T00:00:00Z",
+      "updatedAt": "2026-10-13T00:00:05Z",
+      "expiresAt": "2026-10-13T00:30:00Z",
+      "continuation": null,
+      "retryAfterSeconds": null,
+      "partialReasons": [
+        "capacity-limit"
+      ],
+      "coverage": [
+        {
+          "repositoryId": 123,
+          "owner": "example",
+          "name": "demo",
+          "status": "scanning",
+          "branchDiscoveryComplete": true,
+          "branchesDiscovered": 2,
+          "branchesCompleted": 1,
+          "commitsScanned": 100,
+          "failure": null
+        }
+      ],
+      "items": [
+        {
+          "repositoryId": 123,
+          "commit": {
+            "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "htmlUrl": "https://github.com/example/demo/commit/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "message": "Document read-only history API\n\nClarify pagination and source timestamps.",
+            "title": "Document read-only history API",
+            "body": "Clarify pagination and source timestamps.",
+            "authorLogin": "example-user",
+            "authorName": "Example User",
+            "authoredAt": "2026-10-12T03:00:00Z",
+            "committerName": "Example User",
+            "committedAt": "2026-10-13T03:00:00Z"
+          }
+        }
+      ]
+    },
+    "unfinishedDiscovery": {
+      "schemaVersion": "1.0",
+      "collectionId": "33333333-3333-4333-8333-333333333333",
+      "revision": 1,
+      "generation": "11111111-1111-4111-8111-111111111111",
+      "selectionRevision": "22222222-2222-4222-8222-222222222222",
+      "account": {
+        "id": 7,
+        "login": "example-user"
+      },
+      "range": {
+        "startDate": "2026-10-12",
+        "endDate": "2026-10-12",
+        "timeZone": "Asia/Jakarta"
+      },
+      "status": "partial",
+      "startedAt": "2026-10-13T00:00:00Z",
+      "updatedAt": "2026-10-13T00:00:05Z",
+      "expiresAt": "2026-10-13T00:30:00Z",
+      "continuation": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "retryAfterSeconds": null,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "coverage": [
+        {
+          "repositoryId": 123,
+          "owner": "example",
+          "name": "demo",
+          "status": "scanning",
+          "branchDiscoveryComplete": false,
+          "branchesDiscovered": 0,
+          "branchesCompleted": 0,
+          "commitsScanned": 0,
+          "failure": null
+        }
+      ],
+      "items": []
+    }
+  }
+}

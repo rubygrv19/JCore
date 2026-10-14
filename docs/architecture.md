@@ -1,6 +1,6 @@
 # Architecture and existing behavior
 
-This document describes current source. The [Timeshit plan](timeshit-implementation-plan.md) describes future work separately.
+This document describes current source. The [Timeshit connection contract](timeshit-connection-contract.md) describes implemented credential storage; the [plan](timeshit-implementation-plan.md) tracks approved scope and the [verification report](timeshit-verification-report.md) records current acceptance and remaining release checks; [repository management](timeshit-repositories-contract.md) is implemented.
 
 ## Runtime model
 
@@ -13,7 +13,11 @@ Browser
   VPS page -> same-origin /api/vps/dashboard -> loopback Prometheus
                                            -> Node Exporter -> Linux metrics
            -> same-origin /api/vps/processes -> Linux /proc
-  Settings -> Pinia memory (no persistent backend)
+  Settings -> temporary Base URL/mode drafts in Pinia
+           -> /api/timeshit/connection -> encrypted private SQLite
+  Timeshit -> same-origin repository/history/activity APIs -> fixed GitHub REST/GraphQL origin
+                                          -> account-bound SQLite selection
+           -> ephemeral activity job -> cumulative Pinia snapshot
 
 Nuxt dashboard collector also reads /etc/os-release and inspects
 systemd + MainPID procfs + ss for unit details.
@@ -56,12 +60,12 @@ The monitored host is the host running Nuxt and the collectors. Containerizing N
 | `/` | `app/pages/index.vue` | Authenticated Coming Soon Dashboard |
 | `/settings` | `app/pages/settings.vue` | Authenticated configuration cards and modal |
 | `/services/vps` | `app/pages/services/vps.vue` | Authenticated VPS monitoring |
-| `/services/timeshit` | `app/pages/services/[service].vue` | Authenticated Coming Soon |
+| `/services/timeshit` | `app/pages/services/timeshit.vue` | Authenticated GitHub tracking, branch/commit/change browsing, activity collection, daily digest and heatmap |
 | `/services/code-review` | Same dynamic page | Authenticated Coming Soon |
 | `/services/quota-tracker` | Same dynamic page | Authenticated Coming Soon |
 | `/services/<unknown>` | Same dynamic page | Rejected with 404 |
 
-Nuxt resolves the explicit VPS page before the dynamic service page. Navigation uses pathname routes, not legacy hash navigation. The sidebar exposes Dashboard and Settings without children and one Services group with one child level. Mobile link selection closes navigation below 1024px; desktop selection keeps it open.
+Nuxt resolves the explicit VPS and Timeshit pages before the dynamic service page. Navigation uses pathname routes, not legacy hash navigation. The sidebar exposes Dashboard and Settings without children and one Services group with one child level. Mobile link selection closes navigation below 1024px; desktop selection keeps it open.
 
 ## Authentication
 
@@ -71,7 +75,7 @@ Every current VPS API handler calls `requireUserSession(event)` independently of
 
 ## State ownership
 
-- Pinia owns only shared service configuration currently. Config entries are independent for `vps`, `timeshit`, `code-review`, and `quota-tracker`.
+- Pinia owns shared service configuration, public Timeshit connection metadata, private repository view state and ephemeral history view state; it never owns the PAT. Config entries are independent for `vps`, `timeshit`, `code-review`, and `quota-tracker`.
 - Settings form values, modal selection, accordions and Shutdown confirmation use local Vue refs. Saving copies the draft into Pinia and closes the modal; Cancel does not save.
 - VPS dashboard reads use `useAsyncData('vps-dashboard', ..., { server: false })`. The layout reads its cached snapshot with `useNuxtData` for the source notice. VPS state is not currently a Pinia store.
 - VPS keeps the last successful dashboard/process snapshot in page refs, tracks freshness, expanded table rows and pagination locally, and cleans up polling on unmount.
@@ -101,6 +105,14 @@ See the [VPS contract](vps-response-contract.md) for exact metrics, semantics, t
 
 Keep each service's backend/client/state separate. Define its contract and trust boundary before making live calls. Use standard Nuxt directories and installed tooling. For code needed by client and server, prefer `shared/`; keep secrets, database access and OS commands in `server/`.
 
-A blank Base URL is not a universal “connect local” implementation for all services. VPS is explicitly wired to same-origin APIs. Timeshit's approved default is same-origin server APIs but remains unimplemented; other services need agreed contracts first.
+A blank Base URL is not a universal “connect local” implementation for all services. VPS is explicitly wired to same-origin APIs. Timeshit Connection/PAT, repository and history reads use same-origin server APIs; all-branch activity endpoints are implemented, while client collection controls and daily digest/copy are implemented; heatmap is implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md). Other services need agreed contracts first.
 
 Follow the [development change recipes](development.md), [design rules](../DESIGN.md) and [current boundaries](README.md#known-implementation-boundaries).
+
+## Timeshit Connection/PAT
+
+`server/api/timeshit/connection.{get,post,delete}.ts` guard each method independently. Repository discovery, tracked-selection and branch/commit/detail handlers under `server/api/timeshit/` also enforce the JCore session. `server/utils/timeshit-*` own fixed-origin GitHub reads, validated repository access, authenticated crypto and private SQLite. `shared/types/timeshit.ts` and `shared/utils/timeshit-*-contract.ts` define and validate public response envelopes. `app/utils/timeshit-client.ts` is the same-origin client; `app/stores/timeshit-history.ts` owns ephemeral browsing state. Settings keeps entered tokens local while `app/stores/timeshit.ts` stores only public connection status. See the [connection](timeshit-connection-contract.md), [repository](timeshit-repositories-contract.md) and [history](timeshit-history-contract.md) contracts.
+
+`shared/types/timeshit-activity.ts` and `shared/utils/timeshit-activity*.ts` implement the activity contract foundation: date ranges, author-date filtering, deduplication, daily unknown/zero semantics and runtime validation. The [activity contract](timeshit-activity-contract.md) defines implemented process-local collection checkpoints and guarded start/continue handlers. One active in-memory job holds captured heads, bounded items and coverage; the PAT is decrypted only within requests. The same-origin client and `app/stores/timeshit-activity.ts` implement non-persistent collection state, sequential continuation, cooldowns, pause/visibility and private-state cleanup. Visible collection controls and daily digest/copy are implemented; heatmap is implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md). SQLite remains schema v3 and does not store activity.
+
+History default branch preferences, calendar controls and full-width Timeshit layout are documented in the [preference contract](timeshit-preferences-contract.md).

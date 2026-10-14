@@ -1,11 +1,11 @@
 # Timeshit Service Implementation Plan
 
-- **Status:** Updated after the approved technical audit; implementation pending
+- **Status:** Phases 1–5 implemented. Phase 6 local hardening and browser verification is recorded in the [verification report](timeshit-verification-report.md); remaining live/target-host checks are listed there.
 - **Scope:** Personal, single-user GitHub activity dashboard in JCore
-- **Implementation:** Not started
-- **Reference review:** October 12, 2026
+- **Implementation:** Connection APIs, encrypted SQLite, Settings integration, repository discovery/selection, and read-only branch/commit/change browsing are implemented. See the [connection contract](timeshit-connection-contract.md), [repository contract](timeshit-repositories-contract.md), and [history contract](timeshit-history-contract.md). The [activity contract foundation](timeshit-activity-contract.md) now defines shared schemas, date/deduplication helpers, continuation behavior, initial budgets and the heatmap rendering choice. Its bounded HTTP handlers and collector are implemented; client collection controls and daily digest/copy are implemented; heatmap is implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md).
+- **Reference review:** October 13, 2026
 
-Related guides: [documentation index](README.md), [existing architecture](architecture.md), [security/configuration](security-and-configuration.md), [UI design system](../DESIGN.md), and [official reference catalog](references.md). This plan grants scope for implementation; it does not add running endpoints or storage.
+Related guides: [documentation index](README.md), [existing architecture](architecture.md), [security/configuration](security-and-configuration.md), [UI design system](../DESIGN.md), and [official reference catalog](references.md). See the [current Connection/PAT contract](timeshit-connection-contract.md) for implemented endpoints, setup and limits. Remaining sections define the approved target, not completed functionality.
 
 ## 1. Goal
 
@@ -16,11 +16,11 @@ The connected GitHub account determines commit authorship. Repository discovery 
 ## 2. Approved decisions
 
 - One JCore administrator uses this feature for personal use.
-- The user configures a GitHub fine-grained personal access token (PAT) from the web Settings page.
+- The user configures a GitHub personal access token (PAT; fine-grained recommended, classic accepted) from the web Settings page.
 - Store the PAT encrypted in SQLite on the server. Obtain a stable encryption key from server-only environment configuration and use the built-in `node:crypto` API.
 - Never return the saved PAT through an API or include it in a session cookie, Pinia, browser storage, client-visible runtime config, logs, URLs, or mock data. The Settings form may hold the entered PAT temporarily in a local draft for submission.
-- Request **Metadata: read** and **Contents: read** repository permissions. Use only read operations against GitHub; local Settings mutations do not mutate GitHub resources.
-- Support one active fine-grained PAT. Its private-resource scope is limited to one resource owner. Do not promise access across multiple private organizations from that one token. Public repository access follows GitHub's documented exceptions.
+- For fine-grained PATs, request **Metadata: read** and **Contents: read** repository permissions. Classic PATs need `repo` for private repositories; this also grants write capabilities. Use only read operations against GitHub; local Settings mutations do not mutate GitHub resources.
+- Support one active PAT (fine-grained recommended; classic also approved by the owner on October 13, 2026). A fine-grained PAT's private-resource scope is limited to one resource owner; classic follows its scopes and organization policies. Do not promise access beyond the actual credential's permissions. Public repository access follows GitHub's documented exceptions.
 - Persist the selected repositories in SQLite. Aggregate activity only from that tracked selection, within the token's accessible repository set.
 - Include commits authored by the connected GitHub account from all current remote branches of tracked repositories. Deduplicate by stable repository ID and full commit SHA.
 - Use `authoredAt` for digest and heatmap day grouping in `Asia/Jakarta`; preserve `committedAt` separately.
@@ -30,13 +30,13 @@ The connected GitHub account determines commit authorship. Repository discovery 
 
 ## 3. Current project baseline
 
-The current Settings page has a Timeshit service card and a Base URL form. Service configuration is held in Pinia memory and is explicitly marked as development-only. The application already has a global route middleware for signed-in pages, a private Nuxt server API pattern that calls `requireUserSession(event)`, and Vitest scripts.
+Settings implements the GitHub PAT connection, independent from its temporary Base URL/mode drafts. The encrypted PAT and account-bound tracked repositories persist in SQLite v3. The Timeshit page implements repository discovery/selection and branch/commit/file browsing. The application has a global route middleware for signed-in pages, private server handlers that call `requireUserSession(event)`, and Vitest scripts. Activity collection and daily digest/copy are implemented; heatmap is implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md).
 
-Add GitHub connection settings without silently removing the existing per-service Base URL concept. The approved implementation uses the same-origin Nuxt backend as the Timeshit default. A Timeshit backend Base URL and the server's GitHub API origin are different configuration concepts.
+The implemented connection retains the per-service Base URL concept and uses the same-origin Nuxt backend. A Timeshit backend Base URL and the server's fixed GitHub API origin are different configuration concepts.
 
 The external Timeshit backend path remains unimplemented until its API and authentication contract are specified. Retain the existing Base URL draft, clearly identify the active same-origin backend, and do not send credentials to an arbitrary URL entered in that field. Do not imply that an external URL has been connected or persisted. Keep the other services' configuration behavior scoped to their existing contracts.
 
-`AGENTS.md` records the approved Timeshit server/persistence exceptions and source-content language rule. These are implementation permissions, not a claim that live Timeshit integration already exists. Keep the plan and current-capability documentation synchronized as phases are completed.
+`AGENTS.md` records the approved Timeshit server/persistence exceptions and source-content language rule. Live integration code is present, while real GitHub/Ubuntu acceptance must still be distinguished from synthetic tests. Keep the plan and current-capability documentation synchronized as phases are completed.
 
 ## 4. Proposed architecture
 
@@ -49,15 +49,16 @@ Browser (authenticated JCore session)
           ▼
 Nuxt server API (session guard, validation, pagination and rate-limit handling)
   ├─ GitHub API client (token added only on the server)
-  └─ SQLite: encrypted PAT, account metadata, tracked repository IDs
-          │ HTTPS with read-only PAT
+  ├─ SQLite: encrypted PAT, account metadata, tracked repository IDs
+  └─ Ephemeral activity job: captured heads, checkpoints, coverage
+          │ HTTPS · REST GET / GraphQL POST queries
           ▼
-GitHub REST API
+GitHub REST and GraphQL APIs
 ```
 
 For this integration, the browser calls only same-origin Nuxt Timeshit endpoints. Nuxt adds the PAT to GitHub requests on the server. Keep the HTTP client independent from other services and use a fixed GitHub API origin (`https://api.github.com`).
 
-Keep page/UI code in `app/`, private GitHub/SQLite/crypto code in `server/`, and response types and pure shared normalization/aggregation utilities in `shared/`. Use `useFetch` for initial authenticated same-origin reads and `$fetch` for user-triggered actions, following Nuxt's cookie-forwarding behavior. Keep shared UI state in Pinia and the PAT form draft local. Never import server-only modules into the Vue app.
+Keep page/UI code in `app/`, private GitHub/SQLite/crypto code in `server/`, and response types and pure shared normalization/aggregation utilities in `shared/`. Current private views load after mount through service-specific `$fetch` clients and Pinia; they do not prefetch private GitHub data during SSR. If adding SSR reads, use Nuxt request-aware fetch APIs and verify cookie forwarding. Keep the PAT form draft local. Never import server-only modules into the Vue app.
 
 ## 5. Connection and credential lifecycle
 
@@ -98,6 +99,9 @@ GitHub may conceal inaccessible private resources with `404`. Do not claim that 
 
 ### Repository management
 
+**Implemented bounded milestone:** discovery pages of 30, explicitly page-local search/visibility filtering, per-repository track/remove/recheck, and a 200-selection maximum. The limit is a JCore implementation budget, not a GitHub quota. A full page permits requesting the next page, which may be empty. Same-account PAT replacements preserve candidates as `not-checked`; only successful revalidation enables future activity. Details and current API semantics are in the [repository contract](timeshit-repositories-contract.md).
+
+
 - Load the paginated repository set returned for the authenticated account with the supplied token. This is not a global search of every public GitHub repository.
 - Provide repository search/filtering and a clear empty state.
 - Allow the user to track/untrack repositories and persist that selection in SQLite. Begin with no tracked repositories and a selection prompt. Revalidate membership in the discoverable/access-checked set before accepting a selection.
@@ -135,10 +139,10 @@ Permit public and private repositories granted by GitHub and selected by the use
 
 ### All-branch collection and completeness
 
-1. Paginate the tracked repositories' branch listings and capture branch names plus head SHAs for the current collection. Use each captured head SHA as the commit-list `sha` parameter to keep later pages tied to that head.
-2. Paginate each branch history with the server-resolved account's `author` filter. The upstream default branch behavior is insufficient for the approved all-branches scope.
+1. Paginate the tracked repositories' branch listings and capture branch names plus head SHAs for the current collection. Use each captured head SHA as the GraphQL repository object expression to keep later history pages tied to that head.
+2. Paginate each captured commit's GraphQL history with the freshly verified account's User node ID as the `author.id` filter. The upstream default branch behavior is insufficient for the approved all-branches scope.
 3. Deduplicate commits across branches and then apply the shared author-date/day grouping rules. Do not treat upstream `since/until` as an authored-date guarantee. The correctness baseline is to traverse the reachable author-filtered histories and filter `authoredAt` locally; any optimization must first pass tests covering different author/committer dates and must preserve completeness.
-4. Split collection into bounded, resumable requests. Define request/page/time budgets during phase 1 and document their values. Return continuation and coverage information when a budget is reached; do not start an unbounded scan inside one server request.
+4. Split collection into bounded, resumable requests using the initial request/page/time/state budgets in the [activity contract](timeshit-activity-contract.md). Implement and test enforcement in the collector, then measure representative live workloads before release. Return continuation and coverage information when a budget is reached; do not start an unbounded scan inside one server request.
 5. Keep the current result and coverage in Pinia. Mark results complete only after branch discovery and all required history pages succeed. Incomplete counts are provisional; unscanned/failed scope is unknown, not zero. Include the partial-data warning in copied digests. Do not silently truncate exported data.
 6. Validate continuations against the active connection generation and requested scope. Reject continuations after disconnect, account/token replacement, scope changes, or expiry. A new collection replaces the old result rather than combining unrelated scans.
 
@@ -148,7 +152,7 @@ Use manual refresh and reuse the collected dataset for digest and heatmap. Persi
 
 ## 7. Proposed server API surface
 
-These are planned JCore routes, not existing endpoints or official GitHub routes. Finalize their schemas and continuation representation during phase 1. Every private route must call `requireUserSession(event)` and validate query/body data at runtime.
+These are JCore routes, not official GitHub routes. Connection, repository, history and the two activity handlers below are implemented and defined by the [activity contract](timeshit-activity-contract.md). Every private route must call `requireUserSession(event)` and validate query/body data at runtime.
 
 | Proposed route | Purpose | Credential handling |
 | --- | --- | --- |
@@ -158,10 +162,11 @@ These are planned JCore routes, not existing endpoints or official GitHub routes
 | `GET /api/timeshit/repositories` | List visible repositories | Decrypt only on server for upstream request |
 | `GET /api/timeshit/tracked-repositories` | Return persisted selection and availability | Never return credential |
 | `PUT /api/timeshit/tracked-repositories` | Validate and save selected repository IDs | Session and mutation-origin checks |
-| `GET /api/timeshit/repositories/:owner/:repo/branches` | List repository branches | Server-only upstream auth |
-| `GET /api/timeshit/repositories/:owner/:repo/commits` | List commits for branch/date query | Server-only upstream auth |
-| `GET /api/timeshit/repositories/:owner/:repo/commits/:sha` | Return commit and changed-file details | Server-only upstream auth |
-| `GET /api/timeshit/activity` | Return an activity batch, coverage, and continuation | Server-only upstream auth; bounded work per request |
+| `GET /api/timeshit/repositories/:owner/:repo/branches` | List repository branches | Implemented; see [history contract](timeshit-history-contract.md) |
+| `GET /api/timeshit/repositories/:owner/:repo/commits` | List account-authored commits for a selected branch head | Implemented; see [history contract](timeshit-history-contract.md) |
+| `GET /api/timeshit/repositories/:owner/:repo/commits/:sha` | Return commit and paginated changed-file details | Implemented; see [history contract](timeshit-history-contract.md) |
+| `POST /api/timeshit/activity` | Start collection and return a cumulative bounded snapshot | Planned; session, mutation-origin and current scope checks |
+| `POST /api/timeshit/activity/continue` | Resume the active collection by opaque capability/revision | Planned; server-only checkpoints and bounded work |
 
 ### Verified upstream endpoint map
 
@@ -175,7 +180,7 @@ These are planned JCore routes, not existing endpoints or official GitHub routes
 
 The table describes documented endpoint requirements, not proof of a submitted token's actual grants. Public-resource exceptions are documented by GitHub. Use explicit `Accept: application/vnd.github+json`, `Authorization: Bearer ...`, a descriptive `User-Agent`, and `X-GitHub-Api-Version: 2026-03-10`, the supported version verified during this review. Recheck the version and compatibility when implementation begins.
 
-Follow upstream pagination links only after validating their origin and expected route. Do not accept arbitrary continuation URLs from the browser or forward the JCore session cookie to GitHub. Keep upstream parsing in server utilities and expose a versioned JCore contract. Encode branch names as parameter values so names containing `/` do not break routing.
+Existing browsing uses bounded numeric pages and a full-page next-page heuristic; the next page may be empty. If using upstream pagination links, validate their origin and expected route before following them. Do not accept arbitrary continuation URLs from the browser or forward the JCore session cookie to GitHub. Keep upstream parsing in server utilities and expose a versioned JCore contract. Encode branch names as parameter values so names containing `/` do not break routing.
 
 ## 8. Data contract and mock fixtures
 
@@ -259,18 +264,18 @@ Run `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. Open the local
 
 ## 12. Implementation phases
 
-1. **Contract and runtime verification**: recheck the reference matrix against installed Nuxt/Node and current GitHub docs; define JSON Schema, shared types, errors, author-date completeness rules, collection budgets/continuations, and tracked-selection contract. Select a compatible SQLite driver; use `node:crypto`. Resolve the heatmap rendering choice within the existing Nuxt UI/Chart.js rules before adding dependencies or a custom primitive. Record decisions in contract documentation.
-2. **Credential foundation**: add private runtime configuration, SQLite migration, authenticated encryption, identity/access-check results, and guarded connection status/save/replace/delete endpoints. Verify restart persistence and mutation-origin checks.
-3. **GitHub read client and selection**: add validated, paginated repository/branch/commit/detail endpoints, persisted tracking, and connection/account isolation. Add fixtures and contract tests.
-4. **Timeshit browsing UI**: replace the Coming Soon page with repository/branch navigation, commit list, commit detail, file-change view, and all required states.
-5. **Activity, digest, and heatmap**: implement bounded resumable collection, coverage and stale/partial states, shared date grouping/deduplication, two copy formats, and accessible heatmap interactions.
+1. **Contract and runtime verification**: implemented Connection/repository/history contracts and the [activity contract foundation](timeshit-activity-contract.md), including executable schemas, author-date/deduplication helpers, initial budgets, continuation semantics and the existing-Chart.js heatmap choice. Local Node/SQLite evidence is recorded. Operational bounds are enforced by the collector; representative live local and Ubuntu measurements are recorded in the [verification report](timeshit-verification-report.md).
+2. **Credential foundation**: implemented private runtime configuration, SQLite v1–v3 migration/persistence, authenticated encryption, identity/access-check results and guarded connection status/save/replace/delete endpoints. Synthetic tests cover reopen persistence and mutation-origin checks; real same-account credential lifecycle and isolated Ubuntu acceptance have passed. Public HTTPS/proxy browser acceptance remains separate.
+3. **GitHub read client and selection**: implemented validated, paginated repository/branch/commit/detail endpoints, persisted tracking, connection/account isolation and synthetic fixtures; see the repository and history contracts.
+4. **Timeshit browsing UI**: implemented repository/branch navigation, author-filtered commit lists, commit detail and paginated file changes. Daily digest and heatmap are not included in this browsing milestone.
+5. **Activity, digest, and heatmap**: bounded server collector and authenticated start/continue endpoints are implemented, including identity/repository-ID revalidation, replay/concurrency handling and explicit coverage. Client/Pinia collection state, visible controls, daily digest with two copy formats, and accessible heatmap/table interactions are implemented. Keep live acceptance separate from mocked verification.
 6. **Hardening and verification**: review secret handling, auth/origin checks, collection completeness and permission-error behavior; run all required checks; verify local browser routes/responsive layout; update README, environment, database recovery, and contract documentation; review the complete diff.
 
 Each phase should leave the app buildable and its affected route usable. No phase should introduce a real PAT or production credential into fixtures or source control.
 
 ## 13. Acceptance criteria
 
-- The administrator can connect one GitHub account with a fine-grained PAT configured for read-only use; the UI accurately distinguishes identity verification from checked repository access and explains token scope.
+- The administrator can connect one GitHub account with a PAT configured for the required reads (fine-grained read-only recommended); the UI accurately distinguishes identity verification from checked repository access and explains token scope.
 - The saved PAT is encrypted at rest in SQLite, used only by Nuxt server code, and never returned to the browser or stored in a session cookie. Only its temporary local input draft exists during submission.
 - Repository selection persists in SQLite across reloads/restarts, remains account-bound, and handles revoked repository access explicitly.
 - The user can browse accessible repositories, branches, commits, and available file changes from the connected account.
@@ -282,13 +287,76 @@ Each phase should leave the app buildable and its affected route usable. No phas
 - English UI, preserved source-content language, Nuxt UI conventions, keyboard access, responsive behavior, and required project checks pass.
 - The implementation makes no claim of live data when disconnected or when rendering fixtures.
 
+### Implemented browsing milestone — October 13, 2026
+
+- Added authenticated, no-store branch, commit-list and commit-detail endpoints limited to tracked repositories verified for the active connection.
+- Commit list requests apply the connected GitHub login as the server-side author filter and use captured branch head SHAs for stable paging.
+- Commit messages, author/committer timestamps, file stats and optional patch text are normalized against a versioned TypeScript/JSON Schema contract and synthetic examples.
+- The Timeshit page now browses branches and commits, renders changed-file patch text, paginates GitHub responses, and exposes GitHub links for unavailable or truncated patch data.
+- Automated contract/client/store tests and required project checks passed on October 13, 2026: `pnpm test` (86 tests across 21 files), `pnpm typecheck`, `pnpm lint`, and `pnpm build`.
+- The configured-PAT browser check remains unverified in this session: the browser-use policy rejected navigation to the local app. Do not treat the build or automated tests as proof of a live GitHub browser flow. These checks do not establish all-branch collection completeness, daily digest or heatmap behavior.
+
+### Activity contract and history hardening milestone: October 13, 2026
+
+- Corrected stale baseline/phase status and distinguished the implemented routes from the planned activity handlers.
+- Added the activity contract/schema/synthetic examples, per-operation validators, author-date range selection, repository/SHA deduplication and daily observed-versus-exact count semantics.
+- Defined opaque process-local continuation/revision behavior, initial bounded collection budgets and the installed Chart.js scatter rendering choice with Nuxt UI keyboard/date controls. Budget enforcement and live measurements are future collector acceptance work.
+- Fixed history envelope isolation, file-page limits, safe GitHub conflict handling, linked-author checks, stale loading/private-state cleanup and generation checks on paging. A regression test first reproduced cross-generation commit paging before the fix.
+- Verification passed: 102 tests across 22 files, `pnpm typecheck`, `pnpm lint`, `pnpm build` and local documentation file-link checks. Local Node/SQLite evidence is recorded in the activity contract. No fresh browser acceptance was completed; the existing browser-policy blocker remains recorded.
+
+### Bounded activity collector milestone: October 13, 2026
+
+- Implemented private POST start/continue routes with session, trusted Origin/JSON, input validation and private no-store headers.
+- Added a single process-local job, opaque continuation, revision replay/CAS, bounded batches, expiry and connection/selection invalidation. Tokens are not retained in checkpoints.
+- Captured all observed branch heads, traversed author-filtered history without author-date early stopping, deduplicated matching repository/SHA items and exposed coverage for every selected repository.
+- Enforced request, deadline, spacing, branch, item and payload budgets; bounded the upstream response stream and retained failed-page checkpoints.
+- Verification passed locally: 122 tests across 25 files, `pnpm typecheck`, `pnpm lint`, `pnpm build`, local documentation file-link checks and `git diff --check`. Collector, bounded-reader and in-process H3 route tests use synthetic upstream responses. Live GitHub/Ubuntu acceptance remains pending; no browser acceptance is claimed.
+- Next task: client/Pinia activity collection state, followed by daily digest/copy and accessible heatmap UI.
+
+### Activity client and Pinia lifecycle milestone: October 13, 2026
+
+- Added validated same-origin start/continue client functions with JSON capabilities, explicit timeout and no automatic fetch retries.
+- Added non-persistent collection phases, coverage counts, stale snapshots, sequential continuation, cooldowns, explicit pause/resume and local expiry.
+- Bound scheduling to the authenticated visible Timeshit view. Hidden tabs and navigation stop new batches; in-flight responses checkpoint only while their scope/request remains valid.
+- Added synchronous private-state invalidation for logout, connection/account/generation and tracked-selection changes. Response scope/revision checks prevent cross-collection data from entering state.
+- Tests exercise client validation, timers, lifecycle, lost-response retries, stale refreshes, rate/busy timing, auth errors, expiry, late responses and scope/revision mismatch with synthetic responses. The full local suite passed: 144 tests across 27 files. Typecheck, lint and production build passed. Build and Nuxt tests were run separately after a concurrent run failed to resolve the generated `#app-manifest` alias; the separate test rerun passed. Browser/live-PAT acceptance remains unverified.
+- Visible start/pause/resume controls, daily digest/copy and heatmap remain the next UI tasks. Live PAT/browser/Ubuntu acceptance remains pending.
+
+### Collection controls and daily digest milestone: October 13, 2026
+
+- Added explicit date/Collect/Pause/Resume controls, visible repository coverage, discovered branch progress, timestamps and partial/stale/expiry feedback. No scan starts merely by visiting the page.
+- Added selected-day digest grouped by repository using the shared author-date/deduplication semantics. Display pagination uses 20 commits; exports include the entire selected day.
+- Added plain-text and Markdown clipboard actions with accessible success/failure feedback. Original messages and whitespace remain intact; Markdown source text uses safe variable-length literal fences. Coverage/scope/time and partial/stale warnings accompany exports.
+- Added synthetic digest tests for date scope, deduplication, original content, Markdown fencing, unknown/zero, deterministic output and full export beyond the UI page size.
+- Local verification passed: 150 tests across 28 files, `pnpm typecheck`, `pnpm lint`, `pnpm build`, documentation file-link checks and `git diff --check`.
+- Rendered browser, clipboard-permission and responsive interaction acceptance are pending due to the existing browser-tool navigation denial. Live PAT/Ubuntu acceptance is also pending; automated logic checks do not substitute for these checks.
+- Next task: accessible activity heatmap, followed by rendered and live acceptance once browser access is available.
+
+### Activity heatmap milestone: October 13, 2026
+
+- Added a focused Chart.js/vue-chartjs square scatter wrapper using the existing visualization stack. Pure shared presentation helpers reuse validated author-day counts and deduplication.
+- Added fixed grayscale count buckets, a textual legend, opaque multiline tooltips, selected-day outline, partial/stale labels and animation disabled.
+- Added a 14-day paginated Nuxt UI daily-count table with accessible day actions and pressed state. Chart, table and digest date share the selected author day; long ranges scroll within the chart container.
+- Unit tests cover geometry, leap/year/week boundaries, maximum date range, stable intensity, author-day deduplication and unknown versus exact counts. A Nuxt DOM test mounts the real wrapper with a stubbed renderer to verify cell selection, empty-click handling, selection outline, tooltip and canvas accessibility guidance. These checks do not establish real canvas rendering or browser keyboard/responsive acceptance.
+- Local verification passed: 165 tests across 30 files, `pnpm typecheck`, `pnpm lint`, `pnpm build`, documentation file-link checks and `git diff --check`. Theme tests use the installed color-mode preference API. Build output targets this local macOS architecture and is not an Ubuntu release artifact.
+- Next: rendered complete/partial/stale/empty state checks, keyboard/clipboard/light-dark/responsive acceptance and representative live PAT workload verification. Ubuntu release checks remain separate. No commit, push or deployment is implied.
+
+### Calendar, width and history preference follow-up: October 13, 2026
+
+- Replaced native date inputs with Nuxt UI popover calendars for collection and digest dates. Declared the already installed internationalized date package directly.
+- Removed the Timeshit page width cap and set table/card width explicitly, preserving internal scrolling and default UCard padding.
+- Added a global persisted history branch preference, initially `development`, private GET/PUT endpoints, schema/examples/types/runtime parsing and SQLite migration v3. Initial branch discovery searches up to ten pages before a labeled fallback; manual loading remains available.
+- Explained collection scope and cost in the UI: tracked repositories only, all observed branches, author-filtered history traversal, deduplication, local authored-date filtering, fresh collection and sequential bounded batches. A short date range does not guarantee a short traversal. No speculative cache/date optimization changes were introduced.
+- Local verification passed: 177 tests across 33 files, `pnpm typecheck`, `pnpm lint`, `pnpm build`, documentation file links and `git diff --check`. Calendar interaction uses the official Nuxt mounting helper; preferences include v2-to-v3 migration/persistence and private API/client tests.
+- Rendered/browser/PAT/Ubuntu acceptance remains pending. See the [preference contract](timeshit-preferences-contract.md).
+
 ## 14. Scope boundaries and implementation gates
 
-The repository-selection, timezone, original-content language, and single-PAT scope decisions above are approved. Do not ask for those decisions again unless a new requirement changes them. This approval updates the plan and project rules; application implementation is a separate step.
+The repository-selection, timezone, original-content language, single-PAT scope and execution decisions above are approved. Do not ask for those decisions again unless a new requirement changes them. Continue implementation in the phase order and preserve the distinction between code, synthetic verification and live acceptance.
 
-Phase 1 must produce the concrete schemas, pagination/continuation contract, measured collection limits, SQLite compatibility evidence, and heatmap rendering decision. These are implementation prerequisites, not permission to invent GitHub behavior. Escalate a product change only if evidence requires broader scope, such as multiple resource owners, a different credential model, persistent activity indexing, or an external Timeshit backend.
+The concrete activity schemas, continuation contract, initial limits, local SQLite evidence and heatmap decision are in the [activity contract foundation](timeshit-activity-contract.md). Enforced collector bounds are implemented; measure real workload behavior before claiming release readiness. Escalate a product change only if evidence requires broader scope, such as multiple resource owners, a different credential model, persistent activity indexing, or an external Timeshit backend.
 
-This implementation covers repository/branch/commit browsing and available commit patches. Creating/deleting repositories, modifying files, GitHub writes, AI summaries, local unpushed commits, and guaranteed recovery of unreachable history are outside scope.
+Approved scope covers repository/branch/commit/file browsing plus all-branch activity, daily digest and heatmap. Current code implements browsing, shared activity contracts, server collection and guarded HTTP operations; client collection controls, daily digest/copy and heatmap are implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md). Creating/deleting repositories, modifying files, GitHub writes, AI summaries, local unpushed commits and guaranteed recovery of unreachable history are outside scope.
 
 ## 15. Official references
 
@@ -305,3 +373,23 @@ These sources were checked for the technical audit. Recheck changed APIs and ins
 - [GitHub pagination](https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api), [request/rate-limit best practices](https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api), and [supported API versions](https://docs.github.com/en/rest/about-the-rest-api/api-versions).
 - [Nuxt server directory](https://github.com/nuxt/nuxt/blob/main/docs/2.directory-structure/1.server.md), [shared directory](https://github.com/nuxt/nuxt/blob/main/docs/2.directory-structure/1.shared.md), [private runtime configuration](https://github.com/nuxt/nuxt/blob/main/docs/3.guide/6.going-further/10.runtime-config.md), and [session/API authentication recipe](https://github.com/nuxt/nuxt/blob/main/docs/3.guide/5.recipes/4.sessions-and-authentication.md). These are the official documentation sources; validate helpers against installed Nuxt types rather than assuming every feature on `main` is available locally.
 - [Node 22 cryptography API](https://nodejs.org/docs/latest-v22.x/api/crypto.html).
+
+History default branch preferences, calendar controls and full-width Timeshit layout are documented in the [preference contract](timeshit-preferences-contract.md).
+
+## 16. Activity collection performance follow-up
+
+The GraphQL `Commit.history` date arguments were evaluated as a possible way to reduce traversal for short date ranges. GitHub's reference describes `since` and `until` as time bounds but does not promise that they select commits by `authoredDate`; JCore's day grouping is explicitly based on `authoredAt`. The collector therefore omits those arguments and continues paging the authenticated author's history for each captured branch head, then filters and deduplicates locally. This preserves the approved date semantics but does not claim a shorter date range will reduce GitHub history pages.
+
+The GraphQL switch itself has not been shown to improve elapsed time over the prior REST author-filtered traversal. Treat it as an implementation candidate pending a live configured-PAT comparison of coverage, API cost and timings. Any future optimization must preserve every tracked repository/current branch scope, captured-head coverage, full SHA deduplication and author-date grouping. A persistent commit index could avoid repeat work, but it would retain repository commit data and require a separate retention, invalidation and force-push policy; it is outside the current approval.
+
+### October 14 complete baseline
+
+An uninterrupted local collection for October 1–13 in `Asia/Jakarta` completed 162/162 observed branches in one tracked repository with zero failures: 543,016 ms elapsed, 428 GitHub requests, 31,683 raw history entries and 47 unique matching commits. The [verification report](timeshit-verification-report.md#complete-collection-measurement--october-14-2026) and sanitized [batch measurements](timeshit-collection-benchmark.json) record the evidence and limitations. Temporary measurement logging was removed; no collection behavior, stored PAT or tracked selection was changed.
+
+### October 14 follow-up implementation
+
+Bounded GraphQL aliases are implemented: at most four independent captured heads/cursors per request, with separate checkpoints, whole-response validation before page admission, bounded single-head fallback and an explicit global 100,000-entry ceiling. Existing response schema, account filtering, author-date grouping, deduplication, request spacing and other budgets are preserved. Persistent indexing remains outside scope.
+
+The next live local run completed 163/163 observed branches, zero failures and 47 unique matching commits in 184,572 ms using 112 upstream requests (108 successful GraphQL calls, observed total cost 108). The original baseline completed 162/162 branches in 543,016 ms using 428 requests. The repository gained a branch, and captured heads/network conditions were not frozen between runs; the approximately 66% elapsed reduction and 74% request reduction are observations, not a controlled benchmark or a guaranteed speedup. See the [optimized series](timeshit-collection-optimized-benchmark.json).
+
+Credential lifecycle and Ubuntu evidence, including remaining public HTTPS boundaries, are recorded in the [verification report](timeshit-verification-report.md). The [acceptance runbook](timeshit-acceptance.md) defines isolated synthetic browser checks, real local API lifecycle checks and target-host checks without changing the main saved connection. No commit, push or public deployment is included in this work.

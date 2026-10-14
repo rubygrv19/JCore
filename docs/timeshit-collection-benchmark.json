@@ -1,0 +1,1486 @@
+{
+  "measurementDate": "2026-10-14",
+  "environment": "Local Nuxt development server on macOS; authenticated GitHub API reads",
+  "range": {
+    "startDate": "2026-10-01",
+    "endDate": "2026-10-13",
+    "timeZone": "Asia/Jakarta"
+  },
+  "scope": "One existing tracked private repository; all observed branches; connected account authorship; captured heads; unique repository/SHA results",
+  "limitations": [
+    "Single run; no REST baseline or alias-batching comparison",
+    "Request counts are not GraphQL points or remaining quota",
+    "Raw scanned entries include branch overlap and entries outside the requested author-date range",
+    "Temporary aggregate instrumentation was removed after completion; no credentials or repository identifiers recorded"
+  ],
+  "browserVerification": {
+    "repositoriesComplete": 1,
+    "repositoriesTotal": 1,
+    "failedRepositories": 0,
+    "branchesCompleted": 162,
+    "branchesDiscovered": 162,
+    "consoleErrorsObserved": 0
+  },
+  "samples": [
+    {
+      "revision": 1,
+      "status": "partial",
+      "upstreamRequests": 5,
+      "batchRequests": 5,
+      "batchDurationMs": 4621,
+      "elapsedMs": 4623,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 1,
+      "commitsScanned": 0,
+      "matchingCommits": 0,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 2,
+      "status": "partial",
+      "upstreamRequests": 10,
+      "batchRequests": 5,
+      "batchDurationMs": 5588,
+      "elapsedMs": 11258,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 3,
+      "commitsScanned": 350,
+      "matchingCommits": 2,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 3,
+      "status": "partial",
+      "upstreamRequests": 15,
+      "batchRequests": 5,
+      "batchDurationMs": 6140,
+      "elapsedMs": 18434,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 4,
+      "commitsScanned": 801,
+      "matchingCommits": 3,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 4,
+      "status": "partial",
+      "upstreamRequests": 20,
+      "batchRequests": 5,
+      "batchDurationMs": 5700,
+      "elapsedMs": 25177,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 5,
+      "commitsScanned": 1251,
+      "matchingCommits": 4,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 5,
+      "status": "partial",
+      "upstreamRequests": 25,
+      "batchRequests": 5,
+      "batchDurationMs": 5515,
+      "elapsedMs": 31733,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 6,
+      "commitsScanned": 1703,
+      "matchingCommits": 5,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 6,
+      "status": "partial",
+      "upstreamRequests": 30,
+      "batchRequests": 5,
+      "batchDurationMs": 5702,
+      "elapsedMs": 38474,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 8,
+      "commitsScanned": 2104,
+      "matchingCommits": 5,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 7,
+      "status": "partial",
+      "upstreamRequests": 35,
+      "batchRequests": 5,
+      "batchDurationMs": 5996,
+      "elapsedMs": 45508,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 9,
+      "commitsScanned": 2552,
+      "matchingCommits": 5,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 8,
+      "status": "partial",
+      "upstreamRequests": 40,
+      "batchRequests": 5,
+      "batchDurationMs": 5572,
+      "elapsedMs": 52117,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 10,
+      "commitsScanned": 3005,
+      "matchingCommits": 5,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 9,
+      "status": "partial",
+      "upstreamRequests": 45,
+      "batchRequests": 5,
+      "batchDurationMs": 5212,
+      "elapsedMs": 58374,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 12,
+      "commitsScanned": 3364,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 10,
+      "status": "partial",
+      "upstreamRequests": 50,
+      "batchRequests": 5,
+      "batchDurationMs": 4686,
+      "elapsedMs": 64107,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 15,
+      "commitsScanned": 3640,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 11,
+      "status": "partial",
+      "upstreamRequests": 55,
+      "batchRequests": 5,
+      "batchDurationMs": 5095,
+      "elapsedMs": 70242,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 20,
+      "commitsScanned": 3716,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 12,
+      "status": "partial",
+      "upstreamRequests": 60,
+      "batchRequests": 5,
+      "batchDurationMs": 4848,
+      "elapsedMs": 76125,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 25,
+      "commitsScanned": 3918,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 13,
+      "status": "partial",
+      "upstreamRequests": 65,
+      "batchRequests": 5,
+      "batchDurationMs": 5272,
+      "elapsedMs": 82440,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 27,
+      "commitsScanned": 4260,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 14,
+      "status": "partial",
+      "upstreamRequests": 70,
+      "batchRequests": 5,
+      "batchDurationMs": 5105,
+      "elapsedMs": 88591,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 30,
+      "commitsScanned": 4604,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 15,
+      "status": "partial",
+      "upstreamRequests": 75,
+      "batchRequests": 5,
+      "batchDurationMs": 5272,
+      "elapsedMs": 94900,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 31,
+      "commitsScanned": 5029,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 16,
+      "status": "partial",
+      "upstreamRequests": 80,
+      "batchRequests": 5,
+      "batchDurationMs": 5610,
+      "elapsedMs": 101546,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 33,
+      "commitsScanned": 5466,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 17,
+      "status": "partial",
+      "upstreamRequests": 85,
+      "batchRequests": 5,
+      "batchDurationMs": 5968,
+      "elapsedMs": 108547,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 34,
+      "commitsScanned": 5902,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 18,
+      "status": "partial",
+      "upstreamRequests": 90,
+      "batchRequests": 5,
+      "batchDurationMs": 4833,
+      "elapsedMs": 114413,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 38,
+      "commitsScanned": 6102,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 19,
+      "status": "partial",
+      "upstreamRequests": 95,
+      "batchRequests": 5,
+      "batchDurationMs": 5225,
+      "elapsedMs": 120668,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 40,
+      "commitsScanned": 6503,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 20,
+      "status": "partial",
+      "upstreamRequests": 100,
+      "batchRequests": 5,
+      "batchDurationMs": 5031,
+      "elapsedMs": 126730,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 41,
+      "commitsScanned": 6904,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 21,
+      "status": "partial",
+      "upstreamRequests": 105,
+      "batchRequests": 5,
+      "batchDurationMs": 5444,
+      "elapsedMs": 133207,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 43,
+      "commitsScanned": 7312,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 22,
+      "status": "partial",
+      "upstreamRequests": 110,
+      "batchRequests": 5,
+      "batchDurationMs": 5475,
+      "elapsedMs": 139717,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 44,
+      "commitsScanned": 7720,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 23,
+      "status": "partial",
+      "upstreamRequests": 115,
+      "batchRequests": 5,
+      "batchDurationMs": 5130,
+      "elapsedMs": 145878,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 45,
+      "commitsScanned": 8212,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 24,
+      "status": "partial",
+      "upstreamRequests": 120,
+      "batchRequests": 5,
+      "batchDurationMs": 4867,
+      "elapsedMs": 151779,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 47,
+      "commitsScanned": 8525,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 25,
+      "status": "partial",
+      "upstreamRequests": 125,
+      "batchRequests": 5,
+      "batchDurationMs": 5664,
+      "elapsedMs": 158476,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 49,
+      "commitsScanned": 9021,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 26,
+      "status": "partial",
+      "upstreamRequests": 130,
+      "batchRequests": 5,
+      "batchDurationMs": 5695,
+      "elapsedMs": 165200,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 51,
+      "commitsScanned": 9372,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 27,
+      "status": "partial",
+      "upstreamRequests": 135,
+      "batchRequests": 5,
+      "batchDurationMs": 4954,
+      "elapsedMs": 171182,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 53,
+      "commitsScanned": 9728,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 28,
+      "status": "partial",
+      "upstreamRequests": 140,
+      "batchRequests": 5,
+      "batchDurationMs": 4764,
+      "elapsedMs": 176977,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 56,
+      "commitsScanned": 9965,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 29,
+      "status": "partial",
+      "upstreamRequests": 145,
+      "batchRequests": 5,
+      "batchDurationMs": 5377,
+      "elapsedMs": 183389,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 58,
+      "commitsScanned": 10356,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 30,
+      "status": "partial",
+      "upstreamRequests": 150,
+      "batchRequests": 5,
+      "batchDurationMs": 5467,
+      "elapsedMs": 189888,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 60,
+      "commitsScanned": 10679,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 31,
+      "status": "partial",
+      "upstreamRequests": 155,
+      "batchRequests": 5,
+      "batchDurationMs": 5616,
+      "elapsedMs": 196519,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 62,
+      "commitsScanned": 11098,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 32,
+      "status": "partial",
+      "upstreamRequests": 160,
+      "batchRequests": 5,
+      "batchDurationMs": 5069,
+      "elapsedMs": 202625,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 63,
+      "commitsScanned": 11506,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 33,
+      "status": "partial",
+      "upstreamRequests": 165,
+      "batchRequests": 5,
+      "batchDurationMs": 5205,
+      "elapsedMs": 208872,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 64,
+      "commitsScanned": 11914,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 34,
+      "status": "partial",
+      "upstreamRequests": 170,
+      "batchRequests": 5,
+      "batchDurationMs": 4792,
+      "elapsedMs": 214701,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 65,
+      "commitsScanned": 12322,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 35,
+      "status": "partial",
+      "upstreamRequests": 175,
+      "batchRequests": 5,
+      "batchDurationMs": 5412,
+      "elapsedMs": 221148,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 66,
+      "commitsScanned": 12770,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 36,
+      "status": "partial",
+      "upstreamRequests": 180,
+      "batchRequests": 5,
+      "batchDurationMs": 4879,
+      "elapsedMs": 227063,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 68,
+      "commitsScanned": 13223,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 37,
+      "status": "partial",
+      "upstreamRequests": 185,
+      "batchRequests": 5,
+      "batchDurationMs": 5658,
+      "elapsedMs": 233757,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 71,
+      "commitsScanned": 13440,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 38,
+      "status": "partial",
+      "upstreamRequests": 190,
+      "batchRequests": 5,
+      "batchDurationMs": 5467,
+      "elapsedMs": 240253,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 72,
+      "commitsScanned": 13847,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 39,
+      "status": "partial",
+      "upstreamRequests": 195,
+      "batchRequests": 5,
+      "batchDurationMs": 5946,
+      "elapsedMs": 247231,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 75,
+      "commitsScanned": 14182,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 40,
+      "status": "partial",
+      "upstreamRequests": 200,
+      "batchRequests": 5,
+      "batchDurationMs": 6750,
+      "elapsedMs": 255020,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 77,
+      "commitsScanned": 14578,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 41,
+      "status": "partial",
+      "upstreamRequests": 205,
+      "batchRequests": 5,
+      "batchDurationMs": 4900,
+      "elapsedMs": 260958,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 79,
+      "commitsScanned": 14891,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 42,
+      "status": "partial",
+      "upstreamRequests": 210,
+      "batchRequests": 5,
+      "batchDurationMs": 4517,
+      "elapsedMs": 266513,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 84,
+      "commitsScanned": 14932,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 43,
+      "status": "partial",
+      "upstreamRequests": 215,
+      "batchRequests": 5,
+      "batchDurationMs": 5087,
+      "elapsedMs": 272634,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 89,
+      "commitsScanned": 15062,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 44,
+      "status": "partial",
+      "upstreamRequests": 220,
+      "batchRequests": 5,
+      "batchDurationMs": 4809,
+      "elapsedMs": 278479,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 94,
+      "commitsScanned": 15302,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 45,
+      "status": "partial",
+      "upstreamRequests": 225,
+      "batchRequests": 5,
+      "batchDurationMs": 5389,
+      "elapsedMs": 284907,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 97,
+      "commitsScanned": 15637,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 46,
+      "status": "partial",
+      "upstreamRequests": 230,
+      "batchRequests": 5,
+      "batchDurationMs": 5703,
+      "elapsedMs": 291651,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 99,
+      "commitsScanned": 15997,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 47,
+      "status": "partial",
+      "upstreamRequests": 235,
+      "batchRequests": 5,
+      "batchDurationMs": 4909,
+      "elapsedMs": 297595,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 101,
+      "commitsScanned": 16331,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 48,
+      "status": "partial",
+      "upstreamRequests": 240,
+      "batchRequests": 5,
+      "batchDurationMs": 6134,
+      "elapsedMs": 304763,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 103,
+      "commitsScanned": 16657,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 49,
+      "status": "partial",
+      "upstreamRequests": 245,
+      "batchRequests": 5,
+      "batchDurationMs": 5614,
+      "elapsedMs": 311410,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 105,
+      "commitsScanned": 17037,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 50,
+      "status": "partial",
+      "upstreamRequests": 250,
+      "batchRequests": 5,
+      "batchDurationMs": 5237,
+      "elapsedMs": 317680,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 106,
+      "commitsScanned": 17509,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 51,
+      "status": "partial",
+      "upstreamRequests": 255,
+      "batchRequests": 5,
+      "batchDurationMs": 5023,
+      "elapsedMs": 323741,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 107,
+      "commitsScanned": 18002,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 52,
+      "status": "partial",
+      "upstreamRequests": 260,
+      "batchRequests": 5,
+      "batchDurationMs": 4956,
+      "elapsedMs": 329739,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 109,
+      "commitsScanned": 18423,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 53,
+      "status": "partial",
+      "upstreamRequests": 265,
+      "batchRequests": 5,
+      "batchDurationMs": 4879,
+      "elapsedMs": 335659,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 110,
+      "commitsScanned": 18826,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 54,
+      "status": "partial",
+      "upstreamRequests": 270,
+      "batchRequests": 5,
+      "batchDurationMs": 6615,
+      "elapsedMs": 343318,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 111,
+      "commitsScanned": 19309,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 55,
+      "status": "partial",
+      "upstreamRequests": 275,
+      "batchRequests": 5,
+      "batchDurationMs": 5183,
+      "elapsedMs": 349539,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 112,
+      "commitsScanned": 19772,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 56,
+      "status": "partial",
+      "upstreamRequests": 280,
+      "batchRequests": 5,
+      "batchDurationMs": 5452,
+      "elapsedMs": 356031,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 114,
+      "commitsScanned": 20175,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 57,
+      "status": "partial",
+      "upstreamRequests": 285,
+      "batchRequests": 5,
+      "batchDurationMs": 5112,
+      "elapsedMs": 362177,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 115,
+      "commitsScanned": 20583,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 58,
+      "status": "partial",
+      "upstreamRequests": 290,
+      "batchRequests": 5,
+      "batchDurationMs": 5807,
+      "elapsedMs": 369019,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 117,
+      "commitsScanned": 20899,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 59,
+      "status": "partial",
+      "upstreamRequests": 295,
+      "batchRequests": 5,
+      "batchDurationMs": 5006,
+      "elapsedMs": 375053,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 118,
+      "commitsScanned": 21359,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 60,
+      "status": "partial",
+      "upstreamRequests": 300,
+      "batchRequests": 5,
+      "batchDurationMs": 4830,
+      "elapsedMs": 380906,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 120,
+      "commitsScanned": 21732,
+      "matchingCommits": 43,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 61,
+      "status": "partial",
+      "upstreamRequests": 305,
+      "batchRequests": 5,
+      "batchDurationMs": 5478,
+      "elapsedMs": 387430,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 121,
+      "commitsScanned": 22150,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 62,
+      "status": "partial",
+      "upstreamRequests": 310,
+      "batchRequests": 5,
+      "batchDurationMs": 4971,
+      "elapsedMs": 393441,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 123,
+      "commitsScanned": 22634,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 63,
+      "status": "partial",
+      "upstreamRequests": 315,
+      "batchRequests": 5,
+      "batchDurationMs": 5996,
+      "elapsedMs": 400475,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 124,
+      "commitsScanned": 23036,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 64,
+      "status": "partial",
+      "upstreamRequests": 320,
+      "batchRequests": 5,
+      "batchDurationMs": 5096,
+      "elapsedMs": 406605,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 126,
+      "commitsScanned": 23415,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 65,
+      "status": "partial",
+      "upstreamRequests": 325,
+      "batchRequests": 5,
+      "batchDurationMs": 5643,
+      "elapsedMs": 413280,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 127,
+      "commitsScanned": 23913,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 66,
+      "status": "partial",
+      "upstreamRequests": 330,
+      "batchRequests": 5,
+      "batchDurationMs": 4799,
+      "elapsedMs": 419114,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 129,
+      "commitsScanned": 24230,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 67,
+      "status": "partial",
+      "upstreamRequests": 335,
+      "batchRequests": 5,
+      "batchDurationMs": 5364,
+      "elapsedMs": 425505,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 130,
+      "commitsScanned": 24642,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 68,
+      "status": "partial",
+      "upstreamRequests": 340,
+      "batchRequests": 5,
+      "batchDurationMs": 5682,
+      "elapsedMs": 432222,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 131,
+      "commitsScanned": 25082,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 69,
+      "status": "partial",
+      "upstreamRequests": 345,
+      "batchRequests": 5,
+      "batchDurationMs": 4962,
+      "elapsedMs": 438220,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 132,
+      "commitsScanned": 25549,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 70,
+      "status": "partial",
+      "upstreamRequests": 350,
+      "batchRequests": 5,
+      "batchDurationMs": 4709,
+      "elapsedMs": 443984,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 134,
+      "commitsScanned": 25869,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 71,
+      "status": "partial",
+      "upstreamRequests": 355,
+      "batchRequests": 5,
+      "batchDurationMs": 5638,
+      "elapsedMs": 450658,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 136,
+      "commitsScanned": 26276,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 72,
+      "status": "partial",
+      "upstreamRequests": 360,
+      "batchRequests": 5,
+      "batchDurationMs": 5423,
+      "elapsedMs": 457116,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 139,
+      "commitsScanned": 26479,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 73,
+      "status": "partial",
+      "upstreamRequests": 365,
+      "batchRequests": 5,
+      "batchDurationMs": 5688,
+      "elapsedMs": 463835,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 140,
+      "commitsScanned": 26926,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 74,
+      "status": "partial",
+      "upstreamRequests": 370,
+      "batchRequests": 5,
+      "batchDurationMs": 4604,
+      "elapsedMs": 469482,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 144,
+      "commitsScanned": 27056,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 75,
+      "status": "partial",
+      "upstreamRequests": 375,
+      "batchRequests": 5,
+      "batchDurationMs": 5158,
+      "elapsedMs": 475686,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 146,
+      "commitsScanned": 27356,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 76,
+      "status": "partial",
+      "upstreamRequests": 380,
+      "batchRequests": 5,
+      "batchDurationMs": 5881,
+      "elapsedMs": 482608,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 147,
+      "commitsScanned": 27847,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 77,
+      "status": "partial",
+      "upstreamRequests": 385,
+      "batchRequests": 5,
+      "batchDurationMs": 4933,
+      "elapsedMs": 488576,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 148,
+      "commitsScanned": 28254,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 78,
+      "status": "partial",
+      "upstreamRequests": 390,
+      "batchRequests": 5,
+      "batchDurationMs": 5471,
+      "elapsedMs": 495085,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 150,
+      "commitsScanned": 28567,
+      "matchingCommits": 44,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 79,
+      "status": "partial",
+      "upstreamRequests": 395,
+      "batchRequests": 5,
+      "batchDurationMs": 5029,
+      "elapsedMs": 501172,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 153,
+      "commitsScanned": 28941,
+      "matchingCommits": 47,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 80,
+      "status": "partial",
+      "upstreamRequests": 400,
+      "batchRequests": 5,
+      "batchDurationMs": 5638,
+      "elapsedMs": 507846,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 154,
+      "commitsScanned": 29352,
+      "matchingCommits": 47,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 81,
+      "status": "partial",
+      "upstreamRequests": 405,
+      "batchRequests": 5,
+      "batchDurationMs": 5343,
+      "elapsedMs": 514224,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 155,
+      "commitsScanned": 29817,
+      "matchingCommits": 47,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 82,
+      "status": "partial",
+      "upstreamRequests": 410,
+      "batchRequests": 5,
+      "batchDurationMs": 5725,
+      "elapsedMs": 520998,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 156,
+      "commitsScanned": 30222,
+      "matchingCommits": 47,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 83,
+      "status": "partial",
+      "upstreamRequests": 415,
+      "batchRequests": 5,
+      "batchDurationMs": 5261,
+      "elapsedMs": 527304,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 157,
+      "commitsScanned": 30691,
+      "matchingCommits": 47,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 84,
+      "status": "partial",
+      "upstreamRequests": 420,
+      "batchRequests": 5,
+      "batchDurationMs": 5137,
+      "elapsedMs": 533482,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 159,
+      "commitsScanned": 31124,
+      "matchingCommits": 47,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 85,
+      "status": "partial",
+      "upstreamRequests": 425,
+      "batchRequests": 5,
+      "batchDurationMs": 4877,
+      "elapsedMs": 539392,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 160,
+      "commitsScanned": 31567,
+      "matchingCommits": 47,
+      "partialReasons": [
+        "work-budget"
+      ],
+      "resumable": true,
+      "retryAfterSeconds": null
+    },
+    {
+      "revision": 86,
+      "status": "complete",
+      "upstreamRequests": 428,
+      "batchRequests": 3,
+      "batchDurationMs": 2588,
+      "elapsedMs": 543016,
+      "branchesDiscovered": 162,
+      "branchesCompleted": 162,
+      "commitsScanned": 31683,
+      "matchingCommits": 47,
+      "partialReasons": [],
+      "resumable": false,
+      "retryAfterSeconds": null
+    }
+  ]
+}

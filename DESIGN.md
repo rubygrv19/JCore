@@ -17,6 +17,7 @@ These are implementation rules for future changes. Existing deviations and scope
 | `app/layouts/default.vue` | Shared shell, navigation and theme switching |
 | `app/pages/login.vue` | Separate login composition |
 | `app/pages/settings.vue` | Service configuration cards/modals |
+| `app/pages/services/timeshit.vue` | Repository/history browsing, collection controls, daily digest and activity heatmap with Nuxt UI tables and Chart.js |
 | `app/pages/services/vps.vue` | Monitoring grid, typography, tables and chart palette |
 | `app/components/VpsDonutChart.client.vue` | Donut layout and tooltip |
 | `app/components/VpsResourceChart.client.vue` | Trend chart layout, legends and tooltip |
@@ -86,7 +87,7 @@ Use default UCard body padding on VPS cards. Add internal section gaps independe
 | Process pagination | `UPagination`, 10 rows per page |
 | Theme / identity | `UColorModeButton`, `UAvatar`, `UIcon` |
 
-Every enabled action has a pointer cursor, an accessible name and a visible keyboard focus state. Disabled actions must be visibly disabled and must not imply they are usable. Decorative icons have no click affordance. Use semantic controls rather than clickable containers.
+Nuxt UI button and select slot themes in `app/app.config.ts` provide the shared pointer cursor; Nuxt UI disabled-state cursor variants remain in effect. Every enabled action has a pointer cursor, an accessible name and a visible keyboard focus state. Disabled actions must be visibly disabled and must not imply they are usable. Decorative icons have no click affordance. Use semantic controls rather than clickable containers.
 
 Service Settings opens Connection automatically and leaves Danger Zone closed. Labels sit above inputs. Shutdown requires explicit confirmation. Save is in the modal footer. These mode controls currently change presentation only; labels must not imply an OS shutdown action.
 
@@ -116,6 +117,16 @@ Use Chart.js 4 with vue-chartjs for real data charts. Nuxt UI surrounds the char
 
 ## UI acceptance checklist
 
+The implemented Timeshit heatmap uses the existing Chart.js scatter integration with square week/day points, grayscale intensity and opaque tooltips. Nuxt UI date/table controls provide keyboard day selection and explicit unknown versus zero/observed counts. See the [activity contract](docs/timeshit-activity-contract.md) and current [verification report](docs/timeshit-verification-report.md).
+
 For every UI change, inspect the affected route locally in desktop/mobile widths and both themes. Verify alignment, contained overflow, default card padding, labels, status cues, tooltip fill, keyboard expansion, modal behavior, focus, cursors and reduced motion. Confirm labels and adjacent data remain available for users who cannot inspect a canvas tooltip.
 
 This document specifies the intended system and records current source choices. It is not a claim that every accessibility interaction has automated coverage. Use the [development checklist](docs/development.md#browser-verification-for-ui-changes) and [component references](docs/references.md#nuxt-ui-and-visualization) for verification.
+
+## Timeshit activity layout
+
+Collection controls precede the daily digest and repository management. Use default UCard padding, wrapping date/action rows, repository coverage separated by rules, and full-width commit lists. Controls stack naturally on narrow screens. Preserve original message whitespace and wrap long content; paginate displayed commits at 20 rows without restricting copied output. Use textual complete/partial/stale states and neutral badges; do not invent a progress percentage while branch discovery is unfinished.
+
+The Timeshit heatmap uses Chart.js square scatter points with Sunday-to-Saturday rows, chronological weeks and fixed grayscale intensity buckets (0, 1, 2–4, 5–9, ≥10 observed commits). Keep the legend, partial/stale wording and exact daily-count table together. The 14-day table page provides Nuxt UI buttons for keyboard day selection; chart and table select the same digest date. Keep long charts inside their horizontal scroll container, opaque tooltips and animation disabled.
+
+Timeshit uses the full available shell width as an owner-approved exception to the general 1440px content cap. Its cards/tables fill that width while wide tables and long heatmaps scroll internally. Activity/digest dates use Nuxt UI popover calendars with English date labels and no native HTML date picker. UCard default padding remains unchanged.

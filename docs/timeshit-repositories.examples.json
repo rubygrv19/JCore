@@ -1,0 +1,50 @@
+{
+  "tracked": {
+    "schemaVersion": "1.0",
+    "generation": "11111111-1111-4111-8111-111111111111",
+    "selectionRevision": "22222222-2222-4222-8222-222222222222",
+    "repositories": [
+      {
+        "id": 123,
+        "owner": "example",
+        "name": "project",
+        "description": "Synthetic fixture, not a real repository.",
+        "private": true,
+        "archived": false,
+        "defaultBranch": "main",
+        "access": "readable",
+        "checkedAt": "2026-10-13T00:00:00.000Z"
+      }
+    ],
+    "page": 1,
+    "hasNext": false
+  },
+  "pendingRecheck": {
+    "schemaVersion": "1.0",
+    "generation": "11111111-1111-4111-8111-111111111111",
+    "selectionRevision": "22222222-2222-4222-8222-222222222222",
+    "repositories": [
+      {
+        "id": 123,
+        "owner": "example",
+        "name": "project",
+        "description": "Synthetic fixture, not a real repository.",
+        "private": true,
+        "archived": false,
+        "defaultBranch": "main",
+        "access": "not-checked",
+        "checkedAt": "2026-10-13T00:00:00.000Z"
+      }
+    ],
+    "page": 1,
+    "hasNext": false
+  },
+  "empty": {
+    "schemaVersion": "1.0",
+    "generation": "11111111-1111-4111-8111-111111111111",
+    "selectionRevision": "22222222-2222-4222-8222-222222222222",
+    "repositories": [],
+    "page": 1,
+    "hasNext": false
+  }
+}

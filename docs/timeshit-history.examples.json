@@ -1,0 +1,49 @@
+{
+  "branches": {
+    "schemaVersion": "1.0",
+    "generation": "11111111-1111-4111-8111-111111111111",
+    "repositoryId": 123456,
+    "page": 1,
+    "hasNext": false,
+    "branches": [{ "name": "main", "headSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "protected": true }]
+  },
+  "commits": {
+    "schemaVersion": "1.0",
+    "generation": "11111111-1111-4111-8111-111111111111",
+    "repositoryId": 123456,
+    "branch": "main",
+    "headSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "page": 1,
+    "hasNext": false,
+    "commits": [{
+      "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "htmlUrl": "https://github.com/example/demo/commit/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "message": "Document read-only history API\n\nClarify pagination and source timestamps.",
+      "title": "Document read-only history API",
+      "body": "Clarify pagination and source timestamps.",
+      "authorLogin": "example-user",
+      "authorName": "Example User",
+      "authoredAt": "2026-10-12T10:00:00Z",
+      "committerName": "Example User",
+      "committedAt": "2026-10-12T10:03:00Z"
+    }]
+  },
+  "commitDetail": {
+    "schemaVersion": "1.0",
+    "generation": "11111111-1111-4111-8111-111111111111",
+    "repositoryId": 123456,
+    "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "htmlUrl": "https://github.com/example/demo/commit/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "message": "Document read-only history API\n\nClarify pagination and source timestamps.",
+    "authorLogin": "example-user",
+    "authorName": "Example User",
+    "authoredAt": "2026-10-12T10:00:00Z",
+    "committerName": "Example User",
+    "committedAt": "2026-10-12T10:03:00Z",
+    "stats": { "additions": 8, "deletions": 1, "total": 9 },
+    "filePage": 1,
+    "hasNextFiles": false,
+    "filesTruncatedAtGitHubLimit": false,
+    "files": [{ "filename": "docs/api.md", "previousFilename": null, "status": "modified", "additions": 8, "deletions": 1, "changes": 9, "patch": "@@ -1 +1,8 @@\n+Read-only API contract", "patchTruncated": false, "blobUrl": "https://github.com/example/demo/blob/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/docs/api.md" }]
+  }
+}

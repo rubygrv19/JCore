@@ -1,0 +1,338 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jcore.rubygrv.cloud/schemas/timeshit-activity-1.0.json",
+  "title": "Timeshit activity contract foundation (HTTP handlers not implemented)",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/start"
+    },
+    {
+      "$ref": "#/$defs/resume"
+    },
+    {
+      "$ref": "#/$defs/snapshot"
+    }
+  ],
+  "$defs": {
+    "range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "startDate",
+        "endDate",
+        "timeZone"
+      ],
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(19[7-9]\\d|20\\d\\d)-\\d{2}-\\d{2}$"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(19[7-9]\\d|20\\d\\d)-\\d{2}-\\d{2}$"
+        },
+        "timeZone": {
+          "const": "Asia/Jakarta"
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repositoryId",
+        "owner",
+        "name",
+        "status",
+        "branchDiscoveryComplete",
+        "branchesDiscovered",
+        "branchesCompleted",
+        "commitsScanned",
+        "failure"
+      ],
+      "properties": {
+        "repositoryId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 39
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "scanning",
+            "complete",
+            "failed"
+          ]
+        },
+        "branchDiscoveryComplete": {
+          "type": "boolean"
+        },
+        "branchesDiscovered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2000
+        },
+        "branchesCompleted": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2000
+        },
+        "commitsScanned": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "failure": {
+          "enum": [
+            null,
+            "not-verified",
+            "restricted",
+            "conflict",
+            "unavailable",
+            "invalid-upstream"
+          ]
+        }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repositoryId",
+        "commit"
+      ],
+      "properties": {
+        "repositoryId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "commit": {
+          "$ref": "https://jcore.rubygrv.cloud/schemas/timeshit-history-1.0.json#/$defs/commitItem"
+        }
+      }
+    },
+    "start": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expectedGeneration",
+        "expectedSelectionRevision",
+        "range"
+      ],
+      "properties": {
+        "expectedGeneration": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expectedSelectionRevision": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "range": {
+          "$ref": "#/$defs/range"
+        }
+      }
+    },
+    "resume": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "continuation",
+        "expectedRevision"
+      ],
+      "properties": {
+        "continuation": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1001
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "collectionId",
+        "revision",
+        "generation",
+        "selectionRevision",
+        "account",
+        "range",
+        "status",
+        "startedAt",
+        "updatedAt",
+        "expiresAt",
+        "continuation",
+        "retryAfterSeconds",
+        "partialReasons",
+        "coverage",
+        "items"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0"
+        },
+        "collectionId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1001
+        },
+        "generation": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "selectionRevision": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "account": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "login"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "login": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}$"
+            }
+          }
+        },
+        "range": {
+          "$ref": "#/$defs/range"
+        },
+        "status": {
+          "enum": [
+            "partial",
+            "complete"
+          ]
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "continuation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "retryAfterSeconds": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "partialReasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "work-budget",
+              "rate-limited",
+              "upstream-error",
+              "repository-unavailable",
+              "capacity-limit"
+            ]
+          }
+        },
+        "coverage": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 200,
+          "items": {
+            "$ref": "#/$defs/coverage"
+          }
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 5000,
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "complete"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "continuation": {
+                "type": "null"
+              },
+              "retryAfterSeconds": {
+                "type": "null"
+              },
+              "partialReasons": {
+                "maxItems": 0
+              },
+              "coverage": {
+                "items": {
+                  "properties": {
+                    "status": {
+                      "const": "complete"
+                    },
+                    "branchDiscoveryComplete": {
+                      "const": true
+                    },
+                    "failure": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "partialReasons": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

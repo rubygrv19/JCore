@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Timeshit history preferences",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "historyDefaultBranch"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "historyDefaultBranch": { "type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$" }
+  }
+}

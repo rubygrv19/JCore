@@ -9,6 +9,12 @@ export default defineAppConfig({
       error: 'neutral',
       neutral: 'zinc'
     },
+    button: {
+      slots: { base: 'cursor-pointer' }
+    },
+    select: {
+      slots: { base: 'cursor-pointer', item: 'cursor-pointer' }
+    },
     card: {
       slots: {
         root: 'rounded-none'

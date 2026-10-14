@@ -1,6 +1,6 @@
 # Security and runtime configuration
 
-This describes the existing implementation, not a security certification. See [the Timeshit plan](timeshit-implementation-plan.md) for proposed PAT/database controls; they are not active yet.
+This describes the existing implementation, not a security certification. See the [Timeshit connection contract](timeshit-connection-contract.md) for PAT/database controls, setup and recovery, the [repository contract](timeshit-repositories-contract.md) for persisted selection, and the [history contract](timeshit-history-contract.md) for guarded read-only GitHub browsing. All-branch collection, daily digest/copy and heatmap are implemented. Current rendered/live evidence and remaining release checks are in the [verification report](timeshit-verification-report.md); repeatable isolated checks are in the [acceptance runbook](timeshit-acceptance.md).
 
 ## Environment variables
 
@@ -19,7 +19,7 @@ All current application runtime variables below are private server configuration
 
 Nuxt development tooling reads the ignored `.env`. For the built server, inject variables with the service manager or runtime environment. Changing private collector/auth settings requires restarting the running Node server; Settings is not their configuration interface.
 
-Use `.env.example` for variable names and empty placeholders only. Do not print or commit real secrets, private token responses or user telemetry. Keep secret files readable only by the application account and the operator who needs them. No Timeshit encryption key/database variable has been implemented; do not add a guessed variable to production configuration.
+Use `.env.example` for variable names and empty placeholders only. Do not print or commit real secrets, private token responses or user telemetry. Keep secret files readable only by the application account and the operator who needs them. Timeshit private variables are NUXT_TIMESHIT_ENCRYPTION_KEY, NUXT_TIMESHIT_TRUSTED_ORIGIN and optional NUXT_TIMESHIT_DATABASE_PATH; use the connection runbook for generation, backup and recovery.
 
 ## Login flow
 
@@ -48,7 +48,7 @@ The app does not explicitly configure session maxAge, a session database or glob
 
 The global route middleware checks every route except `/login`. Private VPS API handlers call `requireUserSession(event)` before checking platform or collecting host data. A page redirect alone never protects API data.
 
-The current login route has no custom origin/CSRF check beyond the framework/browser behavior and configured cookie policy. Do not document explicit mutation-origin verification as implemented. Add and verify that policy when implementing the approved Timeshit credential mutations.
+The current login route has no custom origin/CSRF check beyond the framework/browser behavior and configured cookie policy. Timeshit credential mutations separately enforce configured trusted Origin and JSON body limits; this does not change the login endpoint policy.
 
 ## Network and cache boundaries
 
@@ -75,3 +75,9 @@ Before remote exposure, verify HTTPS/session cookies, unauthenticated API reject
 ## Sources
 
 See [authentication/runtime references](references.md#authentication-runtime-and-validation) for Nuxt runtime config, Nuxt Auth Utils and Node crypto. Project behavior is defined by `nuxt.config.ts`, `server/api/auth/login.post.ts`, `server/utils/admin-auth.ts`, `server/utils/login-rate-limit.ts`, `app/middleware/auth.global.ts` and the login page.
+
+## Timeshit activity capabilities
+
+The activity continuation is an opaque capability for an authenticated process-local job. The client sends it only in a private same-origin JSON POST body and retains it in non-persistent Pinia state. Never put it in URLs, browser storage, logs or screenshots. Session/connection/selection changes clear client snapshots and invalidate late responses; server guards still independently enforce authentication and scope. See the [activity contract](timeshit-activity-contract.md).
+
+Timeshit history preferences use a private session-guarded GET/PUT endpoint and SQLite v3 singleton. They contain no credentials and persist independently of PAT identity. See the [preference contract](timeshit-preferences-contract.md) for mutation-origin checks and migration behavior.

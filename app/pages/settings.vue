@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useTimeshitStore } from '~/stores/timeshit'
+import { saveTimeshitConnection, removeTimeshitConnection } from '~/utils/timeshit-client'
 import { useServicesStore } from '~/stores/services'
 import { normalizeBaseUrl } from '~/utils/service-clients'
 import type { ServiceKey, ServiceMode } from '~/types/services'
@@ -6,6 +8,18 @@ import type { ServiceKey, ServiceMode } from '~/types/services'
 useSeoMeta({ title: 'Settings' })
 
 const servicesStore = useServicesStore()
+const timeshit = useTimeshitStore()
+onMounted(() => {
+  void timeshit.load()
+})
+const timeshitCardLabel = computed(() => timeshit.loading ? 'Checking connection' : timeshit.error ? 'Status unavailable' : timeshit.connection?.state === 'connected' ? 'Connected' : timeshit.connection?.state === 'locked' ? 'Connection locked' : 'Not configured')
+const tokenDraft = ref('')
+const revealToken = ref(false)
+const connectionBusy = ref(false)
+const connectionError = ref('')
+const connectionNotice = ref('')
+const disconnectConfirmed = ref(false)
+
 const services: Array<{ key: ServiceKey, label: string, icon: string }> = [
   { key: 'vps', label: 'VPS', icon: 'i-lucide-server' },
   { key: 'timeshit', label: 'Timeshit', icon: 'i-lucide-clock-3' },
@@ -32,7 +46,49 @@ const baseUrlError = ref('')
 const serviceModeDraft = ref<Exclude<ServiceMode, ''>>()
 const shutdownConfirmed = ref(false)
 
+watch(configModalOpen, (open) => {
+  if (!open) clearTokenDraft()
+})
+let formMounted = true
+onBeforeUnmount(() => {
+  formMounted = false
+  clearTokenDraft()
+})
+function clearTokenDraft() {
+  tokenDraft.value = ''
+  revealToken.value = false
+  disconnectConfirmed.value = false
+}
+
+async function updateConnection(disconnect = false) {
+  if (!timeshit.connection || connectionBusy.value) return
+  connectionBusy.value = true
+  connectionError.value = ''
+  connectionNotice.value = ''
+  try {
+    const result = disconnect
+      ? await removeTimeshitConnection(timeshit.connection.generation)
+      : await saveTimeshitConnection({ token: tokenDraft.value, expectedGeneration: timeshit.connection.generation })
+    if (!formMounted) return
+    timeshit.connection = result
+    connectionNotice.value = disconnect ? 'GitHub disconnected. Saved token removed.' : 'GitHub identity verified. Connection saved.'
+  } catch (error) {
+    if (!formMounted) return
+    const data = (error as { data?: { data?: { code?: string, retryAfterSeconds?: number } } }).data?.data
+    const messages: Record<string, string> = { GITHUB_AUTH_FAILED: 'GitHub rejected this token. Check its validity.', GITHUB_RESTRICTED: 'GitHub denied access. Check permissions.', GITHUB_RATE_LIMITED: `Rate limited. Try again in ${data?.retryAfterSeconds ?? 60} seconds.`, CONNECTION_CHANGED: 'Connection changed. Status has been reloaded; review it before retrying.', STORAGE_LOCKED: 'Saved token is locked. Restore the server key or disconnect first.' }
+    connectionError.value = messages[data?.code ?? ''] ?? 'Connection could not be saved. Check server configuration and try again.'
+    await timeshit.load()
+  } finally {
+    connectionBusy.value = false
+    clearTokenDraft()
+  }
+}
+
 function openConfig(serviceKey: ServiceKey) {
+  clearTokenDraft()
+  connectionError.value = ''
+  connectionNotice.value = ''
+  if (serviceKey === 'timeshit') void timeshit.load()
   const config = servicesStore.configs[serviceKey]
   selectedServiceKey.value = serviceKey
   baseUrlDraft.value = config.baseUrl
@@ -103,7 +159,7 @@ function saveConfig() {
             color="neutral"
             variant="subtle"
             size="sm"
-          >{{ service.key === 'vps' ? 'Local collector' : 'Not configured' }}</UBadge>
+          >{{ service.key === 'vps' ? 'Local collector' : service.key === 'timeshit' ? timeshitCardLabel : 'Not configured' }}</UBadge>
         </span>
         <span class="block text-sm font-semibold">{{ service.label }}</span>
         <span class="mt-1 block text-xs font-normal text-muted">Service configuration</span>
@@ -117,6 +173,8 @@ function saveConfig() {
     <UModal
       v-model:open="configModalOpen"
       :title="selectedService"
+      :dismissible="!connectionBusy"
+      :close="!connectionBusy"
     >
       <template #body>
         <div class="space-y-3">
@@ -132,7 +190,143 @@ function saveConfig() {
                 v-if="selectedServiceKey === 'vps'"
                 class="rounded-none border border-gray-300 bg-gray-50 p-3 text-sm leading-6 text-gray-600 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-300"
               >
-                Host metrics are read from the loopback Prometheus endpoint configured by NUXT_VPS_PROMETHEUS_URL. Process details use Linux /proc. Live VPS data requires Nuxt and the collectors to run on Linux; other hosts use demo data.
+                Host metrics are read from the loopback Prometheus endpoint configured by NUXT_VPS_PROMETHEUS_URL. Process details use Linux /proc. Live VPS data requires Nuxt and the collectors to run on Linux
+                other hosts use demo data.
+              </div>
+              <div
+                v-else-if="selectedServiceKey === 'timeshit'"
+                class="space-y-5"
+              >
+                <p class="text-sm text-muted">
+                  GitHub requests run through this Nuxt server. Your token is encrypted at rest and is never returned to the browser.
+                </p>
+                <UAlert
+                  v-if="timeshit.loading"
+                  color="neutral"
+                  title="Loading connection status…"
+                />
+                <UAlert
+                  v-else-if="timeshit.error"
+                  color="neutral"
+                  :title="timeshit.error"
+                />
+                <UButton
+                  v-if="timeshit.error"
+                  color="neutral"
+                  variant="outline"
+                  label="Retry status"
+                  class="cursor-pointer"
+                  @click="timeshit.load()"
+                />
+                <template v-if="timeshit.connection && !timeshit.loading">
+                  <UAlert
+                    v-if="timeshit.connection.state === 'unconfigured'"
+                    color="neutral"
+                    title="Server configuration required"
+                    description="Set NUXT_TIMESHIT_ENCRYPTION_KEY and NUXT_TIMESHIT_TRUSTED_ORIGIN before connecting."
+                  />
+                  <UAlert
+                    v-else-if="timeshit.connection.state === 'locked'"
+                    color="neutral"
+                    title="Saved connection is locked"
+                    description="Restore the original server encryption key, or disconnect to remove the saved credential before reconnecting."
+                  />
+                  <div
+                    v-else
+                    class="space-y-4"
+                  >
+                    <div class="border-b border-default pb-3 text-sm">
+                      <p class="font-semibold">
+                        {{ timeshit.connection.account ? `Connected as ${timeshit.connection.account.login}` : 'GitHub not connected' }}
+                      </p>
+                      <p
+                        v-if="timeshit.connection.account"
+                        class="mt-1 text-xs text-muted"
+                      >
+                        Identity verified · Repository discovery: {{ timeshit.connection.checks.discovery }} · Check repository access in Timeshit
+                      </p>
+                    </div>
+                    <UFormField
+                      :label="timeshit.connection.state === 'connected' ? 'Replacement personal access token' : 'Personal access token'"
+                      description="Fine-grained PAT: Metadata and Contents read access. Classic PAT: repo scope for private repositories; this scope also grants write capabilities. JCore only reads GitHub data."
+                    >
+                      <UInput
+                        v-model="tokenDraft"
+                        :type="revealToken ? 'text' : 'password'"
+                        autocomplete="off"
+                        :maxlength="1024"
+                        placeholder="github_pat_…"
+                        class="mt-2 w-full"
+                        :disabled="connectionBusy"
+                      >
+                        <template #trailing>
+                          <UButton
+                            color="neutral"
+                            variant="link"
+                            :icon="revealToken ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                            :aria-label="revealToken ? 'Hide token' : 'Show token'"
+                            class="cursor-pointer"
+                            :disabled="connectionBusy"
+                            @click="revealToken = !revealToken"
+                          />
+                        </template>
+                      </UInput>
+                    </UFormField>
+                    <UButton
+                      color="neutral"
+                      :label="timeshit.connection.state === 'connected' ? 'Verify and replace token' : 'Verify and connect'"
+                      :loading="connectionBusy"
+                      :disabled="connectionBusy || tokenDraft.length < 20"
+                      class="cursor-pointer"
+                      @click="updateConnection()"
+                    />
+                  </div>
+                  <div
+                    v-if="timeshit.connection.generation"
+                    class="space-y-3 border-t border-default pt-4"
+                  >
+                    <UCheckbox
+                      v-model="disconnectConfirmed"
+                      label="Remove the saved GitHub connection and tracked repository selection."
+                      :disabled="connectionBusy"
+                    />
+                    <UButton
+                      color="neutral"
+                      variant="outline"
+                      label="Disconnect GitHub"
+                      class="cursor-pointer"
+                      :disabled="connectionBusy || !disconnectConfirmed"
+                      @click="updateConnection(true)"
+                    />
+                  </div>
+                </template>
+                <UAlert
+                  v-if="connectionError"
+                  color="neutral"
+                  :title="connectionError"
+                />
+                <UAlert
+                  v-if="connectionNotice"
+                  color="neutral"
+                  :title="connectionNotice"
+                />
+                <p class="text-xs text-muted">
+                  Connection actions save immediately. Cancel only closes the form. Token drafts are cleared after each attempt and when the form closes.
+                </p>
+                <UFormField
+                  label="External backend Base URL (reserved)"
+                  description="Optional draft only. External Timeshit backends are not supported yet
+tokens are always sent to this Nuxt server."
+                  :error="baseUrlError || undefined"
+                >
+                  <UInput
+                    v-model="baseUrlDraft"
+                    type="url"
+                    placeholder="https://api.example.com"
+                    class="mt-2 w-full"
+                    @update:model-value="baseUrlError = ''"
+                  />
+                </UFormField>
               </div>
               <UFormField
                 v-else
@@ -200,13 +394,14 @@ function saveConfig() {
         </div>
       </template>
       <template #footer>
-        <div class="flex w-full items-center justify-between gap-4">
+        <div class="flex w-full flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-center">
           <p class="text-xs text-muted">
-            Development mock; changes are not saved to the backend
+            {{ selectedServiceKey === 'timeshit' ? 'GitHub connection persists; modes and Base URL are temporary drafts.' : 'Development mock; changes are not saved to the backend' }}
           </p>
-          <div class="flex shrink-0 items-center gap-2">
+          <div class="flex shrink-0 items-center justify-end gap-2">
             <UButton
               label="Cancel"
+              :disabled="connectionBusy"
               color="neutral"
               variant="ghost"
               class="cursor-pointer"
@@ -217,7 +412,7 @@ function saveConfig() {
               color="neutral"
               icon="i-lucide-check"
               :class="serviceModeDraft === 'shutdown' && !shutdownConfirmed ? 'cursor-not-allowed' : 'cursor-pointer'"
-              :disabled="serviceModeDraft === 'shutdown' && !shutdownConfirmed"
+              :disabled="connectionBusy || serviceModeDraft === 'shutdown' && !shutdownConfirmed"
               @click="saveConfig"
             />
           </div>

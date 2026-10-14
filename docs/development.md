@@ -15,7 +15,7 @@ These commands assume a clean checkout or local changes that can safely move wit
 
 Use another branch only when the owner requests it. Commit/push/deploy only when explicitly authorized. A documentation-edit request does not authorize any of those actions.
 
-Use Node 22 as the current CI baseline and the pnpm version in `package.json`. Install with `pnpm install --frozen-lockfile`; preserve `pnpm-lock.yaml`. Set ignored local auth variables as described in [configuration](security-and-configuration.md), then run `pnpm dev` and open its printed loopback address.
+Use Node 22.16+ within Node 22 as the current CI baseline (or Node 24+) and the pnpm version in `package.json`. Install with `pnpm install --frozen-lockfile`; preserve `pnpm-lock.yaml`. Set ignored local auth variables as described in [configuration](security-and-configuration.md), then run `pnpm dev` and open its printed loopback address.
 
 ## Required reading
 
@@ -107,3 +107,13 @@ Anti-Slop is the project UI/copy quality filter. Follow the installed core's mod
 Update docs in the same change as behavior. Use the [ownership table](README.md#documentation-ownership), keep implemented/planned status explicit, remove stale instructions, and add a direct official source when introducing an API rule. Prefer one canonical explanation with links over duplicated values.
 
 Before handoff, review `git diff --check` and the final diff. State what changed, commands/checks actually completed, browser verification status, unresolved limits, and whether commit/push/deployment occurred. Keep evidence free of secrets. Do not promise zero bugs or production readiness from documentation and mock tests alone.
+
+## Timeshit milestone checks
+
+Use the [Connection/PAT runbook](timeshit-connection-contract.md) for private configuration. Tests exercise server guards, JSON limits, encrypted persistence and mocked GitHub responses. Do not use an existing gh/SSH token implicitly for browser verification. Live PAT acceptance requires an explicitly configured token. The native SQLite module requires a Node server and target-host validation.
+
+Repository changes must also follow the [repository contract](timeshit-repositories-contract.md). History routes and UI must follow the [history contract](timeshit-history-contract.md). Use schema fixtures and tests for migration, stable IDs, stale revisions, same-account credential invalidation, account switches, author filtering, SHA-pinned paging, omitted/truncated patches and late browser requests. Search is page-local; do not imply global GitHub search. A local browser using a synthetic upstream stub establishes UI behavior only, never real PAT acceptance or complete activity coverage.
+
+When changing collection handlers or adding the activity UI, follow the [activity contract](timeshit-activity-contract.md) and reuse its shared types, validators, date selection and daily-count helpers. Preserve complete versus partial, observed versus exact counts and cumulative revision replacement. Add tests for real checkpoint behavior and budget enforcement with fake clocks/clients; do not test a hard-coded limit without testing that work actually stops. Measure representative live GitHub behavior during acceptance without exposing the PAT.
+
+Activity client/state changes must cover `test/nuxt/timeshit-activity-client.nuxt.test.ts` and `test/nuxt/timeshit-activity.nuxt.test.ts`. Use fake timers for continuation, cooldown, visibility/pause and expiry; use the installed session composable for logout invalidation. Page mount/unmount only attaches/detaches the collection view; the implemented controls explicitly invoke start/resume. See the canonical [client lifecycle](timeshit-activity-contract.md#client-and-pinia-lifecycle) and [verification report](timeshit-verification-report.md).

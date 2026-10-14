@@ -1,0 +1,5 @@
+{
+  "_note": "Synthetic preferences examples; no credentials or live account data.",
+  "default": { "schemaVersion": "1.0", "historyDefaultBranch": "development" },
+  "custom": { "schemaVersion": "1.0", "historyDefaultBranch": "release/stable" }
+}

@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "backend",
+    "state",
+    "generation",
+    "account",
+    "checkedAt",
+    "checks"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "backend": {
+      "const": "nuxt"
+    },
+    "state": {
+      "enum": [
+        "unconfigured",
+        "disconnected",
+        "connected",
+        "locked"
+      ]
+    },
+    "generation": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "account": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "login"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "login": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}$"
+            }
+          }
+        }
+      ]
+    },
+    "checkedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "discovery",
+        "contents"
+      ],
+      "properties": {
+        "identity": {
+          "enum": [
+            "not-checked",
+            "verified"
+          ]
+        },
+        "discovery": {
+          "enum": [
+            "not-checked",
+            "available",
+            "restricted",
+            "rate-limited",
+            "unavailable"
+          ]
+        },
+        "contents": {
+          "const": "not-checked"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "connected"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "generation": {
+            "type": "string"
+          },
+          "account": {
+            "type": "object"
+          },
+          "checkedAt": {
+            "type": "string"
+          },
+          "checks": {
+            "properties": {
+              "identity": {
+                "const": "verified"
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "account": {
+            "type": "null"
+          },
+          "checkedAt": {
+            "type": "null"
+          },
+          "checks": {
+            "properties": {
+              "identity": {
+                "const": "not-checked"
+              },
+              "discovery": {
+                "const": "not-checked"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "enum": [
+              "unconfigured",
+              "disconnected"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "generation": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

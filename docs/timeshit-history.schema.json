@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jcore.rubygrv.cloud/schemas/timeshit-history-1.0.json",
+  "title": "Timeshit history responses",
+  "oneOf": [
+    { "$ref": "#/$defs/branches" },
+    { "$ref": "#/$defs/commits" },
+    { "$ref": "#/$defs/commitDetail" }
+  ],
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[a-fA-F0-9]{40}$" },
+    "branchItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "headSha", "protected"],
+      "properties": { "name": { "type": "string", "minLength": 1, "maxLength": 255 }, "headSha": { "$ref": "#/$defs/sha" }, "protected": { "type": "boolean" } }
+    },
+    "commitItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sha", "htmlUrl", "message", "title", "body", "authorLogin", "authorName", "authoredAt", "committerName", "committedAt"],
+      "properties": {
+        "sha": { "$ref": "#/$defs/sha" }, "htmlUrl": { "type": "string", "format": "uri", "pattern": "^https://github\\.com/" },
+        "message": { "type": "string" }, "title": { "type": "string" }, "body": { "type": ["string", "null"] },
+        "authorLogin": { "type": ["string", "null"] }, "authorName": { "type": ["string", "null"] },
+        "authoredAt": { "type": "string", "format": "date-time" }, "committerName": { "type": ["string", "null"] },
+        "committedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "file": {
+      "type": "object", "additionalProperties": false,
+      "required": ["filename", "previousFilename", "status", "additions", "deletions", "changes", "patch", "patchTruncated", "blobUrl"],
+      "properties": {
+        "filename": { "type": "string", "minLength": 1 }, "previousFilename": { "type": ["string", "null"] },
+        "status": { "type": "string" }, "additions": { "type": "integer", "minimum": 0 }, "deletions": { "type": "integer", "minimum": 0 },
+        "changes": { "type": "integer", "minimum": 0 }, "patch": { "type": ["string", "null"] }, "patchTruncated": { "type": "boolean" },
+        "blobUrl": { "type": ["string", "null"], "format": "uri", "pattern": "^https://github\\.com/" }
+      }
+    },
+    "branches": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "generation", "repositoryId", "page", "hasNext", "branches"],
+      "properties": {
+        "schemaVersion": { "const": "1.0" }, "generation": { "type": "string", "format": "uuid" },
+        "repositoryId": { "type": "integer", "minimum": 1 }, "page": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "hasNext": { "type": "boolean" }, "branches": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/branchItem" } }
+      }
+    },
+    "commits": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "generation", "repositoryId", "branch", "headSha", "page", "hasNext", "commits"],
+      "properties": {
+        "schemaVersion": { "const": "1.0" }, "generation": { "type": "string", "format": "uuid" },
+        "repositoryId": { "type": "integer", "minimum": 1 }, "branch": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "headSha": { "$ref": "#/$defs/sha" }, "page": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "hasNext": { "type": "boolean" }, "commits": { "type": "array", "maxItems": 30, "items": { "$ref": "#/$defs/commitItem" } }
+      }
+    },
+    "commitDetail": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "generation", "repositoryId", "sha", "htmlUrl", "message", "authorLogin", "authorName", "authoredAt", "committerName", "committedAt", "stats", "filePage", "hasNextFiles", "filesTruncatedAtGitHubLimit", "files"],
+      "properties": {
+        "schemaVersion": { "const": "1.0" }, "generation": { "type": "string", "format": "uuid" },
+        "repositoryId": { "type": "integer", "minimum": 1 }, "sha": { "$ref": "#/$defs/sha" },
+        "htmlUrl": { "type": "string", "format": "uri", "pattern": "^https://github\\.com/" }, "message": { "type": "string" },
+        "authorLogin": { "type": ["string", "null"] }, "authorName": { "type": ["string", "null"] },
+        "authoredAt": { "type": "string", "format": "date-time" }, "committerName": { "type": ["string", "null"] },
+        "committedAt": { "type": "string", "format": "date-time" },
+        "stats": { "type": "object", "additionalProperties": false, "required": ["additions", "deletions", "total"], "properties": { "additions": { "type": "integer", "minimum": 0 }, "deletions": { "type": "integer", "minimum": 0 }, "total": { "type": "integer", "minimum": 0 } } },
+        "filePage": { "type": "integer", "minimum": 1, "maximum": 30 }, "hasNextFiles": { "type": "boolean" },
+        "filesTruncatedAtGitHubLimit": { "type": "boolean" }, "files": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/file" } }
+      }
+    }
+  }
+}

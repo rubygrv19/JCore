@@ -1,0 +1,59 @@
+{
+  "verificationDate": "2026-10-14",
+  "environment": {
+    "os": "Ubuntu 26.04.1 LTS",
+    "memoryMiB": 1962,
+    "existingSwapMiB": 2047,
+    "node": "v24.21.0",
+    "pnpm": "12.5.1",
+    "isolatedDirectory": true,
+    "publicDeployment": false
+  },
+  "checks": {
+    "frozenLockfileInstall": "passed",
+    "tests": {
+      "files": 34,
+      "passed": 194,
+      "maxWorkers": 1
+    },
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": {
+      "status": "passed",
+      "preset": "node-server",
+      "platformBinaries": "linux-x64",
+      "heapMiB": 1536,
+      "initial768MiBHeap": "failed with V8 heap exhaustion"
+    }
+  },
+  "api": {
+    "hostAcceptance": "passed",
+    "sourceFilesVerified": 80,
+    "node": "v24.21.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "authenticated": true,
+    "privateNoStore": true,
+    "trustedOriginEnforced": true,
+    "secureCookieAttributes": true,
+    "encryptedStorage": true,
+    "restartPersistence": true,
+    "liveGithubConnection": true,
+    "collection": {
+      "status": "complete",
+      "batches": 23,
+      "elapsedMs": 178648,
+      "branchesDiscovered": 164,
+      "branchesCompleted": 164,
+      "matchingCommits": 47
+    },
+    "publicHttpsBrowser": "not tested; loopback API acceptance only"
+  },
+  "limits": [
+    "One representative tracked repository in a temporary independent database",
+    "Live GitHub reads only; no public listener, proxy, firewall, existing repository or service-manager changes",
+    "Secure production cookie attributes checked through loopback HTTP API; real HTTPS browser/proxy acceptance remains unverified",
+    "Two-real-account switching not tested; isolated browser switching uses synthetic GitHub accounts",
+    "Temporary database and child server removed after normal completion"
+  ]
+}

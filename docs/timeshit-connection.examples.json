@@ -1,0 +1,31 @@
+{
+  "disconnected": {
+    "schemaVersion": "1.0",
+    "backend": "nuxt",
+    "state": "disconnected",
+    "generation": null,
+    "account": null,
+    "checkedAt": null,
+    "checks": {
+      "identity": "not-checked",
+      "discovery": "not-checked",
+      "contents": "not-checked"
+    }
+  },
+  "connected": {
+    "schemaVersion": "1.0",
+    "backend": "nuxt",
+    "state": "connected",
+    "generation": "f4a629e3-d4d1-43dc-aafa-4a13c15fb297",
+    "account": {
+      "id": 123,
+      "login": "example-user"
+    },
+    "checkedAt": "2026-10-12T08:00:00.000Z",
+    "checks": {
+      "identity": "verified",
+      "discovery": "available",
+      "contents": "not-checked"
+    }
+  }
+}

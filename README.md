@@ -10,15 +10,17 @@ JCore is a personal, single-administrator service dashboard built with Nuxt 4 an
 | VPS | One local Linux host: CPU, memory/swap, filesystem/inodes, disk I/O, network, systemd, processes, and current alerts |
 | macOS / Windows | Development UI with labeled VPS fixtures; native live collectors are not implemented |
 | Dashboard | Coming Soon page |
-| Settings | Per-service draft configuration in Pinia memory; no backend persistence |
-| Timeshit | Coming Soon page; [approved implementation plan](docs/timeshit-implementation-plan.md), execution pending |
+| Settings | Base URL/mode drafts in Pinia; Timeshit PAT and repository selection persist in private SQLite |
+| Timeshit | Connection/PAT, repository management, branch/commit/file browsing, bounded all-branch activity, daily digest/copy, heatmap and branch preferences. See the [plan](docs/timeshit-implementation-plan.md), scoped contracts below and [verification report](docs/timeshit-verification-report.md) for current evidence and remaining release checks. |
 | Code Review / Quota Tracker | Coming Soon pages; external integrations are not implemented |
+
+The [Timeshit activity contract foundation](docs/timeshit-activity-contract.md) provides schema/examples, runtime validation and shared author-date/deduplication helpers. Its bounded collection HTTP handlers and client/Pinia lifecycle are implemented; visible collection controls and daily digest/copy are implemented; heatmap is implemented; current acceptance and remaining release checks are recorded in the [verification report](docs/timeshit-verification-report.md).
 
 VPS telemetry comes from same-origin Nuxt endpoints, loopback Prometheus/Node Exporter, and Linux OS inspection. Settings does not connect an external VPS API. A configured Base URL for another service is currently a validated draft, not an active integration.
 
 ## Start locally
 
-Use Node 22 (the current CI baseline) and the pnpm release declared in `package.json` (`pnpm@12.5.1`). Exact dependency resolution is recorded in `pnpm-lock.yaml`.
+Use Node 22.16+ within Node 22 (the current CI baseline), or Node 24+ and the pnpm release declared in `package.json` (`pnpm@12.5.1`). Exact dependency resolution is recorded in `pnpm-lock.yaml`.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -67,7 +69,7 @@ Start with the [documentation index](docs/README.md). It separates existing beha
 | [DESIGN.md](DESIGN.md) | Swiss Style, Nuxt UI usage, theme, spacing, charts, accessibility |
 | [VPS contract](docs/vps-response-contract.md) | Endpoint semantics, schema/fixtures, metrics and UI behavior |
 | [Ubuntu operations](ops/vps/VERIFY.md) | Collectors, host permissions, verification, troubleshooting |
-| [Timeshit plan](docs/timeshit-implementation-plan.md) | Approved future GitHub/PAT integration |
+| [Timeshit plan](docs/timeshit-implementation-plan.md) | Remaining approved GitHub integration |
 | [References](docs/references.md) | Official Nuxt, UI, auth, chart, monitoring, and GitHub sources |
 
 ## Working agreement

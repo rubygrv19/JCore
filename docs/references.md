@@ -56,14 +56,30 @@ The MCP URL is a protocol endpoint, not a documentation webpage. During this aud
 Swiss Style is the owner's chosen visual direction, documented in `DESIGN.md`. Nuxt UI documentation supplies implementation APIs; it does not dictate JCore's brand or layout.
 
 ## Authentication, runtime and validation
-
 - [Nuxt Auth Utils](https://github.com/atinux/nuxt-auth-utils): sealed sessions, server guard, composable and secret requirements. Match the installed 0.5.30 release before using newer APIs.
 - [Pinia Nuxt integration](https://pinia.vuejs.org/ssr/nuxt.html): shared service state; do not duplicate session management.
 - [Vitest guide](https://vitest.dev/guide/): tests and project setup, together with Nuxt Test Utils guidance above.
-- [AJV JSON Schema](https://ajv.js.org/json-schema.html): draft 2020-12 validation; JCore uses `Ajv2020` and `ajv-formats`.
-- [Node 22 crypto](https://nodejs.org/docs/latest-v22.x/api/crypto.html): credential comparison and planned authenticated PAT encryption.
+- [AJV JSON Schema](https://ajv.js.org/json-schema.html): VPS uses draft 2020-12 with `Ajv2020`; Timeshit uses draft-07 with `Ajv`. Both use `ajv-formats`. Compile the specific operation/envelope definition rather than accepting an unrelated member of a schema union.
+- [Node 22 crypto](https://nodejs.org/docs/latest-v22.x/api/crypto.html): credential comparison and authenticated PAT encryption.
 - [Node 22 child_process](https://nodejs.org/docs/latest-v22.x/api/child_process.html): read-only OS commands through `execFile`.
 - [Node 22 filesystem](https://nodejs.org/docs/latest-v22.x/api/fs.html): procfs and host-file reads.
+
+## GitHub Timeshit reads
+
+- [GraphQL commits](https://docs.github.com/en/graphql/reference/commits): `Commit.history`, author filter, date arguments, and cursor fields. Its `since`/`until` descriptions do not guarantee author-date filtering.
+- [GraphQL aliases](https://graphql.org/learn/queries/#aliases): independently named fields with separate variables in the bounded activity query.
+- [GraphQL pagination](https://docs.github.com/en/graphql/guides/using-pagination-in-the-graphql-api): cursor pagination behavior and connection limits.
+- [GraphQL rate and query limits](https://docs.github.com/en/graphql/overview/rate-limits-and-query-limits-for-the-graphql-api): point budgets and query node limits.
+- [REST API endpoints for commits](https://docs.github.com/en/rest/commits/commits?apiVersion=2026-03-10): commit list filters, commit detail fields and changed-file pagination.
+- [REST API pagination](https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api): GitHub `Link` headers and page behavior.
+- [REST API best practices](https://docs.github.com/en/rest/guides/best-practices-for-integrators): pagination and conditional read guidance.
+
+JCore's page sizes, route schemas and patch preview cap are application choices documented in the [Timeshit history contract](timeshit-history-contract.md), not GitHub requirements.
+
+The [activity contract](timeshit-activity-contract.md) records collection-specific decisions and remaining operational verification:
+
+- [GitHub rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api): upstream quota/header behavior; separate from JCore's conservative request/time/state budgets.
+- [Chart.js scatter](https://www.chartjs.org/docs/latest/charts/scatter.html), [point styles](https://www.chartjs.org/docs/latest/configuration/elements.html#point-styles), and [accessibility](https://www.chartjs.org/docs/latest/general/accessibility.html): planned week/day square-marker rendering and accessible date/table controls using installed dependencies.
 
 ## Linux telemetry and operations
 
@@ -82,11 +98,13 @@ Swiss Style is the owner's chosen visual direction, documented in `DESIGN.md`. N
 
 See `server/utils/vps-dashboard.ts`, `server/utils/vps-processes.ts`, `server/utils/vps-systemd.ts` and `ops/vps/` for the precise selected queries, filters and deployment values.
 
-## GitHub and planned Timeshit
+## GitHub and Timeshit
 
-These references support the [approved Timeshit plan](timeshit-implementation-plan.md); they do not describe an existing JCore integration.
+These references support the [approved Timeshit plan](timeshit-implementation-plan.md). Connection/PAT, repository management and history browsing are implemented. The [activity contract foundation](timeshit-activity-contract.md) is implemented as shared types/validation/date helpers; its bounded collector and HTTP handlers are implemented, while client activity controls, daily digest/copy and heatmap UI are implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md).
 
 - [Fine-grained personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens): resource owner, permission and repository restrictions.
+- [Classic token scopes](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps): private repo scope also grants write capabilities.
+- [Repository identity](https://docs.github.com/en/rest/repos/repos#get-a-repository): documented owner/name lookup and stable numeric ID comparison.
 - [Authenticated user](https://docs.github.com/en/rest/users/users#get-the-authenticated-user): connected account identity.
 - [Authenticated repository discovery](https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user): accessible repository set.
 - [Branches](https://docs.github.com/en/rest/branches/branches#list-branches): remote head discovery.
@@ -99,3 +117,5 @@ These references support the [approved Timeshit plan](timeshit-implementation-pl
 ## Keeping references useful
 
 Link directly to the relevant official API/section, note the installed version when behavior is version-sensitive, and record project-specific choices separately from upstream requirements. Recheck links and API assumptions when updating a dependency or contract. Never use an online example to claim a JCore feature exists without locating its implementation.
+
+- [Node 22 SQLite](https://nodejs.org/docs/latest-v22.x/api/sqlite.html): native DatabaseSync, experimental status and timeout support since 22.16.

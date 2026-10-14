@@ -2,6 +2,7 @@
 import type { VpsDashboardResponse } from '~/types/vps'
 
 const route = useRoute()
+const activity = useTimeshitActivityStore()
 const { data: vpsSnapshot } = useNuxtData<VpsDashboardResponse>('vps-dashboard')
 const workspaceNotice = computed(() => route.path === '/services/vps'
   ? vpsSnapshot.value?.dataMode === 'live'
@@ -9,7 +10,7 @@ const workspaceNotice = computed(() => route.path === '/services/vps'
     : vpsSnapshot.value?.dataMode === 'mock'
       ? { title: 'Demo VPS data', text: 'Live collection requires a Linux host. These values are samples.' }
       : { title: 'VPS monitoring', text: 'Waiting for a validated metrics response.' }
-  : { title: 'JCore workspace', text: 'Service settings are development-only until backend persistence is available.' })
+  : { title: 'JCore workspace', text: 'GitHub connection and tracked repositories persist; other settings are temporary drafts.' })
 
 const serviceLinks = [
   { label: 'VPS', to: '/services/vps' },
@@ -28,6 +29,9 @@ const accountEmail = computed(() => user.value?.email ?? 'Signed in')
 const accountInitials = computed(() => accountEmail.value.slice(0, 2).toUpperCase())
 
 async function signOut() {
+  activity.reset()
+  useTimeshitStore().reset()
+  useTimeshitRepositoriesStore().reset()
   await clearUserSession()
   return navigateTo('/login')
 }

@@ -17,6 +17,11 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
+    timeshit: {
+      encryptionKey: '',
+      databasePath: '',
+      trustedOrigin: ''
+    },
     vpsPrometheusUrl: 'http://127.0.0.1:9090',
     vpsExpectedServices: '{}',
     auth: {
