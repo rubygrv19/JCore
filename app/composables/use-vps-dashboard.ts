@@ -1,4 +1,4 @@
-import { parseVpsDashboardResponse } from '~/utils/vps-response'
+import { parseVpsDashboardResponse } from '#shared/utils/vps-response'
 
 // Non-Linux development hosts use the validated fixture until the Linux collector is available.
 export function useVpsDashboard() {

@@ -119,3 +119,29 @@ These references support the [approved Timeshit plan](timeshit-implementation-pl
 Link directly to the relevant official API/section, note the installed version when behavior is version-sensitive, and record project-specific choices separately from upstream requirements. Recheck links and API assumptions when updating a dependency or contract. Never use an online example to claim a JCore feature exists without locating its implementation.
 
 - [Node 22 SQLite](https://nodejs.org/docs/latest-v22.x/api/sqlite.html): native DatabaseSync, experimental status and timeout support since 22.16.
+
+## Dependency remediation: October 15, 2026
+
+See [AUD-01 remediation evidence and remaining advisories](project-audit-2026-10-14.md#aud-01-remediation-record-october-15-2026) for the dated decisions and verification.
+
+- [Nuxt 4.6.1 release](https://github.com/nuxt/nuxt/releases/tag/v4.6.1) and published package engine metadata: compatible Node requirements and framework update.
+- [Nuxt UI 4.11.3 release](https://github.com/nuxt/ui/releases/tag/v4.11.3): UI patch update.
+- [Nuxt DevTools 3.4.3 release](https://github.com/nuxt/devtools/releases/tag/v3.4.3): removal of simple-git from the dependency tree.
+- [simple-git 4.0.0 breaking changes](https://github.com/steveukx/git-js/releases/tag/simple-git@4.0.0): default export removal explains why a blind major override was rejected.
+- [sharp advisory](https://github.com/advisories/GHSA-wq5f-xc86-pv6w), [node-forge advisory](https://github.com/advisories/GHSA-86w9-cpqp-85rv), [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), and [esbuild advisory](https://github.com/advisories/GHSA-g7r4-m6w7-qqqr): patched ranges and unresolved tooling triage. Recheck advisory status before release.
+
+## Login request boundary: October 15, 2026
+
+- [OWASP CSRF prevention: verifying Origin](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#using-standard-headers-to-verify-origin): exact source/target Origin comparison and explicit trusted target configuration behind proxies. JCore requires Origin for login instead of falling back to Referer.
+- [Nuxt runtime configuration](https://nuxt.com/docs/4.x/guide/going-further/runtime-config): private `runtimeConfig.auth.trustedOrigin` and the matching `NUXT_AUTH_TRUSTED_ORIGIN` runtime variable. Installed project types/build verify the actual configuration shape.
+- Installed H3 1.15.11 source was inspected: `readBody` buffers before parsing and has no byte-limit option. JCore therefore reuses its bounded stream reader instead of adding another dependency or using an unsupported API.
+
+See [security and configuration](security-and-configuration.md#login-flow) for statuses, the 8 KiB login limit, and operator requirements.
+
+## Login throttling: October 15, 2026
+
+- [Nginx proxy_set_header](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_set_header): overwriting upstream headers, including X-Real-IP from the proxy's remote address.
+- [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#login-throttling): login throttling and denial-of-service tradeoffs. JCore's 10/client, 100/global, and 128-entry limits are application choices, not OWASP-prescribed values; there is no persistent account lockout.
+- [Node net.isIP](https://nodejs.org/docs/latest-v22.x/api/net.html#netisipinput), [WHATWG URL](https://nodejs.org/api/url.html#the-whatwg-url-api), and [performance.now](https://nodejs.org/docs/latest-v22.x/api/perf_hooks.html#performancenow): IP validation/canonicalization and monotonic windows. Installed H3 getRequestIP source was inspected; JCore deliberately reads the socket peer directly instead of trusting forwarded headers or adapter context.
+
+See [login identity and proxy policy](security-and-configuration.md#login-client-identity-and-recommended-proxy-topology) for the actual trust boundary and its limits.

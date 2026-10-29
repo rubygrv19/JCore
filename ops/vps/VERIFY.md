@@ -5,10 +5,13 @@ This runbook targets one Linux host running JCore's Nuxt Node server and loopbac
 ## Deployment assumptions
 
 - Run Nuxt directly on the monitored host as a dedicated unprivileged application user. A container has different process visibility unless host namespaces/mounts are deliberately configured.
+- Set `NUXT_AUTH_TRUSTED_ORIGIN` to the exact external HTTPS application origin, without a trailing slash. Preserve Origin through the proxy; login now fails closed when this production setting is missing.
+- For a verified one-hop Nginx proxy to `127.0.0.1`, review [login proxy trust](../../docs/security-and-configuration.md#login-client-identity-and-recommended-proxy-topology), overwrite `X-Real-IP`, restrict direct Nuxt access, then set `NUXT_AUTH_TRUSTED_PROXY_IPS=127.0.0.1`. Leave it empty for direct local access. Verify separate clients are isolated and caller-supplied IP headers cannot bypass the limiter; do not assume the existing VPS proxy has this configuration.
 - Install the Node/pnpm versions agreed for the project (current CI baseline: Node 22, package manager pinned in `package.json`). Use the lockfile.
 - Docker Engine with Compose is needed for the checked-in collectors. This Compose setup uses Linux host networking, host PID visibility, `/proc`, `/sys` and the system D-Bus socket; Docker Desktop on macOS is not equivalent host monitoring.
 - Existing HTTPS proxy, DNS, service manager, firewall and access policy must be inspected and configured for the real environment. The repo does not supply a JCore systemd unit, reverse-proxy configuration, TLS provisioning, deployment script or an automatically configured domain.
 - Keep Prometheus, Node Exporter and Nuxt private on loopback. Do not grant blanket sudo to the web application.
+- Verify authenticated and unauthenticated `/api/vps/dashboard` and `/api/vps/processes` responses include `Cache-Control: private, no-store`; confirm the reverse proxy/CDN does not cache these private routes.
 
 ## Collector configuration
 

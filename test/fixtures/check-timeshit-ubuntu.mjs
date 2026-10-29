@@ -19,7 +19,7 @@ const directory = mkdtempSync(join(tmpdir(), 'jcore-ubuntu-acceptance-'))
 const base = 'http://127.0.0.1:3002'
 const origin = 'https://jcore.rubygrv.cloud'
 const password = randomBytes(32).toString('hex')
-const env = { ...process.env, NODE_OPTIONS: '', NODE_ENV: 'production', NITRO_HOST: '127.0.0.1', NITRO_PORT: '3002', NUXT_AUTH_ADMIN_EMAIL: 'acceptance@example.invalid', NUXT_AUTH_ADMIN_PASSWORD: password, NUXT_SESSION_PASSWORD: randomBytes(48).toString('base64'), NUXT_TIMESHIT_ENCRYPTION_KEY: randomBytes(32).toString('base64'), NUXT_TIMESHIT_DATABASE_PATH: join(directory, 'connection.sqlite'), NUXT_TIMESHIT_TRUSTED_ORIGIN: origin }
+const env = { ...process.env, NODE_OPTIONS: '', NODE_ENV: 'production', NITRO_HOST: '127.0.0.1', NITRO_PORT: '3002', NUXT_AUTH_ADMIN_EMAIL: 'acceptance@example.invalid', NUXT_AUTH_ADMIN_PASSWORD: password, NUXT_AUTH_TRUSTED_PROXY_IPS: '', NUXT_AUTH_TRUSTED_ORIGIN: origin, NUXT_SESSION_PASSWORD: randomBytes(48).toString('base64'), NUXT_TIMESHIT_ENCRYPTION_KEY: randomBytes(32).toString('base64'), NUXT_TIMESHIT_DATABASE_PATH: join(directory, 'connection.sqlite'), NUXT_TIMESHIT_TRUSTED_ORIGIN: origin }
 let child
 let cookie = ''
 async function start() {
@@ -62,7 +62,7 @@ try {
   stage = 'authentication'
   await start()
   for (const path of ['/api/timeshit/connection', '/api/timeshit/repositories', '/api/timeshit/tracked-repositories']) assert.equal((await call(path)).status, 401)
-  const login = await fetch(`${base}/api/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'acceptance@example.invalid', password }) })
+  const login = await fetch(`${base}/api/auth/login`, { method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: JSON.stringify({ email: 'acceptance@example.invalid', password }) })
   assert.equal(login.status, 200)
   const sealed = login.headers.getSetCookie()
   assert(sealed.some(value => value.startsWith('__Host-jcore-session=') && /; Secure/i.test(value) && /; HttpOnly/i.test(value) && /; SameSite=Lax/i.test(value) && /; Path=\//i.test(value)))

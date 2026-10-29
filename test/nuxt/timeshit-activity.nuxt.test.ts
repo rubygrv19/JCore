@@ -8,7 +8,7 @@ import examples from '../../docs/timeshit-activity.examples.json'
 import connectionExamples from '../../docs/timeshit-connection.examples.json'
 import type { TimeshitActivitySnapshot } from '../../shared/types/timeshit-activity'
 
-const api = vi.hoisted(() => ({ startTimeshitActivity: vi.fn(), continueTimeshitActivity: vi.fn() }))
+const api = vi.hoisted(() => ({ startTimeshitActivity: vi.fn(), continueTimeshitActivity: vi.fn(), getTimeshitRepositories: vi.fn() }))
 vi.mock('../../app/utils/timeshit-client', () => api)
 let pinia: Pinia
 const partial = () => structuredClone(examples.snapshots.partial) as TimeshitActivitySnapshot
@@ -44,6 +44,52 @@ function deferred() {
   return { promise, resolve }
 }
 describe('Timeshit activity collection state', () => {
+  it('retains the snapshot and verified tracked scope while repository pages refresh', async () => {
+    const store = ready()
+    const repositories = useTimeshitRepositoriesStore()
+    await store.start(examples.start.range as never)
+    const tracked = repositories.tracked!
+    api.getTimeshitRepositories.mockResolvedValueOnce(tracked).mockResolvedValueOnce({ ...tracked, page: 2 })
+
+    await repositories.load(2)
+
+    expect(repositories.tracked).toEqual(tracked)
+    expect(repositories.discovery?.page).toBe(2)
+    expect(store.snapshot).toEqual(partial())
+    expect(store.phase).toBe('waiting')
+    expect(store.resumable).toBe(true)
+  })
+
+  it('keeps the activity snapshot and tracked scope when a non-auth refresh fails', async () => {
+    const store = ready()
+    const repositories = useTimeshitRepositoriesStore()
+    await store.start(examples.start.range as never)
+    const tracked = repositories.tracked!
+    api.getTimeshitRepositories.mockResolvedValueOnce(tracked).mockRejectedValueOnce(new Error('temporary network error'))
+
+    await repositories.load(2)
+
+    expect(repositories.tracked).toEqual(tracked)
+    expect(repositories.discovery).toBeNull()
+    expect(repositories.error).toContain('Unable to load repositories')
+    expect(store.snapshot).toEqual(partial())
+    expect(store.resumable).toBe(true)
+  })
+
+  it('invalidates activity when refresh confirms a changed tracked selection', async () => {
+    const store = ready()
+    const repositories = useTimeshitRepositoriesStore()
+    await store.start(examples.start.range as never)
+    const changed = { ...repositories.tracked!, selectionRevision: 'new-selection' }
+    api.getTimeshitRepositories.mockResolvedValueOnce(changed).mockResolvedValueOnce({ ...changed, page: 2 })
+
+    await repositories.load(2)
+
+    expect(repositories.tracked?.selectionRevision).toBe('new-selection')
+    expect(store.snapshot).toBeNull()
+    expect(store.phase).toBe('idle')
+  })
+
   it('requires an explicitly active visible view and validates dates before starting', async () => {
     const store = useTimeshitActivityStore()
     await store.start(examples.start.range as never)

@@ -1,8 +1,9 @@
-import { createError } from 'h3'
-import { parseVpsDashboardResponse } from '~/utils/vps-response'
+import { createError, setHeader } from 'h3'
+import { parseVpsDashboardResponse } from '#shared/utils/vps-response'
 import { collectVpsDashboard } from '../../utils/vps-dashboard'
 
 export default defineEventHandler(async (event) => {
+  setHeader(event, 'Cache-Control', 'private, no-store')
   await requireUserSession(event)
 
   if (process.platform !== 'linux') {

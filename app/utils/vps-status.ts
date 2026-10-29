@@ -1,4 +1,22 @@
-import type { VpsStatus } from '~/types/vps'
+import type { VpsDashboardResponse, VpsStatus } from '#shared/types/vps'
+
+type NetworkRates = Pick<VpsDashboardResponse['current']['network']['interfaces'][number], 'rxBytesPerSecond' | 'txBytesPerSecond' | 'rxErrorsPerSecond' | 'txErrorsPerSecond' | 'rxDropsPerSecond' | 'txDropsPerSecond'>
+
+export function aggregateNetworkRates(interfaces: readonly NetworkRates[]): NetworkRates {
+  const sum = (key: keyof NetworkRates) => {
+    const values = interfaces.map(iface => iface[key]).filter((value): value is number => value !== null && Number.isFinite(value))
+    return values.length ? values.reduce((total, value) => total + value, 0) : null
+  }
+
+  return {
+    rxBytesPerSecond: sum('rxBytesPerSecond'),
+    txBytesPerSecond: sum('txBytesPerSecond'),
+    rxErrorsPerSecond: sum('rxErrorsPerSecond'),
+    txErrorsPerSecond: sum('txErrorsPerSecond'),
+    rxDropsPerSecond: sum('rxDropsPerSecond'),
+    txDropsPerSecond: sum('txDropsPerSecond')
+  }
+}
 
 export const VPS_STATUS_META: Record<VpsStatus, { label: string, color: 'neutral', icon: string }> = {
   healthy: { label: 'Healthy', color: 'neutral', icon: 'i-lucide-circle-check' },

@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { $fetch } from 'ofetch'
-import type { VpsDashboardResponse, VpsStatus } from '~/types/vps'
+import type { VpsDashboardResponse, VpsStatus } from '#shared/types/vps'
 import { collectSystemdUnits, parseServiceExpectations } from './vps-systemd'
 
 interface PromSeries {

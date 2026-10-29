@@ -1,7 +1,8 @@
-import { createError } from 'h3'
+import { createError, setHeader } from 'h3'
 import { collectLinuxProcesses } from '../../utils/vps-processes'
 
 export default defineEventHandler(async (event) => {
+  setHeader(event, 'Cache-Control', 'private, no-store')
   await requireUserSession(event)
 
   if (process.platform !== 'linux') {

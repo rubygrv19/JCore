@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { startPolling } from '../../app/utils/polling'
-import { consumeLoginAttempt } from '../../server/utils/login-rate-limit'
+import { createLoginRateLimiter } from '../../server/utils/login-rate-limit'
 
 afterEach(() => vi.useRealTimers())
 
@@ -39,9 +39,9 @@ describe('VPS polling lifecycle', () => {
 
 describe('single administrator sign-in limit', () => {
   it('rejects the eleventh attempt and admits attempts after the window expires', () => {
-    const bucket = { count: 0, resetAt: 0 }
-    for (let count = 0; count < 10; count++) expect(consumeLoginAttempt(bucket, 1000)).toBe(0)
-    expect(consumeLoginAttempt(bucket, 2000)).toBe(59)
-    expect(consumeLoginAttempt(bucket, 61_000)).toBe(0)
+    const consumeLoginAttempt = createLoginRateLimiter()
+    for (let count = 0; count < 10; count++) expect(consumeLoginAttempt('client', 1000)).toBe(0)
+    expect(consumeLoginAttempt('client', 2000)).toBe(59)
+    expect(consumeLoginAttempt('client', 61_000)).toBe(0)
   })
 })

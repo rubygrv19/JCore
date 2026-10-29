@@ -126,24 +126,13 @@ const formatDate = (value: string) => new Intl.DateTimeFormat('en-US', { dateSty
 async function refresh(page = 1) {
   search.value = ''
   trackedPage.value = 1
-  await connection.load()
-  if (connected.value) await repos.load(page)
-  else repos.reset()
+  await refreshRepositories(page)
 }
-async function initialize() {
-  await refresh()
-  await history.loadPreferences()
-  branchDraft.value = history.preferredBranch
-}
-onMounted(() => {
-  startDate.value = endDate.value = digestDay.value = timeshitAuthoredDay(new Date().toISOString())
-  activity.attachView()
-  void initialize()
-})
-onBeforeUnmount(() => {
-  activity.detachView()
-  repos.reset()
-  history.reset()
+const { initialize, refreshRepositories } = useTimeshitPageLifecycle({
+  onMount: () => {
+    startDate.value = endDate.value = digestDay.value = timeshitAuthoredDay(new Date().toISOString())
+  },
+  onPreferredBranchLoaded: branch => branchDraft.value = branch
 })
 </script>
 

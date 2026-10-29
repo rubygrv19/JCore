@@ -1,4 +1,4 @@
-import type { VpsDashboardResponse } from '~/types/vps'
+import type { VpsDashboardResponse } from '#shared/types/vps'
 
 export type VpsProcess = VpsDashboardResponse['current']['processes']['items'][number]
 

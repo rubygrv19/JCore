@@ -52,7 +52,7 @@ if (process.argv.includes('--ssh-target')) {
 const directory = mkdtempSync(join(tmpdir(), 'jcore-timeshit-live-'))
 const password = randomBytes(32).toString('hex')
 const base = 'http://127.0.0.1:3002'
-const env = { ...process.env, NODE_OPTIONS: '', NODE_ENV: 'production', NITRO_HOST: '127.0.0.1', NITRO_PORT: '3002', NUXT_AUTH_ADMIN_EMAIL: 'acceptance@example.invalid', NUXT_AUTH_ADMIN_PASSWORD: password, NUXT_SESSION_PASSWORD: randomBytes(48).toString('base64'), NUXT_SESSION_NAME: 'jcore-live-acceptance', NUXT_SESSION_COOKIE_SECURE: 'false', NUXT_TIMESHIT_ENCRYPTION_KEY: randomBytes(32).toString('base64'), NUXT_TIMESHIT_DATABASE_PATH: join(directory, 'connection.sqlite'), NUXT_TIMESHIT_TRUSTED_ORIGIN: base }
+const env = { ...process.env, NODE_OPTIONS: '', NODE_ENV: 'production', NITRO_HOST: '127.0.0.1', NITRO_PORT: '3002', NUXT_AUTH_ADMIN_EMAIL: 'acceptance@example.invalid', NUXT_AUTH_ADMIN_PASSWORD: password, NUXT_AUTH_TRUSTED_PROXY_IPS: '', NUXT_AUTH_TRUSTED_ORIGIN: base, NUXT_SESSION_PASSWORD: randomBytes(48).toString('base64'), NUXT_SESSION_NAME: 'jcore-live-acceptance', NUXT_SESSION_COOKIE_SECURE: 'false', NUXT_TIMESHIT_ENCRYPTION_KEY: randomBytes(32).toString('base64'), NUXT_TIMESHIT_DATABASE_PATH: join(directory, 'connection.sqlite'), NUXT_TIMESHIT_TRUSTED_ORIGIN: base }
 let child
 let cookie = ''
 async function start() {
@@ -90,7 +90,7 @@ async function call(method, body) {
 try {
   await start()
   assert.equal((await call('GET')).status, 401)
-  const login = await fetch(`${base}/api/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'acceptance@example.invalid', password }) })
+  const login = await fetch(`${base}/api/auth/login`, { method: 'POST', headers: { 'origin': base, 'content-type': 'application/json' }, body: JSON.stringify({ email: 'acceptance@example.invalid', password }) })
   assert.equal(login.status, 200)
   cookie = login.headers.getSetCookie().map(value => value.split(';')[0]).join('; ')
   const connected = await call('POST', { token, expectedGeneration: null })

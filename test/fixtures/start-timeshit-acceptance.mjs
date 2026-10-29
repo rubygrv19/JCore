@@ -18,6 +18,8 @@ const child = spawn(process.execPath, ['--import', preload, resolve('.output/ser
     JCORE_TIMESHIT_ACCEPTANCE: 'synthetic',
     NUXT_AUTH_ADMIN_EMAIL: 'acceptance@example.invalid',
     NUXT_AUTH_ADMIN_PASSWORD: 'synthetic-acceptance-password',
+    NUXT_AUTH_TRUSTED_ORIGIN: 'http://127.0.0.1:3001',
+    NUXT_AUTH_TRUSTED_PROXY_IPS: '',
     NUXT_SESSION_PASSWORD: randomBytes(48).toString('base64'),
     NUXT_SESSION_NAME: 'jcore-acceptance',
     NUXT_SESSION_COOKIE_SECURE: 'false',

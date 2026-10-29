@@ -89,7 +89,7 @@ The current Prometheus queries assume the checked-in single Node Exporter target
 
 Filesystem queries exclude virtual/pseudo filesystems and mounts under `/proc`, `/sys`, `/dev` and `/run`. The exact regex is in `server/utils/vps-dashboard.ts` and `ops/vps/vps.rules.yml`; update them together. Disk I/O sums devices excluding `loop.*` and `ram.*`; it does not attempt physical-device topology deduplication. On hosts exposing both logical and backing-device counters, review whether aggregation matches the intended storage interpretation.
 
-Network queries exclude `lo`, `docker.*`, `veth.*` and `br.*`. Interfaces are sorted by name. The overview Network donut uses the first returned interface and represents RX/TX composition. It is not a capacity gauge or necessarily an aggregation of all interfaces. Storage overview prefers `/`, then the first returned filesystem; its status reflects the storage status across monitored filesystems, so another mount can raise the badge.
+Network queries exclude `lo`, `docker.*`, `veth.*` and `br.*`. Interfaces are sorted by name. The overview Network donut and network trend both sum RX/TX rates across the monitored interfaces returned in the interface table; error and drop rates in the overview are summed over the same scope. Null series are omitted from each sum, matching Prometheus `sum` behavior; a total is `null` only when no value is available for that direction. These rates do not establish health or link capacity. Storage overview prefers `/`, then the first returned filesystem; its status reflects the storage status across monitored filesystems, so another mount can raise the badge.
 
 History requests cover the prior 3600 seconds at a 300-second step. A fully populated inclusive range can have 13 timestamps; the UI displays the actual returned sample count. Fixtures may contain a different count. Missing samples remain null/gaps; newly started Prometheus cannot supply an hour of history immediately.
 
@@ -117,8 +117,9 @@ Use these artifacts together:
 - Dashboard example: [public fixture](../public/mock/vps-dashboard.json).
 - Additional complete scenarios: [vps-response-examples.json](vps-response-examples.json).
 - Process JSON Schema: [vps-processes.schema.json](vps-processes.schema.json).
-- Existing TypeScript types: `app/types/vps.ts`, `app/types/vps-processes.ts`.
-- Runtime validators: `app/utils/vps-response.ts`, `app/utils/vps-processes-client.ts`.
+- Shared TypeScript types: `shared/types/vps.ts`, `shared/types/vps-processes.ts`.
+- Runtime validators: `shared/utils/vps-response.ts`, `shared/utils/vps-processes-response.ts`.
+- Browser fetch clients remain in `app/utils/vps-processes-client.ts`; dashboard `useAsyncData()` orchestration is in `app/composables/use-vps-dashboard.ts`.
 - Fixture and parser/collector tests: `test/unit/vps-fixture.test.ts`, `test/unit/vps-process-collector.test.ts`, and mocked collector integration tests.
 
 For a standalone process mock, use the process-schema envelope (`source`, `collectedAt`, `items`) and illustrative rows from the dashboard fixture; no standalone public process fixture is checked in. `test/unit/vps-process-collector.test.ts` includes a validated process-envelope example. Do not send a dashboard-shaped object to the process endpoint.

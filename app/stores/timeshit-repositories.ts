@@ -21,7 +21,6 @@ export const useTimeshitRepositoriesStore = defineStore('timeshit-repositories',
     loading.value = true
     error.value = ''
     discovery.value = null
-    tracked.value = null
     try {
       const saved = await getTimeshitRepositories(1, true)
       if (request !== revision) return

@@ -1,17 +1,18 @@
-import { createError, readBody, setResponseHeader } from 'h3'
+import { createError, setResponseHeader } from 'h3'
 import { isAdminAuthConfigured, parseAdminCredentials, verifyAdminCredentials } from '../../utils/admin-auth'
-import { consumeLoginAttempt } from '../../utils/login-rate-limit'
+import { createLoginRateLimiter, loginClientKey } from '../../utils/login-rate-limit'
+import { readLoginRequest } from '../../utils/login-request'
 
-// Single administrator, single Node process. No trust in client-supplied forwarding headers.
-const attempts = { count: 0, resetAt: 0 }
+const consumeLoginAttempt = createLoginRateLimiter()
 
 export default defineEventHandler(async (event) => {
-  const retryAfter = consumeLoginAttempt(attempts)
+  const config = useRuntimeConfig(event)
+  const retryAfter = consumeLoginAttempt(loginClientKey(event, config.auth.trustedProxyIps))
   if (retryAfter) {
     setResponseHeader(event, 'Retry-After', retryAfter)
+    if (!event.web?.request) setResponseHeader(event, 'Connection', 'close')
     throw createError({ statusCode: 429, statusMessage: 'Too many sign-in attempts. Try again in one minute.' })
   }
-  const config = useRuntimeConfig(event)
   const { adminEmail, adminPassword } = config.auth
   const sessionSecret = config.session.password
 
@@ -19,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 503, statusMessage: 'Sign-in is not configured.' })
   }
 
-  const credentials = parseAdminCredentials(await readBody(event))
+  const credentials = parseAdminCredentials(await readLoginRequest(event, config.auth.trustedOrigin))
   if (!credentials || !verifyAdminCredentials(credentials, adminEmail, adminPassword)) {
     throw createError({ statusCode: 401, statusMessage: 'Email address or password is incorrect.' })
   }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatBytes, formatProcessPercent, formatProcessStartedAt, formatServicePorts, formatUptime, percent, sortProcessesByCpu, VPS_STATUS_META } from '../../app/utils/vps-status'
+import { aggregateNetworkRates, formatBytes, formatProcessPercent, formatProcessStartedAt, formatServicePorts, formatUptime, percent, sortProcessesByCpu, VPS_STATUS_META } from '../../app/utils/vps-status'
 
 describe('VPS dashboard formatting and state labels', () => {
   it('uses consistent monochrome colors and distinct labels for each health state', () => {
@@ -37,5 +37,41 @@ describe('VPS dashboard formatting and state labels', () => {
 
     expect(sortProcessesByCpu(processes).map(process => process.name)).toEqual(['high', 'low', 'unknown'])
     expect(processes.map(process => process.name)).toEqual(['low', 'unknown', 'high'])
+  })
+
+  it('sums current network rates across monitored interfaces like the trend queries', () => {
+    expect(aggregateNetworkRates([
+      { rxBytesPerSecond: 100, txBytesPerSecond: 30, rxErrorsPerSecond: 1, txErrorsPerSecond: 2, rxDropsPerSecond: 3, txDropsPerSecond: 4 },
+      { rxBytesPerSecond: 250, txBytesPerSecond: 70, rxErrorsPerSecond: 5, txErrorsPerSecond: 6, rxDropsPerSecond: 7, txDropsPerSecond: 8 }
+    ])).toEqual({
+      rxBytesPerSecond: 350,
+      txBytesPerSecond: 100,
+      rxErrorsPerSecond: 6,
+      txErrorsPerSecond: 8,
+      rxDropsPerSecond: 10,
+      txDropsPerSecond: 12
+    })
+  })
+
+  it('returns null for unavailable network totals and sums only reported series', () => {
+    expect(aggregateNetworkRates([])).toEqual({
+      rxBytesPerSecond: null,
+      txBytesPerSecond: null,
+      rxErrorsPerSecond: null,
+      txErrorsPerSecond: null,
+      rxDropsPerSecond: null,
+      txDropsPerSecond: null
+    })
+    expect(aggregateNetworkRates([
+      { rxBytesPerSecond: null, txBytesPerSecond: 40, rxErrorsPerSecond: null, txErrorsPerSecond: null, rxDropsPerSecond: null, txDropsPerSecond: null },
+      { rxBytesPerSecond: 80, txBytesPerSecond: null, rxErrorsPerSecond: null, txErrorsPerSecond: 3, rxDropsPerSecond: 5, txDropsPerSecond: null }
+    ])).toEqual({
+      rxBytesPerSecond: 80,
+      txBytesPerSecond: 40,
+      rxErrorsPerSecond: null,
+      txErrorsPerSecond: 3,
+      rxDropsPerSecond: 5,
+      txDropsPerSecond: null
+    })
   })
 })

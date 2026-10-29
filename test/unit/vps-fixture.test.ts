@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import fixture from '../../public/mock/vps-dashboard.json'
 import examples from '../../docs/vps-response-examples.json'
-import { parseVpsDashboardResponse } from '../../app/utils/vps-response'
+import { parseVpsDashboardResponse } from '../../shared/utils/vps-response'
 import { getActiveProcesses, paginateItems } from '../../app/utils/vps-status'
 
 describe('VPS backend reference fixture', () => {

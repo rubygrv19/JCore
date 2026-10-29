@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { VpsDashboardResponse } from '~/types/vps'
+import type { VpsDashboardResponse } from '#shared/types/vps'
 
 const route = useRoute()
 const activity = useTimeshitActivityStore()

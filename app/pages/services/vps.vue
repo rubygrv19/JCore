@@ -1,42 +1,19 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
-import type { VpsDashboardResponse, VpsProcessState, VpsStatus } from '~/types/vps'
-import type { VpsProcess } from '~/types/vps-processes'
-import { formatBytes, formatProcessPercent, formatProcessStartedAt, formatServicePorts, formatUptime, getActiveProcesses, paginateItems, percent, VPS_STATUS_META } from '~/utils/vps-status'
-import { useVpsDashboard } from '~/utils/vps-client'
-import { fetchVpsProcesses } from '~/utils/vps-processes-client'
-import { startPolling } from '~/utils/polling'
+import type { VpsDashboardResponse, VpsProcessState, VpsStatus } from '#shared/types/vps'
+import type { VpsProcess } from '#shared/types/vps-processes'
+import { aggregateNetworkRates, formatBytes, formatProcessPercent, formatProcessStartedAt, formatServicePorts, formatUptime, getActiveProcesses, paginateItems, percent, VPS_STATUS_META } from '~/utils/vps-status'
+import { useVpsDashboard } from '~/composables/use-vps-dashboard'
+import { useVpsMonitoring } from '~/composables/use-vps-monitoring'
 
 type VpsServiceUnit = VpsDashboardResponse['current']['services']['units'][number]
 
 useSeoMeta({ title: 'VPS' })
 
-const { data, error, refresh, pending } = await useVpsDashboard()
-const lastSnapshot = shallowRef(data.value)
-watch(data, (value) => {
-  if (value) lastSnapshot.value = value
-})
-const dashboard = computed(() => data.value ?? lastSnapshot.value)
-const latest = computed(() => dashboard.value?.current)
-const points = computed(() => dashboard.value?.history.samples ?? [])
+const vpsData = await useVpsDashboard()
+const { error, refresh, pending, dashboard, latest, points, liveProcesses, processSnapshotAt, processFetchFailed, processSource, chartLabels, isDataStale, collectedAtLabel, freshnessLabel } = useVpsMonitoring(vpsData)
 const processPage = ref(1)
 const processPageSize = 10
-const now = ref(Date.now())
-let clockTimer: ReturnType<typeof setInterval> | undefined
-let stopDashboardPolling: (() => void) | undefined
-let stopProcessPolling: (() => void) | undefined
-const liveProcesses = shallowRef<VpsProcess[] | null>(null)
-const processSnapshotAt = ref<string | null>(null)
-const processFetchFailed = ref(false)
-const processFailureReason = ref<'platform' | 'unavailable' | null>(null)
-const processSource = computed(() => liveProcesses.value
-  ? processFetchFailed.value ? 'Stale snapshot · Linux /proc update failed' : 'Live · Linux /proc'
-  : processFailureReason.value === 'platform' && dashboard.value?.dataMode === 'mock' ? 'Demo data · Linux required' : processFailureReason.value === 'unavailable' ? 'Process collector unavailable · retrying automatically' : 'Waiting for the process collector')
-const chartLabels = computed(() => points.value.map(point => new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).format(new Date(point.timestamp))))
-const collectedAtDate = computed(() => dashboard.value?.source.sampledAt ? Date.parse(dashboard.value.source.sampledAt) : Number.NaN)
-const dataAgeSeconds = computed(() => Number.isFinite(collectedAtDate.value) ? Math.max(0, Math.floor((now.value - collectedAtDate.value) / 1000)) : null)
-const isDataStale = computed(() => dashboard.value?.dataMode === 'live' && (Boolean(error.value) || dashboard.value.source.status === 'stale' || (dataAgeSeconds.value !== null && dataAgeSeconds.value >= 60)))
-const collectedAtLabel = computed(() => dashboard.value?.collectedAt ? new Date(dashboard.value.collectedAt).toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }) : 'Time unavailable')
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
 const chartPalette = computed(() => ({
@@ -44,13 +21,6 @@ const chartPalette = computed(() => ({
   available: isDark.value ? '#3f3f46' : '#d4d4d8',
   secondary: isDark.value ? '#a1a1aa' : '#52525b'
 }))
-const freshnessLabel = computed(() => {
-  const age = dataAgeSeconds.value
-  if (age === null) return 'Collection time unavailable'
-  if (age < 60) return `Updated ${age} ${age === 1 ? 'second' : 'seconds'} ago`
-  const minutes = Math.floor(age / 60)
-  return `Updated ${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`
-})
 const statusMeta = (value: VpsStatus) => ({
   ...VPS_STATUS_META[value],
   hex: chartPalette.value.used
@@ -70,7 +40,7 @@ const storageUsedPercent = computed(() => {
   if (!primaryFilesystem.value?.totalBytes || primaryFilesystem.value.usedBytes === null) return null
   return (primaryFilesystem.value.usedBytes / primaryFilesystem.value.totalBytes) * 100
 })
-const networkInterface = computed(() => latest.value?.network.interfaces[0])
+const networkRates = computed(() => aggregateNetworkRates(latest.value?.network.interfaces ?? []))
 const serviceItems = computed(() => (latest.value?.services.units ?? []).map(unit => ({ ...unit, label: unit.name, value: unit.name })))
 const processItems = computed(() => getActiveProcesses(liveProcesses.value ?? latest.value?.processes.items ?? []))
 const processPageCount = computed(() => Math.max(1, Math.ceil(processItems.value.length / processPageSize)))
@@ -79,33 +49,6 @@ const expandedServiceRows = ref<Record<string, boolean>>({})
 const expandedProcessRows = ref<Record<string, boolean>>({})
 watch(processPageCount, (pageCount) => {
   processPage.value = Math.min(processPage.value, pageCount)
-})
-async function refreshProcesses(signal: AbortSignal) {
-  try {
-    const response = await fetchVpsProcesses(signal)
-    if (signal.aborted) return
-    liveProcesses.value = response.items
-    processSnapshotAt.value = response.collectedAt
-    processFetchFailed.value = false
-  } catch (error) {
-    if (signal.aborted) return
-    // Keep labeled fixture data on macOS and on hosts where Linux /proc is unavailable.
-    processFetchFailed.value = liveProcesses.value !== null
-    const statusCode = (error as { statusCode?: number, status?: number }).statusCode ?? (error as { status?: number }).status
-    processFailureReason.value = statusCode === 501 ? 'platform' : 'unavailable'
-  }
-}
-onMounted(() => {
-  clockTimer = setInterval(() => {
-    now.value = Date.now()
-  }, 1000)
-  stopDashboardPolling = startPolling(signal => refresh({ signal, dedupe: 'defer' }), 10_000, false)
-  stopProcessPolling = startPolling(refreshProcesses)
-})
-onBeforeUnmount(() => {
-  clearInterval(clockTimer)
-  stopDashboardPolling?.()
-  stopProcessPolling?.()
 })
 const serviceColumns: TableColumn<VpsServiceUnit>[] = [
   { id: 'expand', header: '', size: 48, enableSorting: false },
@@ -152,12 +95,11 @@ const overviewCards = computed(() => {
   const cpu = latest.value.cpu
   const memory = latest.value.memory
   const storage = primaryFilesystem.value
-  const iface = networkInterface.value
   const cpuUsed = clampPercent(cpu.usagePercent)
   const memoryUsed = clampPercent(memoryUsedPercent.value)
   const diskUsed = clampPercent(storageUsedPercent.value)
-  const rx = iface?.rxBytesPerSecond ?? null
-  const tx = iface?.txBytesPerSecond ?? null
+  const rx = networkRates.value.rxBytesPerSecond
+  const tx = networkRates.value.txBytesPerSecond
 
   return [
     {
@@ -228,7 +170,7 @@ const overviewCards = computed(() => {
       unit: 'rate' as const,
       status: latest.value.network.status,
       centerValue: rx === null || tx === null ? '—' : formatRate(rx + tx),
-      chartLabel: `Inbound and outbound traffic composition on ${iface?.name ?? 'interface'}`,
+      chartLabel: 'Inbound and outbound traffic across all monitored interfaces',
       segments: rx === null || tx === null
         ? []
         : [
@@ -236,20 +178,20 @@ const overviewCards = computed(() => {
             { label: 'Outbound · TX', value: tx, color: chartPalette.value.secondary }
           ],
       details: [
-        { label: 'Inbound · RX', value: formatRate(iface?.rxBytesPerSecond), color: chartPalette.value.used },
-        { label: 'Outbound · TX', value: formatRate(iface?.txBytesPerSecond), color: chartPalette.value.secondary }
+        { label: 'Inbound · RX', value: formatRate(rx), color: chartPalette.value.used },
+        { label: 'Outbound · TX', value: formatRate(tx), color: chartPalette.value.secondary }
       ],
-      total: { label: 'Interface', value: iface?.name ?? '—' },
+      total: { label: 'Scope', value: `${latest.value.network.interfaces.length} monitored ${latest.value.network.interfaces.length === 1 ? 'interface' : 'interfaces'}` },
       footerRows: [
-        { label: 'Errors · RX / TX', value: `${iface?.rxErrorsPerSecond ?? '—'} / ${iface?.txErrorsPerSecond ?? '—'} per second` },
-        { label: 'Drops · RX / TX', value: `${iface?.rxDropsPerSecond ?? '—'} / ${iface?.txDropsPerSecond ?? '—'} per second` }
+        { label: 'Errors · RX / TX', value: `${networkRates.value.rxErrorsPerSecond ?? '—'} / ${networkRates.value.txErrorsPerSecond ?? '—'} per second` },
+        { label: 'Drops · RX / TX', value: `${networkRates.value.rxDropsPerSecond ?? '—'} / ${networkRates.value.txDropsPerSecond ?? '—'} per second` }
       ],
       meter: null,
-      footnote: !iface
+      footnote: !latest.value.network.interfaces.length
         ? 'Interface data is unavailable.'
-        : iface.capacityBitsPerSecond === null
-          ? 'The donut shows the traffic ratio. Bandwidth capacity has not been configured.'
-          : 'The donut shows the inbound-to-outbound traffic ratio.'
+        : latest.value.network.interfaces.some(iface => iface.capacityBitsPerSecond === null)
+          ? 'Rates are summed across the monitored interfaces below. Capacity is not configured for every interface.'
+          : 'Rates are summed across the monitored interfaces below.'
     }
   ]
 })
@@ -283,9 +225,9 @@ const charts = computed(() => [
   },
   {
     title: 'Network',
-    description: 'Inbound and outbound traffic',
+    description: 'Inbound and outbound traffic across monitored interfaces',
     unit: 'rate' as const,
-    ariaLabel: 'Network inbound and outbound traffic chart',
+    ariaLabel: 'Network inbound and outbound traffic across monitored interfaces chart',
     datasets: [
       { label: 'RX', color: chartPalette.value.used, values: points.value.map(point => point.networkRxBytesPerSecond) },
       { label: 'TX', color: chartPalette.value.secondary, values: points.value.map(point => point.networkTxBytesPerSecond) }

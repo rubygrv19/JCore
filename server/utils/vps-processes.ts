@@ -1,7 +1,7 @@
 import { readdir, readFile, readlink } from 'node:fs/promises'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import type { VpsProcess } from '~/types/vps-processes'
+import type { VpsProcess } from '#shared/types/vps-processes'
 
 const execFileAsync = promisify(execFile)
 const previousCpuTicks = new Map<number, { ticks: number, startTicks: number }>()

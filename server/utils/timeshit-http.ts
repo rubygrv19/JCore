@@ -1,5 +1,6 @@
 import { getHeader, type H3Event } from 'h3'
 import { timeshitError } from './timeshit-errors'
+import { readLimitedBody } from './limited-body'
 
 export function validateTimeshitOrigin(origin: string | undefined, configured: string) {
   let trusted: URL
@@ -26,65 +27,10 @@ export async function readTimeshitMutation(event: H3Event, trustedOrigin: string
 export async function readTimeshitJson(event: H3Event, trustedOrigin: string): Promise<unknown> {
   validateTimeshitOrigin(getHeader(event, 'origin'), trustedOrigin)
   if (getHeader(event, 'sec-fetch-site') === 'cross-site' || getHeader(event, 'content-type')?.split(';')[0]?.trim().toLowerCase() !== 'application/json') throw timeshitError('INVALID_INPUT', 400, 'Send a same-origin JSON request.')
-  const body = await readLimitedBody(event)
+  const body = await readLimitedBody(event, 4096, status => timeshitError('INVALID_INPUT', status, status === 413 ? 'Connection request is too large.' : 'Connection request was interrupted.'))
   let value: unknown
   try {
     value = JSON.parse(body)
   } catch { throw timeshitError('INVALID_INPUT', 400, 'Invalid JSON request.') }
   return value
-}
-
-async function readLimitedBody(event: H3Event): Promise<string> {
-  const webBody = event.web?.request?.body
-  if (webBody) {
-    const reader = webBody.getReader()
-    const chunks: Uint8Array[] = []
-    let size = 0
-    try {
-      while (true) {
-        const next = await reader.read()
-        if (next.done) break
-        size += next.value.byteLength
-        if (size > 4096) {
-          await reader.cancel()
-          throw timeshitError('INVALID_INPUT', 413, 'Connection request is too large.')
-        }
-        chunks.push(next.value)
-      }
-      return Buffer.concat(chunks).toString('utf8')
-    } finally { reader.releaseLock() }
-  }
-  return new Promise((resolve, reject) => {
-    const request = event.node.req
-    const chunks: Buffer[] = []
-    let size = 0
-    function cleanup() {
-      request.off('data', onData)
-      request.off('end', onEnd)
-      request.off('error', onError)
-      request.off('aborted', onError)
-    }
-    function onData(chunk: Buffer) {
-      size += chunk.length
-      if (size > 4096) {
-        cleanup()
-        request.resume()
-        reject(timeshitError('INVALID_INPUT', 413, 'Connection request is too large.'))
-        return
-      }
-      chunks.push(chunk)
-    }
-    function onEnd() {
-      cleanup()
-      resolve(Buffer.concat(chunks).toString('utf8'))
-    }
-    function onError() {
-      cleanup()
-      reject(timeshitError('INVALID_INPUT', 400, 'Connection request was interrupted.'))
-    }
-    request.on('data', onData)
-    request.once('end', onEnd)
-    request.once('error', onError)
-    request.once('aborted', onError)
-  })
 }

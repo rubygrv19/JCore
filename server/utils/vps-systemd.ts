@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process'
 import { readFile, readlink } from 'node:fs/promises'
 import { promisify } from 'node:util'
-import type { VpsDashboardResponse, VpsStatus } from '~/types/vps'
+import type { VpsDashboardResponse, VpsStatus } from '#shared/types/vps'
 import { redactCommandLine } from './vps-processes'
 
 const execute = promisify(execFile)

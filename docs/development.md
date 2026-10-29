@@ -15,7 +15,7 @@ These commands assume a clean checkout or local changes that can safely move wit
 
 Use another branch only when the owner requests it. Commit/push/deploy only when explicitly authorized. A documentation-edit request does not authorize any of those actions.
 
-Use Node 22.16+ within Node 22 as the current CI baseline (or Node 24+) and the pnpm version in `package.json`. Install with `pnpm install --frozen-lockfile`; preserve `pnpm-lock.yaml`. Set ignored local auth variables as described in [configuration](security-and-configuration.md), then run `pnpm dev` and open its printed loopback address.
+Use Node 22.22.3+ within Node 22 as the current CI baseline, Node 24.15+ within Node 24, or Node 26+ (the Nuxt 4.6.1 engine ranges; local verification used Node 22.23.2) and the pnpm version in `package.json`. Install with `pnpm install --frozen-lockfile`; preserve `pnpm-lock.yaml`. Set ignored local auth variables as described in [configuration](security-and-configuration.md), then run `pnpm dev` and open its printed loopback address.
 
 ## Required reading
 
@@ -49,7 +49,7 @@ Run focused tests during development, then the complete checks before handoff. E
 | Polling cleanup/retry and login attempt budget | `test/unit/vps-lifecycle.test.ts` |
 | Nuxt/Pinia service store behavior | `test/nuxt/services.nuxt.test.ts` |
 
-`vitest.config.ts` separates Node unit tests and the Nuxt test project. These tests do not replace browser interaction checks, a live authenticated endpoint check, or Ubuntu verification. The current workflow in `.github/workflows/ci.yml` runs install, lint and typecheck on pushes to Ubuntu/Node 22; it does not run tests or build yet. Do not call CI a complete release gate.
+`vitest.config.ts` separates Node unit tests and the Nuxt test project. CI runs frozen-lockfile installation, lint, typecheck, unit tests, and a production build on pushes and pull requests using Ubuntu/Node 22. A successful local run does not prove that GitHub Actions completed; confirm the remote run before treating the workflow check as passed. CI does not replace browser interaction checks, authenticated endpoint verification, or Ubuntu host verification.
 
 For documentation-only changes, validate local links, referenced paths, commands, fenced blocks, JSON/schema examples and consistency with source. Do not claim runtime checks from a previous run as fresh evidence. Application checks may be run when requested or when documentation changes reveal an implementation concern; report exactly what was executed.
 
@@ -74,7 +74,7 @@ Trace collector -> API -> validator/schema -> type -> fixture/examples -> format
 
 - `server/utils/vps-dashboard.ts`, `vps-systemd.ts`, or `vps-processes.ts`.
 - `server/api/vps/*.ts` and `app/utils/vps-*.ts` where applicable.
-- `docs/vps-dashboard.schema.json` or `docs/vps-processes.schema.json` and their TypeScript types.
+- `docs/vps-dashboard.schema.json` or `docs/vps-processes.schema.json`, `shared/types/vps*.ts`, and `shared/utils/vps*-response.ts`.
 - `public/mock/vps-dashboard.json`, named examples, `docs/vps-response-contract.md`.
 - Focused tests, page states, `ops/vps/VERIFY.md` and monitoring rules where semantics change.
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { collectVpsDashboard } from '../../server/utils/vps-dashboard'
-import { parseVpsDashboardResponse } from '../../app/utils/vps-response'
+import { parseVpsDashboardResponse } from '../../shared/utils/vps-response'
 
 const transport = vi.hoisted(() => ({ missingCpu: false, age: 0, up: 1, alerts: [] as unknown[] }))
 const epoch = Date.parse('2026-10-10T00:00:00Z') / 1000

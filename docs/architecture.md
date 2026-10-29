@@ -38,19 +38,20 @@ The monitored host is the host running Nuxt and the collectors. Containerizing N
 | `app/middleware/auth.global.ts` | Dashboard route session guard; `/login` exemption |
 | `app/pages/` | File-based routes and page-local view state |
 | `app/stores/services.ts` | Service configuration shared through Pinia |
-| `app/utils/` | Service clients, response validation, formatting and polling |
-| `app/types/` | Existing client and VPS contract types |
+| `app/utils/` | Service clients, formatting and polling |
+| `app/composables/` | Nuxt composables such as VPS `useAsyncData()` orchestration |
 | `app/components/*.client.vue` | Client-rendered Chart.js wrappers |
 | `server/api/` | Nitro endpoints and private API guards |
 | `server/utils/` | Credential checks, login limiter, Prometheus/procfs/systemd collectors |
 | `shared/types/auth.d.ts` | Session user typing shared with Nuxt Auth Utils |
+| `shared/types/vps*.ts` / `shared/utils/vps*.ts` | VPS response types and pure runtime validation shared by app and server |
 | `public/mock/` | Public illustrative fixture; never put credentials or real private telemetry here |
 | `docs/*.schema.json` | AJV runtime schemas imported by validators |
 | `test/unit/` / `test/nuxt/` | Node logic tests and Nuxt-aware tests |
 | `ops/vps/` | Compose stack, scrape/alert rules, Ubuntu runbook |
 | `scripts/start-local.mjs` | Loopback-only production start wrapper |
 
-`shared/` is a Nuxt-standard location for code needed by both app and server. Existing VPS types/validators still live under `app/` and are also imported by server collectors/handlers via `~`. This is an existing coupling, not a completed shared-contract migration. New shared contracts should live in `shared/`; migrate existing imports together if that cleanup is requested.
+`shared/` contains code used by both app and server. VPS response types and AJV validators live there; the browser fetch client remains in `app/utils/`, and Nuxt `useAsyncData()` orchestration lives in `app/composables/`. `useVpsMonitoring()` owns VPS snapshot/freshness/process polling and cleanup; `useTimeshitPageLifecycle()` owns Timeshit initial loads and view-store cleanup. The page files retain local control state, table definitions and their Nuxt UI markup. Shared VPS modules import only shared types, validation dependencies and contract schemas; they do not import app-only or server-private code.
 
 ## Routes
 
@@ -69,9 +70,11 @@ Nuxt resolves the explicit VPS and Timeshit pages before the dynamic service pag
 
 ## Authentication
 
-`POST /api/auth/login` uses server environment credentials, validates the payload, applies a process-wide attempt budget, compares credentials and calls `setUserSession`. `useUserSession()` supplies session state to login, middleware and the dashboard layout. Signing out calls its `clear()` method. The current login page does not automatically redirect an already signed-in visitor merely because they opened `/login`.
+`POST /api/auth/login` uses server environment credentials, resolves the TCP client (or an explicitly trusted proxy's single X-Real-IP), applies bounded per-client and global process-local budgets, validates the configured login Origin and JSON Content-Type, reads at most 8 KiB through the shared bounded stream reader, validates credentials, compares them and calls `setUserSession`. The shared reader also preserves Timeshit's separate 4 KiB mutation limit. `useUserSession()` supplies session state to login, middleware and the dashboard layout. Signing out calls its `clear()` method. The current login page does not automatically redirect an already signed-in visitor merely because they opened `/login`.
 
 Every current VPS API handler calls `requireUserSession(event)` independently of the page guard. Framework session routes come from Nuxt Auth Utils; they are not custom application endpoints. See [security and configuration](security-and-configuration.md) for exact behavior and limits.
+
+Both private VPS telemetry endpoints set `Cache-Control: private, no-store` before authentication and collection; this applies to success and error responses. Reverse proxy/CDN cache behavior remains a separate deployment check.
 
 ## State ownership
 

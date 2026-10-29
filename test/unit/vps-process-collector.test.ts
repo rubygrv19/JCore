@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { calculateHostCpuPercent, mapProcState, parseProcStat, processStartedAt, redactCommandLine } from '../../server/utils/vps-processes'
-import { parseVpsProcessesResponse } from '../../app/utils/vps-processes-client'
+import { parseVpsProcessesResponse } from '../../shared/utils/vps-processes-response'
 
 describe('Linux process collector parsers', () => {
   it('parses proc stat when the command name contains spaces and parentheses', () => {

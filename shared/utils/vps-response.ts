@@ -1,7 +1,7 @@
 import Ajv2020, { type AnySchema } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import schema from '../../docs/vps-dashboard.schema.json'
-import type { VpsDashboardResponse } from '~/types/vps'
+import type { VpsDashboardResponse } from '#shared/types/vps'
 
 const ajv = new Ajv2020({ allErrors: true })
 addFormats(ajv)
