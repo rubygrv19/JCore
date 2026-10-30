@@ -590,4 +590,4 @@ Both audit commands still exit nonzero because two advisories remain. Counts des
 
 **Verification:** Fresh `pnpm test` (**269/269**), `pnpm typecheck`, `pnpm lint` and `pnpm build` passed. Build log contains no `Duplicated imports` warnings for the service symbols. Remaining Nitro `node:sqlite` externalization and third-party annotation warnings are unchanged.
 
-**Commit:** Pending with the documentation refresh that records this cleanup.
+**Commit:** `79de073` on `development`.
