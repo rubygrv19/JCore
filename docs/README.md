@@ -1,15 +1,15 @@
 # Documentation index
 
-Last source audit: October 12, 2026, on `development`, based on the `280f108` application baseline and the accompanying documentation changes. This date records a source review, not a production release or Linux-host verification.
+Current project baseline: October 30, 2026 on `development`. Nuxt 4.6.3 / Nuxt UI 4.12.0; local suite **269 tests / 39 files** with typecheck, lint and production build passing. Audit findings AUD-01–AUD-12 are closed or mitigated (AUD-01 retains 2 low advisories); UX-01 is deferred; public HTTPS and Ubuntu operator release gates remain open. See the [project audit tracker](project-audit-2026-10-14.md) and [pending execution plan](superpowers/plans/2026-10-30-pending-task-execution.md).
 
-Latest Timeshit audit: October 14, 2026. Connection/PAT, repository/history browsing, activity collection, daily digest/copy, heatmap and branch preferences are implemented. The [verification report](timeshit-verification-report.md) maps the plan to current code, records corrected defects and passing checks, and distinguishes local browser evidence from remaining release checks. The October 12 audit record below remains historical.
+Latest Timeshit feature audit: October 14, 2026. Connection/PAT, repository/history browsing, activity collection, daily digest/copy, heatmap and branch preferences are implemented. The [verification report](timeshit-verification-report.md) maps the plan to current code, records corrected defects and passing checks, and distinguishes local browser evidence from remaining release checks. The October 12 documentation audit record below remains historical.
 
 ## Reading paths
 
 - New developer: [README](../README.md), [architecture](architecture.md), [development](development.md), [configuration](security-and-configuration.md).
 - UI contributor: [project rules](../AGENTS.md), [design system](../DESIGN.md), then the affected page and its Nuxt UI documentation.
 - VPS backend contributor: [response contract](vps-response-contract.md), its linked schemas/examples, collector source, and [Ubuntu verification](../ops/vps/VERIFY.md).
-- Timeshit contributor: [approved plan](timeshit-implementation-plan.md). Connection/PAT, repository management and branch/commit/change browsing are implemented; read the [connection](timeshit-connection-contract.md), [repository](timeshit-repositories-contract.md) and [history](timeshit-history-contract.md) contracts. The [activity contract foundation](timeshit-activity-contract.md) defines implemented shared helpers/schema, bounded collector and HTTP operations. Client activity controls and daily digest/copy are implemented; heatmap UI is implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md).
+- Timeshit contributor: [approved plan](timeshit-implementation-plan.md). Connection/PAT, repository management and branch/commit/change browsing are implemented; read the [connection](timeshit-connection-contract.md), [repository](timeshit-repositories-contract.md) and [history](timeshit-history-contract.md) contracts. The [activity contract](timeshit-activity-contract.md) defines implemented shared helpers/schema, bounded collector and HTTP operations. Client activity controls and daily digest/copy are implemented; heatmap UI is implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md).
 - AI agent: read [AGENTS.md](../AGENTS.md) first, then use the relevant reading path. Consult [official references](references.md) and installed dependency source when uncertain.
 
 ## Documentation ownership
@@ -35,6 +35,9 @@ Latest Timeshit audit: October 14, 2026. Connection/PAT, repository/history brow
 | `docs/timeshit-implementation-plan.md` | Approved future Timeshit scope | Decisions change or a phase is implemented |
 | `docs/timeshit-verification-report.md` | Plan-to-code audit, corrected defects, local evidence and remaining release checks | Acceptance evidence or unresolved limits change |
 | `docs/timeshit-acceptance.md` | Isolated synthetic UI, real PAT lifecycle and Ubuntu acceptance procedures | Test helpers, acceptance prerequisites or release gates change |
+| `docs/timeshit-preferences-contract.md` | Persisted history default branch preference | Preference API/schema/UI changes |
+| `docs/project-audit-2026-10-14.md` | Dated audit findings, remediation evidence and remaining decisions | Findings close, defer, or re-verify |
+| `docs/superpowers/plans/2026-10-30-pending-task-execution.md` | Ordered remaining local/release tasks | Task status or release-gate order changes |
 | `ops/vps/VERIFY.md` | Operator runbook and release evidence checklist | Host/runtime/collector deployment changes |
 | `docs/references.md` | External reference catalog | New APIs, dependencies or guidance are introduced |
 
@@ -57,9 +60,9 @@ These are existing limits, not features completed by this documentation audit:
 - Process state, CPU sampling, command redaction, and systemd listener ownership have the limits described in the [VPS contract](vps-response-contract.md).
 - No alert history, external notification delivery, network-capacity policy, remote multi-host monitoring, service-control action, registration, password reset, or database-backed administration is implemented.
 - Login throttling uses bounded per-client and global budgets within one Node process. Proxy address trust is opt-in and requires verified header overwriting; no multi-proxy-chain policy is implemented. There is no shared limiter, explicit app-configured session lifetime, or central session revocation. Login enforces an explicit configured Origin and an 8 KiB JSON body bound; see [configuration](security-and-configuration.md).
-- Private VPS handlers require a session but do not explicitly set response cache-control headers. Configure the proxy/CDN to bypass caching authenticated pages and APIs; do not claim application-level `no-store` is implemented.
-- CI currently runs install, lint and typecheck on Ubuntu/Node 22 for pushes. Unit tests and production build remain local release requirements and are not CI steps yet.
-- Current documentation and mocked tests cannot establish that Ubuntu permissions, exporters, systemd, HTTPS, and production cookies work on the deployment host. Record evidence using the runbook.
+- Private VPS handlers require a session and set `Cache-Control: private, no-store` on success and errors. Configure the proxy/CDN to bypass caching authenticated pages and APIs as defense in depth; application-level headers do not replace host proxy verification.
+- CI runs frozen-lockfile install, lint, typecheck, unit tests and production build on Ubuntu/Node 22 for pushes and pull requests. Browser interaction, authenticated host checks and public HTTPS verification remain outside CI.
+- Public HTTPS for `jcore.rubygrv.cloud` was unreachable on October 30, 2026 (DNS resolves; TCP 80/443 closed). Current documentation and mocked tests cannot establish that Ubuntu permissions, exporters, systemd, HTTPS, and production cookies work on the deployment host. Record evidence using the runbook when the public listener exists.
 
 Keep this list current. Move a boundary to “implemented” only after the code, contract, tests, and required runtime checks agree.
 

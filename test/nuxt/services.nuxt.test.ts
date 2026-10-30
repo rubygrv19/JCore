@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { SERVICE_KEYS, useServicesStore } from '../../app/stores/services'
+import { useServicesStore } from '../../app/stores/services'
+import { SERVICE_KEYS } from '../../app/types/services'
 
 describe('Nuxt service state', () => {
   beforeEach(() => setActivePinia(createPinia()))

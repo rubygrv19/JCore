@@ -323,7 +323,7 @@ Artifact inspection also searched the generated server chunks for imports of the
 - Browser checks used the built production server with the existing synthetic acceptance launcher, an ephemeral database, and a synthetic administrator. Login and navigation to Dashboard, VPS, Timeshit (disconnected state), and Settings succeeded. VPS rendered eight chart canvases and expandable service details. The Timeshit Settings modal opened; no console errors were recorded in the checked flow. The modal fit a 390px viewport without horizontal overflow. The temporary viewport was reset.
 - The owner's saved PAT/database was not changed, no live GitHub collection was rerun, and no real Ubuntu deployment was performed. Live source/HTTPS release checks remain separate.
 
-**Non-blocking warnings to retain for follow-up:** Nuxt reports duplicate auto-import candidates from the existing service type re-exports; pnpm reports optional WASM peer-range warnings for `@emnapi/core`/`@emnapi/runtime`; Nitro emits third-party annotation and `node:sqlite` externalization warnings. Tests and the built server passed on this platform. These warnings are not proof of compatibility on untested platforms; reassess the duplicate exports during structural cleanup and verify the target Linux build before deployment.
+**Non-blocking warnings to retain for follow-up:** pnpm reports optional WASM peer-range warnings for `@emnapi/core`/`@emnapi/runtime`; Nitro emits third-party annotation and `node:sqlite` externalization warnings. The service-type duplicate auto-import warning was removed on October 30, 2026 by dropping the Pinia store re-exports of `SERVICE_KEYS` / `Service*` so those symbols come only from `app/types/services.ts`. Tests and the built server passed on this platform. These remaining warnings are not proof of compatibility on untested platforms; verify the target Linux build before deployment.
 
 **Commit:** Not committed. No push or deployment occurred during this remediation.
 
@@ -578,6 +578,16 @@ Both audit commands still exit nonzero because two advisories remain. Counts des
 - AUD-12: `pnpm typecheck`, `pnpm lint`, and the production build passed. Mobile browser inspection at 390px confirmed the enabled computed cursor is `pointer`, keyboard focus has a visible outline, and the page has no horizontal overflow. The busy state was not triggered live; its disabled binding and `cursor-not-allowed` class are present in source.
 - `pnpm build` passed after the component deletion with no missing-component reference. Existing Nuxt duplicate-import, Rollup annotation, and `node:sqlite` externalization warnings remain; this batch introduced no new warning.
 
-**Remaining acceptance:** Desktop visual check remains pending. Do not disconnect the owner's real connection.
+**Remaining acceptance:** Mobile cursor/focus verification is recorded above. A separate desktop-only cursor recheck was not repeated; the same markup applies at both widths. Do not disconnect the owner's real connection.
 
-**Commit:** Not committed. No push or deployment occurred.
+**Commit:** Included in `a7ec203` on `development`.
+
+### Duplicate service auto-import cleanup: October 30, 2026
+
+**Status:** Fixed and verified locally.
+
+**Implementation:** Removed `SERVICE_KEYS` / `Service*` re-exports from `app/stores/services.ts` so Nuxt auto-import resolves those symbols only from `app/types/services.ts`. Updated `test/nuxt/services.nuxt.test.ts` to import `SERVICE_KEYS` from the types module.
+
+**Verification:** Fresh `pnpm test` (**269/269**), `pnpm typecheck`, `pnpm lint` and `pnpm build` passed. Build log contains no `Duplicated imports` warnings for the service symbols. Remaining Nitro `node:sqlite` externalization and third-party annotation warnings are unchanged.
+
+**Commit:** Pending with the documentation refresh that records this cleanup.

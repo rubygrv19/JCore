@@ -37,7 +37,8 @@ The monitored host is the host running Nuxt and the collectors. Containerizing N
 | `app/layouts/default.vue` | Sidebar, route navigation, theme control, account and sign-out |
 | `app/middleware/auth.global.ts` | Dashboard route session guard; `/login` exemption |
 | `app/pages/` | File-based routes and page-local view state |
-| `app/stores/services.ts` | Service configuration shared through Pinia |
+| `app/types/services.ts` | Canonical `SERVICE_KEYS` and service config types (do not re-export from Pinia) |
+| `app/stores/services.ts` | Temporary Base URL/mode drafts shared through Pinia |
 | `app/utils/` | Service clients, formatting and polling |
 | `app/composables/` | Nuxt composables such as VPS `useAsyncData()` orchestration |
 | `app/components/*.client.vue` | Client-rendered Chart.js wrappers |

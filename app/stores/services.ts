@@ -17,6 +17,3 @@ export const useServicesStore = defineStore('services', () => {
 
   return { configs, saveConfig }
 })
-
-export { SERVICE_KEYS }
-export type { ServiceConfig, ServiceConfigs, ServiceKey, ServiceMode } from '../types/services'

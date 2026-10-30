@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Work on `development`. Preserve every pre-existing uncommitted change.
-- Progress (October 30, 2026): Tasks 1–6 committed and pushed as `a7ec203`. Task 7 (UX-01) deferred by owner until after HTTPS/Ubuntu release gates; current clear-on-leave retained. Remaining: Tasks 8–11.
+- Progress (October 30, 2026): Tasks 1–6 committed and pushed as `a7ec203`. Task 7 (UX-01) deferred by owner until after HTTPS/Ubuntu release gates; current clear-on-leave retained. Owner chose option 3 (pause release); Tasks 8–11 wait on a public HTTPS listener / operator access. Extra local cleanup: removed service-type Pinia re-exports that caused Nuxt duplicate auto-import warnings.
 - Do not commit, push, publish or deploy unless the owner explicitly asks for that action.
 - Do not reset, stash or discard unrelated work.
 - Keep `pnpm-lock.yaml`; do not introduce npm as the package manager.

@@ -14,7 +14,7 @@ JCore is a personal, single-administrator service dashboard built with Nuxt 4 an
 | Timeshit | Connection/PAT, repository management, branch/commit/file browsing, bounded all-branch activity, daily digest/copy, heatmap and branch preferences. See the [plan](docs/timeshit-implementation-plan.md), scoped contracts below and [verification report](docs/timeshit-verification-report.md) for current evidence and remaining release checks. |
 | Code Review / Quota Tracker | Coming Soon pages; external integrations are not implemented |
 
-The [Timeshit activity contract foundation](docs/timeshit-activity-contract.md) provides schema/examples, runtime validation and shared author-date/deduplication helpers. Its bounded collection HTTP handlers and client/Pinia lifecycle are implemented; visible collection controls and daily digest/copy are implemented; heatmap is implemented; current acceptance and remaining release checks are recorded in the [verification report](docs/timeshit-verification-report.md).
+The [Timeshit activity contract](docs/timeshit-activity-contract.md) defines schema/examples, runtime validation, shared author-date/deduplication helpers, bounded collection HTTP handlers and the client/Pinia lifecycle. Visible collection controls, daily digest/copy and heatmap are implemented; current acceptance and remaining release checks are recorded in the [verification report](docs/timeshit-verification-report.md).
 
 VPS telemetry comes from same-origin Nuxt endpoints, loopback Prometheus/Node Exporter, and Linux OS inspection. Settings does not connect an external VPS API. A configured Base URL for another service is currently a validated draft, not an active integration.
 
@@ -69,7 +69,8 @@ Start with the [documentation index](docs/README.md). It separates existing beha
 | [DESIGN.md](DESIGN.md) | Swiss Style, Nuxt UI usage, theme, spacing, charts, accessibility |
 | [VPS contract](docs/vps-response-contract.md) | Endpoint semantics, schema/fixtures, metrics and UI behavior |
 | [Ubuntu operations](ops/vps/VERIFY.md) | Collectors, host permissions, verification, troubleshooting |
-| [Timeshit plan](docs/timeshit-implementation-plan.md) | Remaining approved GitHub integration |
+| [Timeshit plan](docs/timeshit-implementation-plan.md) | Approved Timeshit scope; phases 1–5 implemented |
+| [Project audit](docs/project-audit-2026-10-14.md) | Remediation tracker, residual advisories and deferred UX |
 | [References](docs/references.md) | Official Nuxt, UI, auth, chart, monitoring, and GitHub sources |
 
 ## Working agreement

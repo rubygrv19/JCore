@@ -103,7 +103,9 @@ The isolated Ubuntu production Node server verified hashes of **80 runtime sourc
 
 The real PAT was transferred only through authenticated strict-host-key SSH stdin into the acceptance process; it was not an argument, environment file, repository artifact or log. The temporary server bound to loopback, used fresh private keys/database, and stopped/removed its database on completion. The existing target checkout and public service configuration were preserved. See the sanitized [Ubuntu evidence](timeshit-ubuntu-acceptance.json) and repeatable [acceptance runbook](timeshit-acceptance.md).
 
-The latest local suite also passed **194 tests / 34 files**, typecheck and lint. The application production build passed locally; its macOS binaries are not the Ubuntu artifact. The additional acceptance helpers are deliberately operator-invoked, use built-in Node assertions, and are not automatically run by `pnpm test`.
+The October 14 local suite also passed **194 tests / 34 files**, typecheck and lint. The application production build passed locally; its macOS binaries are not the Ubuntu artifact. The additional acceptance helpers are deliberately operator-invoked, use built-in Node assertions, and are not automatically run by `pnpm test`.
+
+Current local baseline (October 30, 2026): **269 tests / 39 files**, typecheck, lint and production build passed on macOS arm64 / Node 22 after the dependency remediation and audit follow-ups. This supersedes the October 14 local count for day-to-day development; it does not replace the Ubuntu acceptance evidence above.
 
 ## Remaining release gates and recommendations
 
