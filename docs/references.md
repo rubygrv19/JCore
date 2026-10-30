@@ -100,7 +100,7 @@ See `server/utils/vps-dashboard.ts`, `server/utils/vps-processes.ts`, `server/ut
 
 ## GitHub and Timeshit
 
-These references support the [approved Timeshit plan](timeshit-implementation-plan.md). Connection/PAT, repository management and history browsing are implemented. The [activity contract foundation](timeshit-activity-contract.md) is implemented as shared types/validation/date helpers; its bounded collector and HTTP handlers are implemented, while client activity controls, daily digest/copy and heatmap UI are implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md).
+These references support the [approved Timeshit plan](timeshit-implementation-plan.md). Connection/PAT, repository management and history browsing are implemented. The [activity contract](timeshit-activity-contract.md) covers shared types/validation/date helpers, the bounded collector and HTTP handlers, client activity controls, daily digest/copy and heatmap UI; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md).
 
 - [Fine-grained personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens): resource owner, permission and repository restrictions.
 - [Classic token scopes](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps): private repo scope also grants write capabilities.

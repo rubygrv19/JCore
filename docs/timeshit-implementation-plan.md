@@ -165,8 +165,10 @@ These are JCore routes, not official GitHub routes. Connection, repository, hist
 | `GET /api/timeshit/repositories/:owner/:repo/branches` | List repository branches | Implemented; see [history contract](timeshit-history-contract.md) |
 | `GET /api/timeshit/repositories/:owner/:repo/commits` | List account-authored commits for a selected branch head | Implemented; see [history contract](timeshit-history-contract.md) |
 | `GET /api/timeshit/repositories/:owner/:repo/commits/:sha` | Return commit and paginated changed-file details | Implemented; see [history contract](timeshit-history-contract.md) |
-| `POST /api/timeshit/activity` | Start collection and return a cumulative bounded snapshot | Planned; session, mutation-origin and current scope checks |
-| `POST /api/timeshit/activity/continue` | Resume the active collection by opaque capability/revision | Planned; server-only checkpoints and bounded work |
+| `POST /api/timeshit/activity` | Start collection and return a cumulative bounded snapshot | Implemented; session, mutation-origin and current scope checks |
+| `POST /api/timeshit/activity/continue` | Resume the active collection by opaque capability/revision | Implemented; server-only checkpoints and bounded work |
+| `GET /api/timeshit/preferences` | Return the persisted history default-branch preference | Never return credential |
+| `PUT /api/timeshit/preferences` | Update the persisted history default-branch preference | Session and mutation-origin checks |
 
 ### Verified upstream endpoint map
 
@@ -264,7 +266,7 @@ Run `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. Open the local
 
 ## 12. Implementation phases
 
-1. **Contract and runtime verification**: implemented Connection/repository/history contracts and the [activity contract foundation](timeshit-activity-contract.md), including executable schemas, author-date/deduplication helpers, initial budgets, continuation semantics and the existing-Chart.js heatmap choice. Local Node/SQLite evidence is recorded. Operational bounds are enforced by the collector; representative live local and Ubuntu measurements are recorded in the [verification report](timeshit-verification-report.md).
+1. **Contract and runtime verification**: implemented Connection/repository/history contracts and the [activity contract](timeshit-activity-contract.md), including executable schemas, author-date/deduplication helpers, initial budgets, continuation semantics and the existing-Chart.js heatmap choice. Local Node/SQLite evidence is recorded. Operational bounds are enforced by the collector; representative live local and Ubuntu measurements are recorded in the [verification report](timeshit-verification-report.md).
 2. **Credential foundation**: implemented private runtime configuration, SQLite v1–v3 migration/persistence, authenticated encryption, identity/access-check results and guarded connection status/save/replace/delete endpoints. Synthetic tests cover reopen persistence and mutation-origin checks; real same-account credential lifecycle and isolated Ubuntu acceptance have passed. Public HTTPS/proxy browser acceptance remains separate.
 3. **GitHub read client and selection**: implemented validated, paginated repository/branch/commit/detail endpoints, persisted tracking, connection/account isolation and synthetic fixtures; see the repository and history contracts.
 4. **Timeshit browsing UI**: implemented repository/branch navigation, author-filtered commit lists, commit detail and paginated file changes. Daily digest and heatmap are not included in this browsing milestone.
@@ -286,6 +288,8 @@ Each phase should leave the app buildable and its affected route usable. No phas
 - Mock fixtures, response types/schema, docs, and tests agree on the contract.
 - English UI, preserved source-content language, Nuxt UI conventions, keyboard access, responsive behavior, and required project checks pass.
 - The implementation makes no claim of live data when disconnected or when rendering fixtures.
+
+The dated milestone subsections below are historical session records. Their “next task”, pending-acceptance and test-count lines describe that day only. Current capability and remaining release gates are in the status block above and the [verification report](timeshit-verification-report.md).
 
 ### Implemented browsing milestone — October 13, 2026
 
@@ -354,7 +358,7 @@ Each phase should leave the app buildable and its affected route usable. No phas
 
 The repository-selection, timezone, original-content language, single-PAT scope and execution decisions above are approved. Do not ask for those decisions again unless a new requirement changes them. Continue implementation in the phase order and preserve the distinction between code, synthetic verification and live acceptance.
 
-The concrete activity schemas, continuation contract, initial limits, local SQLite evidence and heatmap decision are in the [activity contract foundation](timeshit-activity-contract.md). Enforced collector bounds are implemented; measure real workload behavior before claiming release readiness. Escalate a product change only if evidence requires broader scope, such as multiple resource owners, a different credential model, persistent activity indexing, or an external Timeshit backend.
+The concrete activity schemas, continuation contract, initial limits, local SQLite evidence and heatmap decision are in the [activity contract](timeshit-activity-contract.md). Enforced collector bounds are implemented; measure real workload behavior before claiming release readiness. Escalate a product change only if evidence requires broader scope, such as multiple resource owners, a different credential model, persistent activity indexing, or an external Timeshit backend.
 
 Approved scope covers repository/branch/commit/file browsing plus all-branch activity, daily digest and heatmap. Current code implements browsing, shared activity contracts, server collection and guarded HTTP operations; client collection controls, daily digest/copy and heatmap are implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md). Creating/deleting repositories, modifying files, GitHub writes, AI summaries, local unpushed commits and guaranteed recovery of unreachable history are outside scope.
 

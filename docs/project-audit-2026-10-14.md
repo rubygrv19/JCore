@@ -2,9 +2,7 @@
 
 Audit date: October 14, 2026. Working branch: `development`.
 
-AUD-01 status refreshed October 29, 2026: the current audit reports 0 critical, 0 high, 0 moderate, and 2 low advisories; see the new record below. Historical status updated October 15, 2026: AUD-02 through AUD-05 were fixed and verified locally; reverse proxy/CDN behavior remains a host release check. AUD-06's workflow changes were implemented locally but await a successful GitHub Actions run. AUD-07 and AUD-08 were fixed locally; AUD-09's refactor and desktop check were completed, with mobile visual verification then pending; AUD-10 through AUD-12 remained open; UX-01 remained a recommendation. Historical audit evidence is retained as recorded on October 14.
-
-Status updated October 30, 2026: AUD-06 is fixed and confirmed by successful GitHub Actions run `40829488434`; AUD-09 mobile rendering and AUD-12 cursor/focus behavior are verified at 390px; AUD-10 and AUD-11 are fixed and verified locally. UX-01 is deferred until after public HTTPS/Ubuntu release gates. A fresh probe of `jcore.rubygrv.cloud` still finds no open public HTTP(S) ports. See the remediation records below.
+Current status (October 30, 2026): AUD-01 mitigated with 2 low advisories remaining; AUD-02–AUD-12 fixed/verified (AUD-06 confirmed by GitHub Actions run `40829488434`; AUD-09 mobile and AUD-12 cursor/focus verified at 390px). UX-01 is deferred until after public HTTPS/Ubuntu release gates. A fresh probe of `jcore.rubygrv.cloud` still finds no open public HTTP(S) ports. Dated remediation records below retain earlier evidence, including the October 14 audit snapshot and October 15/29 intermediate status.
 
 ## Scope and evidence
 

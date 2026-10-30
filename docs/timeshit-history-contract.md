@@ -1,6 +1,6 @@
 # Timeshit branch and commit browsing contract
 
-This milestone implements read-only branch, commit and changed-file browsing for repositories whose access is verified for the active GitHub connection. The [activity contract foundation](timeshit-activity-contract.md) now defines collection budgets and shared date/deduplication behavior. Its bounded all-branch collector/HTTP handlers are implemented, with daily digest/copy implemented; heatmap is implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md) in the [approved plan](timeshit-implementation-plan.md).
+This milestone implements read-only branch, commit and changed-file browsing for repositories whose access is verified for the active GitHub connection. The [activity contract](timeshit-activity-contract.md) defines collection budgets and shared date/deduplication behavior. Its bounded all-branch collector/HTTP handlers are implemented, with daily digest/copy implemented; heatmap is implemented; current acceptance and remaining release checks are recorded in the [verification report](timeshit-verification-report.md) in the [approved plan](timeshit-implementation-plan.md).
 
 ## Access and origin
 

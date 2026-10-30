@@ -104,7 +104,7 @@ Record pass/fail/evidence for each item on the actual deployment:
 8. On controlled staging, stop only the collector being tested, verify stale/unavailable/error feedback, restore it and verify recovery. Do not stop production services merely to exercise monitoring. Use promtool test rules or controlled staging load for timing checks.
 9. Exercise process pagination through two refreshes; page is retained/clamped and CPU order remains valid. Expand service/process details. Navigate away/back and confirm polling stops while away.
 10. Verify desktop/mobile, both themes, tooltips, contained table scrolling, keyboard actions and Settings draft behavior.
-11. In an isolated test window, verify the 11th login attempt is limited with 429/Retry-After. This budget is shared by all callers in one Node process, resets on restart and needs a shared proxy policy for multiple instances.
+11. In an isolated test window, verify the 11th attempt from the same client is limited with 429/Retry-After (10 attempts per client per 60 seconds, plus a 100-attempt global process safeguard). Budgets are process-local, reset on restart and are not shared across multiple Node workers without an external store.
 
 ## Troubleshooting
 
@@ -130,6 +130,6 @@ The API intentionally returns generic errors rather than raw internal details. D
 
 Before a release, preserve the prior verified app artifact/commit and private environment separately, build on Linux, run checks and record the change. Coordinate collector rule/image changes with the response contract and dashboard. Recheck health after restart.
 
-Prometheus history persists in the named volume; do not delete it during a routine app update. A volume is not a backup. Define backup/retention policy from operational requirements using the [official storage documentation](https://prometheus.io/docs/prometheus/latest/storage/). No backup automation exists in this repository. Settings has no persistent database to back up today; Timeshit storage/keys will require separate procedures when implemented.
+Prometheus history persists in the named volume; do not delete it during a routine app update. A volume is not a backup. Define backup/retention policy from operational requirements using the [official storage documentation](https://prometheus.io/docs/prometheus/latest/storage/). No backup automation exists in this repository. Settings Base URL/mode drafts are non-persistent. Timeshit encrypted PAT/selection SQLite and its encryption key are already implemented; back them up separately from Prometheus volumes and keep the key outside the database backup set. See [Timeshit connection contract](../../docs/timeshit-connection-contract.md) and [security configuration](../../docs/security-and-configuration.md).
 
 Rollback should restore the known-good app release and compatible runtime/collector configuration. Do not reset unrelated working changes or blindly remove Docker volumes. Preserve evidence of failures and verify restored sessions/telemetry. This document does not execute a deploy or authorize changes to the host.
