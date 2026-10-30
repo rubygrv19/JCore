@@ -120,7 +120,16 @@ Link directly to the relevant official API/section, note the installed version w
 
 - [Node 22 SQLite](https://nodejs.org/docs/latest-v22.x/api/sqlite.html): native DatabaseSync, experimental status and timeout support since 22.16.
 
-## Dependency remediation: October 15, 2026
+## Dependency remediation: October 29, 2026
+
+See [AUD-01 remediation evidence and remaining advisories](project-audit-2026-10-14.md#aud-01-remediation-record-october-29-2026) for the current dated decisions and verification.
+
+- [Nuxt 4.6.3 release](https://github.com/nuxt/nuxt/releases/tag/v4.6.3): framework security and dependency update; package engine metadata remains aligned with the documented Node range.
+- [Nuxt UI 4.12.0 release](https://github.com/nuxt/ui/releases/tag/v4.12.0) and [Nuxt DevTools 3.4.4 release](https://github.com/nuxt/devtools/releases/tag/v3.4.4): resolved framework/UI tooling versions.
+- [Nuxt Test Utils 4.3.4 release](https://github.com/nuxt/test-utils/releases/tag/v4.3.4): test harness fixes. The October 29 calendar failure was a dual Vue runtime from an accidental npm `package-lock.json`, not this harness; a clean pnpm-only install restored the full suite.
+- [node-forge 1.4.1 release](https://github.com/digitalbazaar/forge/releases/tag/v1.4.1), [RSA verification source](https://github.com/digitalbazaar/forge/blob/v1.4.1/lib/rsa.js) and [upstream PR #1152](https://github.com/digitalbazaar/forge/pull/1152): canonical `DigestInfo` validation used to remediate the high advisory; the [GitHub advisory record](https://github.com/advisories/GHSA-86w9-cpqp-85rv) has not caught up with the release evidence. [esbuild](https://github.com/advisories/GHSA-g7r4-m6w7-qqqr) and [deepmerge](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) remain under review.
+
+## Dependency remediation: October 15, 2026 (historical)
 
 See [AUD-01 remediation evidence and remaining advisories](project-audit-2026-10-14.md#aud-01-remediation-record-october-15-2026) for the dated decisions and verification.
 

@@ -287,6 +287,7 @@ function saveConfig() {
                   >
                     <UCheckbox
                       v-model="disconnectConfirmed"
+                      :class="connectionBusy ? 'cursor-not-allowed' : 'cursor-pointer'"
                       label="Remove the saved GitHub connection and tracked repository selection."
                       :disabled="connectionBusy"
                     />

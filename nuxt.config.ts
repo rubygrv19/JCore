@@ -31,6 +31,7 @@ export default defineNuxtConfig({
       adminPassword: ''
     },
     session: {
+      password: '',
       name: process.env.NODE_ENV === 'production' ? '__Host-jcore-session' : 'jcore-session',
       cookie: {
         httpOnly: true,

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://jcore.rubygrv.cloud/schemas/timeshit-activity-1.0.json",
-  "title": "Timeshit activity contract foundation (HTTP handlers not implemented)",
+  "title": "Timeshit activity contract",
   "oneOf": [
     {
       "$ref": "#/$defs/start"

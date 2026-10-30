@@ -15,7 +15,7 @@ These commands assume a clean checkout or local changes that can safely move wit
 
 Use another branch only when the owner requests it. Commit/push/deploy only when explicitly authorized. A documentation-edit request does not authorize any of those actions.
 
-Use Node 22.22.3+ within Node 22 as the current CI baseline, Node 24.15+ within Node 24, or Node 26+ (the Nuxt 4.6.1 engine ranges; local verification used Node 22.23.2) and the pnpm version in `package.json`. Install with `pnpm install --frozen-lockfile`; preserve `pnpm-lock.yaml`. Set ignored local auth variables as described in [configuration](security-and-configuration.md), then run `pnpm dev` and open its printed loopback address.
+Use Node 22.22.3+ within Node 22 as the current CI baseline, Node 24.15+ within Node 24, or Node 26+ (the Nuxt 4.6.3 engine ranges; local verification used Node 22.23.2) and the pnpm version in `package.json`. Install with `pnpm install --frozen-lockfile`; preserve `pnpm-lock.yaml`. Set ignored local auth variables as described in [configuration](security-and-configuration.md), then run `pnpm dev` and open its printed loopback address.
 
 ## Required reading
 

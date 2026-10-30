@@ -106,7 +106,7 @@ Status interpretation belongs to the API/contract. Do not infer health from a ch
 
 ## Charts
 
-Use Chart.js 4 with vue-chartjs for real data charts. Nuxt UI surrounds the charts; focused client-only chart wrappers are the allowed custom integration. `RevenueChart.client.vue` remains in the tree but is not referenced by current pages; it is not a second approved chart style to copy.
+Use Chart.js 4 with vue-chartjs for real data charts. Nuxt UI surrounds the charts; focused client-only chart wrappers are the allowed custom integration.
 
 - Donuts use a 76% cutout and no legend; the adjacent list supplies labels/values. Missing or zero-only segments show an unavailable placeholder ring with tooltip disabled. Do not interpret the placeholder ring as real data.
 - Trend series use tone plus solid/dashed line patterns and distinct hover point styles. Multi-series charts show a bottom legend. Do not bridge null samples (`spanGaps: false`).

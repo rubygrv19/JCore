@@ -5,10 +5,14 @@ allowBuilds:
   unrs-resolver: false
   vue-demi: false
 minimumReleaseAgeExclude:
-  - '@nuxt/devtools-kit@3.4.3'
-  - '@nuxt/devtools-wizard@3.4.3'
-  - '@nuxt/devtools@3.4.3'
+  - '@nuxt/devtools-kit@3.4.4'
+  - '@nuxt/devtools-wizard@3.4.4'
+  - '@nuxt/devtools@3.4.4'
 overrides:
   # DevTools 3.4.3 removes the vulnerable simple-git dependency used by 3.4.2.
-  '@nuxt/devtools@^3.4.2': 3.4.3
-  vue: 3.5.43
+  '@nuxt/devtools@^3.4.2': 3.4.4
+  fast-uri: 3.1.9
+  node-forge: 1.4.1
+  serialize-javascript: 7.1.4
+  vue: 3.5.44
+  zod: 4.6.7

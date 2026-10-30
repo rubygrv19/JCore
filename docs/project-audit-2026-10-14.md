@@ -2,7 +2,9 @@
 
 Audit date: October 14, 2026. Working branch: `development`.
 
-Status updated October 15, 2026: AUD-01 has been mitigated and verified locally, with three documented upstream/tooling advisory deferrals. AUD-02 through AUD-05 are fixed and verified locally; reverse proxy/CDN behavior remains a host release check. AUD-06's workflow changes are implemented locally but await a successful GitHub Actions run. AUD-07 and AUD-08 are fixed locally; AUD-09's refactor and desktop check are complete, with mobile visual verification pending; AUD-10 through AUD-12 remain open; UX-01 remains a recommendation. See the remediation record below. Historical audit evidence is retained as recorded on October 14.
+AUD-01 status refreshed October 29, 2026: the current audit reports 0 critical, 0 high, 0 moderate, and 2 low advisories; see the new record below. Historical status updated October 15, 2026: AUD-02 through AUD-05 were fixed and verified locally; reverse proxy/CDN behavior remains a host release check. AUD-06's workflow changes were implemented locally but await a successful GitHub Actions run. AUD-07 and AUD-08 were fixed locally; AUD-09's refactor and desktop check were completed, with mobile visual verification then pending; AUD-10 through AUD-12 remained open; UX-01 remained a recommendation. Historical audit evidence is retained as recorded on October 14.
+
+Status updated October 30, 2026: AUD-06 is fixed and confirmed by successful GitHub Actions run `40829488434`; AUD-09 mobile rendering and AUD-12 cursor/focus behavior are verified at 390px; AUD-10 and AUD-11 are fixed and verified locally. See the remediation records below.
 
 ## Scope and evidence
 
@@ -20,18 +22,18 @@ Priority meanings:
 
 | Order | ID | Priority | Finding | Status |
 | --- | --- | --- | --- | --- |
-| 1 | AUD-01 | P1 | Dependency security advisories | Mitigated; three advisory deferrals remain |
+| 1 | AUD-01 | P1 | Dependency security advisories | Mitigated; 2 low advisories remain (Oct 29 audit: 0C/0H/0M/2L) |
 | 2 | AUD-02 | P1 | Login request body has no application byte limit | Fixed; local HTTP/browser verification passed |
 | 3 | AUD-03 | P1 | Login attempts share one global quota | Fixed locally; production proxy check remains a release gate |
 | 4 | AUD-04 | P2 | Repository refresh resets activity collection state | Fixed locally; tests and browser refresh check passed |
 | 5 | AUD-05 | P2 | Private VPS responses lack explicit no-store headers | Fixed locally; route tests cover success and errors |
-| 6 | AUD-06 | P2 | CI omits tests, production build, and PR trigger | Workflow fixed locally; successful GitHub Actions run pending |
+| 6 | AUD-06 | P2 | CI omits tests, production build, and PR trigger | Fixed; successful GitHub Actions run recorded |
 | 7 | AUD-07 | P2 | Network overview and trend use different scopes | Fixed locally; aggregation and null handling tested |
 | 8 | AUD-08 | P3 | Shared VPS contracts live under app directories | Fixed locally |
-| 9 | AUD-09 | P3 | Large pages combine view and service orchestration | Refactored locally; mobile visual check pending |
-| 10 | AUD-10 | P3 | Unused demo chart remains in source | Open |
-| 11 | AUD-11 | P3 | Activity schema title is outdated | Open |
-| 12 | AUD-12 | P3 | Interactive checkbox lacks pointer cursor | Open |
+| 9 | AUD-09 | P3 | Large pages combine view and service orchestration | Fixed; desktop and mobile rendering verified |
+| 10 | AUD-10 | P3 | Unused demo chart remains in source | Fixed; unused chart removed and build passed |
+| 11 | AUD-11 | P3 | Activity schema title is outdated | Fixed; schema title corrected |
+| 12 | AUD-12 | P3 | Interactive checkbox lacks pointer cursor | Fixed; enabled and disabled cursor states verified |
 | Decision | UX-01 | P3 | Navigation clears collected activity | Recommendation; not an undocumented bug |
 
 ## Findings
@@ -126,7 +128,7 @@ References: [sharp advisory](https://github.com/advisories/GHSA-wq5f-xc86-pv6w),
 
 ### AUD-06: CI omits tests, production build, and PR trigger
 
-**Evidence:** [CI workflow](../.github/workflows/ci.yml) runs on pushes with Ubuntu/Node 22 and includes installation, lint, and typecheck only.
+**Evidence at audit time:** [CI workflow](../.github/workflows/ci.yml) ran only on pushes with Ubuntu/Node 22 and included installation, lint, and typecheck only.
 
 **Impact:** automated checks can pass without detecting unit test or production build regressions before a merge.
 
@@ -136,7 +138,7 @@ References: [sharp advisory](https://github.com/advisories/GHSA-wq5f-xc86-pv6w),
 
 - [x] Validate workflow syntax and commands against package scripts.
 - [x] Configure push and pull request triggers to run lint, typecheck, unit tests, and production build.
-- [ ] Record an actual successful CI run; a local run alone does not prove CI execution.
+- [x] Record an actual successful CI run; a local run alone does not prove CI execution. GitHub Actions run `40829488434` completed successfully on `development` at `ecdc0a8` (October 29, 2026).
 
 ### AUD-07: Network overview and trend use different scopes
 
@@ -179,29 +181,29 @@ References: [sharp advisory](https://github.com/advisories/GHSA-wq5f-xc86-pv6w),
 - [x] Preserve observable behavior and state ownership.
 - [x] Add focused tests for page mount/unmount orchestration and VPS polling cleanup.
 - [x] Verify desktop page rendering and collection lifecycle after refactoring.
-- [ ] Verify mobile page rendering after refactoring.
+- [x] Verify mobile page rendering after refactoring.
 
 ### AUD-10: Unused demo chart remains in source
 
-**Evidence:** [RevenueChart.client.vue](../app/components/RevenueChart.client.vue) contains 87 lines. The audit found no application usage; the design document also identifies it as unused.
+**Evidence at audit time:** `app/components/RevenueChart.client.vue` contained 87 lines. The audit found no application usage; the design document also identified it as unused.
 
 **Action:** confirm it remains unused, remove it, and update references that describe its presence. Do not remove approved multi-API client foundations merely because placeholder services are not live yet.
 
 **Acceptance:**
 
-- [ ] Search for direct and auto-import usage before removal.
-- [ ] Update affected documentation and verify the build.
+- [x] Search for direct and auto-import usage before removal.
+- [x] Update affected documentation and verify the build. The component was deleted on October 30, 2026; `DESIGN.md` no longer identifies it, and the production build passed.
 
 ### AUD-11: Activity schema title is outdated
 
-**Evidence:** [activity schema](timeshit-activity.schema.json) still has the title `Timeshit activity contract foundation (HTTP handlers not implemented)` although handlers are implemented.
+**Evidence at audit time:** [activity schema](timeshit-activity.schema.json) had the title `Timeshit activity contract foundation (HTTP handlers not implemented)` although handlers were implemented.
 
 **Action:** correct descriptive metadata and check nearby activity documentation for the same stale wording. Do not alter the API shape or version just to fix this title.
 
 **Acceptance:**
 
-- [ ] Schema descriptions agree with the actual routes and current contract.
-- [ ] Schema JSON parses and existing validation tests pass.
+- [x] Schema descriptions agree with the actual routes and current contract. The title was corrected to `Timeshit activity contract` on October 30, 2026.
+- [x] Schema JSON parses and existing validation tests pass.
 
 ### AUD-12: Interactive checkbox lacks pointer cursor
 
@@ -211,9 +213,9 @@ References: [sharp advisory](https://github.com/advisories/GHSA-wq5f-xc86-pv6w),
 
 **Acceptance:**
 
-- [ ] Verify computed cursor for the enabled control and label.
-- [ ] Verify keyboard toggle, focus visibility, and disabled states.
-- [ ] Keep the disconnect action protected by its existing confirmation; do not disconnect the owner's account during verification.
+- [x] Verify computed cursor for the enabled control and label. The disconnect checkbox uses `cursor-pointer` when enabled and `cursor-not-allowed` when busy; the enabled computed cursor was `pointer` at mobile width on October 30, 2026.
+- [x] Verify keyboard toggle, focus visibility, and disabled states. Keyboard focus reached the checkbox with a visible outline; the busy state is bound to the disabled state and `cursor-not-allowed`.
+- [x] Keep the disconnect action protected by its existing confirmation; do not disconnect the owner's account during verification.
 
 ## UX recommendation requiring a behavior decision
 
@@ -320,6 +322,47 @@ Artifact inspection also searched the generated server chunks for imports of the
 - The owner's saved PAT/database was not changed, no live GitHub collection was rerun, and no real Ubuntu deployment was performed. Live source/HTTPS release checks remain separate.
 
 **Non-blocking warnings to retain for follow-up:** Nuxt reports duplicate auto-import candidates from the existing service type re-exports; pnpm reports optional WASM peer-range warnings for `@emnapi/core`/`@emnapi/runtime`; Nitro emits third-party annotation and `node:sqlite` externalization warnings. Tests and the built server passed on this platform. These warnings are not proof of compatibility on untested platforms; reassess the duplicate exports during structural cleanup and verify the target Linux build before deployment.
+
+**Commit:** Not committed. No push or deployment occurred during this remediation.
+
+### AUD-01 remediation record: October 29, 2026
+
+**Status:** Targeted dependency remediation is complete. The dependency tree still has two low advisories; it is not advisory-free. No other audit point was addressed.
+
+**Changed files:** `.nuxtrc`, `nuxt.config.ts`, `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `README.md`, `docs/development.md`, `docs/references.md`, `docs/security-and-configuration.md`, and this tracker.
+
+**Implementation:**
+
+- Updated Nuxt 4.6.1 to 4.6.3, Nuxt UI 4.11.3 to 4.12.0, Nuxt DevTools to 3.4.4, and `@nuxt/test-utils` 4.3.2 to 4.3.4. Updated Vitest to 5.0.5 and happy-dom to 21.0.4 for their patched advisories.
+- Updated the Vue override to 3.5.44 to match Nuxt's installed requirements. Added workspace overrides for the transitive packages `fast-uri` 3.1.9, `serialize-javascript` 7.1.4 and `zod` 4.6.7. The DevTools release-age exceptions now match 3.4.4.
+- Updated `node-forge` to 1.4.1. The upstream release re-encodes `DigestInfo` and requires a canonical encoding during RSA signature verification; see the [1.4.1 release](https://github.com/digitalbazaar/forge/releases/tag/v1.4.1), [verification implementation](https://github.com/digitalbazaar/forge/blob/v1.4.1/lib/rsa.js), and maintainer comment on [PR #1152](https://github.com/digitalbazaar/forge/pull/1152). The GitHub advisory page still reports no patched version despite that newer release; the resolved local tree and audit no longer flag `node-forge`.
+- Added an empty source default for `runtimeConfig.session.password` so Nuxt's required session type passes while the deployment secret remains supplied through `NUXT_SESSION_PASSWORD`. No secret value was added to source or `.env.example`.
+- Updated the Nuxt Test Utils setup version in `.nuxtrc`. Updated the Node engine references to the Nuxt 4.6.3 engine range.
+
+**Audit results:**
+
+| Scope | Critical | High | Moderate | Low |
+| --- | --- | --- | --- | --- |
+| Production tree before updates | 0 | 8 | 17 | 6 |
+| Production tree after updates | 0 | 0 | 0 | 2 |
+| All dependencies after updates | 0 | 0 | 0 | 2 |
+
+Both audit commands still exit nonzero because two advisories remain. Counts describe dependency findings, not proven exploitable JCore routes.
+
+**Remaining advisory decisions:**
+
+| Package/advisory | Observed path | Reason for deferral and follow-up |
+| --- | --- | --- |
+| `esbuild@0.27.7`, Low, [GHSA-g7r4-m6w7-qqqr](https://github.com/advisories/GHSA-g7r4-m6w7-qqqr) | `@nuxt/fonts@0.14.0` -> `fontless@0.2.1` -> esbuild. | The advisory concerns the Windows development server. Fontless 0.2.1 does not accept the patched 0.28.x line; retain the supported range and recheck when font tooling changes. |
+| `deepmerge@4.3.1`, Low, [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) | Nuxt -> Nitro -> nitropack -> `@rollup/plugin-node-resolve` -> deepmerge. | The advisory lists no published patched version. Recheck the upstream package and Nitro dependency chain before release. |
+
+**Verification:**
+
+- `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm lint`, and `pnpm build` passed. The production build used the Nuxt Node server preset on macOS arm64; an Ubuntu build was not performed.
+- Final audit counts were 0 critical, 0 high and 2 low in both production-only and full dependency scopes.
+- `pnpm test` initially passed 268 of 269 tests across 39 files. The remaining failure was the Nuxt UI calendar interaction test, which threw `Cannot read properties of null (reading 'ce')` in Reka UI's `CalendarRoot`.
+- Calendar regression resolution: an accidental npm install had created a root `package-lock.json` and a second, hoisted Vue runtime (`@vue/runtime-core` 3.5.43) beside pnpm's 3.5.44, so Reka UI's compiled render called `renderSlot` from a different Vue runtime instance than the one rendering the component and read a null `currentRenderingInstance`. The dependency updates were not the cause; focused pin tests of `@nuxt/test-utils` 4.3.2, Nuxt UI 4.11.3, happy-dom 20.14.5 and Vue 3.5.43 each still failed. The permanent fix is a clean pnpm-only install (remove the stray npm `package-lock.json` and reinstall `node_modules` from `pnpm-lock.yaml`); no dependency pin or downgrade was needed, so the 4.3.4 harness and the advisory fixes are retained. Full suite passed 269 of 269 tests across 39 files on October 30, 2026.
+- No browser page was opened. No commit, push, deployment or live Ubuntu verification occurred.
 
 **Commit:** Not committed. No push or deployment occurred during this remediation.
 
@@ -443,6 +486,20 @@ Artifact inspection also searched the generated server chunks for imports of the
 
 **Commit:** Not committed. No push or deployment occurred during this remediation.
 
+### AUD-06 remediation record: October 30, 2026
+
+**Status:** Fixed. A successful GitHub Actions run now confirms remote CI execution. No commit or push was performed for this tracker update.
+
+**Verification:**
+
+- GitHub Actions run [40829488434](https://github.com/rubygrv19/JCore/actions/runs/40829488434) completed with conclusion `success` on `development` for event `push` at HEAD `ecdc0a8` (October 29, 2026).
+- The `ci (ubuntu-latest, 22)` job passed every step: install dependencies with the frozen lockfile, lint, typecheck, test, and production build.
+- The workflow still declares both `push` and `pull_request` triggers. The recorded run is a push run; no separate pull-request run is claimed.
+
+**Remaining limits:** CI verifies Ubuntu/Node 22 only, matching the documented baseline.
+
+**Commit:** Not committed. No push or deployment occurred during this tracker update.
+
 ### AUD-07 remediation record: October 15, 2026
 
 **Status:** Fixed locally. No commit, push, or deployment occurred.
@@ -484,7 +541,7 @@ Artifact inspection also searched the generated server chunks for imports of the
 
 ### AUD-09 remediation record: October 15, 2026
 
-**Status:** Page lifecycle extraction is implemented and verified locally. Desktop routes rendered in the local browser. Mobile visual verification remains pending.
+**Status:** Page lifecycle extraction is implemented and verified locally. Desktop and 390px mobile routes rendered in the local browser.
 
 **Implementation:**
 
@@ -496,8 +553,29 @@ Artifact inspection also searched the generated server chunks for imports of the
 
 - Full suite: **269 tests passed across 39 files**. `pnpm lint`, `pnpm typecheck`, and `pnpm build` passed. `git diff --check` passed, and local Markdown links passed for 18 documents.
 - The local desktop browser rendered `/services/vps` after hydration with the demo metrics and tables, and `/services/timeshit` with its existing connected state and controls. No service configuration or collection action was changed during this check.
+- The synthetic acceptance server rendered `/services/vps`, `/services/timeshit`, and `/settings` at 390px in light and dark modes. Each page reported `scrollWidth === innerWidth === 390`; keyboard traversal showed visible focus outlines.
 - Lifecycle tests cover initial loading, connected/disconnected repository refresh behavior, activity attach/detach, and stopping VPS pollers on unmount.
 
-**Remaining acceptance:** The available browser control did not provide a supported viewport resize operation, so visual rendering at mobile width has not been verified. Keep the mobile layout acceptance unchecked until inspected at a mobile viewport.
+**Remaining acceptance:** None for this refactor. Public-host and real-account release checks remain separate.
+
+**Commit:** Not committed. No push or deployment occurred.
+
+### AUD-10, AUD-11, AUD-12 remediation record: October 30, 2026
+
+**Status:** AUD-10, AUD-11, and AUD-12 are fixed and verified locally.
+
+**Implementation:**
+
+- AUD-10: confirmed no direct or auto-import usage of `RevenueChart.client.vue`, deleted the component, and removed the sentence in `DESIGN.md` that described it as an unused chart. Chart.js/vue-chartjs guidance is unchanged.
+- AUD-11: changed only the activity schema title to `Timeshit activity contract`. The schema shape, version, examples, and contract wording were not changed.
+- AUD-12: made the disconnect-confirmation `UCheckbox` use `cursor-pointer` when enabled and `cursor-not-allowed` when busy. The checkbox label, confirmation requirement, disabled binding, and keyboard behavior are unchanged.
+
+**Verification:**
+
+- AUD-10/AUD-11: the schema parses, and `test/unit/timeshit-activity.test.ts` passed 8/8 tests across 3 suites.
+- AUD-12: `pnpm typecheck`, `pnpm lint`, and the production build passed. Mobile browser inspection at 390px confirmed the enabled computed cursor is `pointer`, keyboard focus has a visible outline, and the page has no horizontal overflow. The busy state was not triggered live; its disabled binding and `cursor-not-allowed` class are present in source.
+- `pnpm build` passed after the component deletion with no missing-component reference. Existing Nuxt duplicate-import, Rollup annotation, and `node:sqlite` externalization warnings remain; this batch introduced no new warning.
+
+**Remaining acceptance:** Desktop visual check remains pending. Do not disconnect the owner's real connection.
 
 **Commit:** Not committed. No push or deployment occurred.

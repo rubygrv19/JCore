@@ -20,7 +20,7 @@ VPS telemetry comes from same-origin Nuxt endpoints, loopback Prometheus/Node Ex
 
 ## Start locally
 
-Use Node 22.22.3+ within Node 22 (the current CI baseline), Node 24.15+ within Node 24, or Node 26+ with the pnpm release declared in `package.json` (`pnpm@12.5.1`). These ranges match Nuxt 4.6.1 requirements; this update was verified locally on Node 22.23.2, not every allowed Node release. Exact dependency resolution is recorded in `pnpm-lock.yaml`. Set `NUXT_AUTH_TRUSTED_ORIGIN` to the browser origin when overriding the default development address; production requires an explicit exact HTTP(S) origin.
+Use Node 22.22.3+ within Node 22 (the current CI baseline), Node 24.15+ within Node 24, or Node 26+ with the pnpm release declared in `package.json` (`pnpm@12.5.1`). These ranges match Nuxt 4.6.3 requirements; the October 29, 2026 dependency update was verified locally on Node 22.23.2, not every allowed Node release. Exact dependency resolution is recorded in `pnpm-lock.yaml`. Set `NUXT_AUTH_TRUSTED_ORIGIN` to the browser origin when overriding the default development address; production requires an explicit exact HTTP(S) origin.
 
 ```bash
 pnpm install --frozen-lockfile

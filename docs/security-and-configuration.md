@@ -12,7 +12,7 @@ All current application runtime variables below are private server configuration
 | `NUXT_AUTH_ADMIN_PASSWORD` | Empty; 15 to 1024 characters | Login credential verification |
 | `NUXT_AUTH_TRUSTED_ORIGIN` | Exact HTTP(S) application origin without a trailing slash; defaults to `http://127.0.0.1:3000` in development and empty in production | Required login Origin policy; missing/invalid production configuration returns 503 |
 | `NUXT_AUTH_TRUSTED_PROXY_IPS` | Empty by default; optional comma-separated exact TCP proxy peer IPs | Login client address resolution; forwarded IP headers are ignored unless the actual peer is explicitly trusted |
-| `NUXT_SESSION_PASSWORD` | Supply a stable unique secret of at least 32 characters | Nuxt Auth Utils sealing/unsealing; login configuration check |
+| `NUXT_SESSION_PASSWORD` | Empty source default; supply a stable unique secret of at least 32 characters | Nuxt Auth Utils sealing/unsealing; login configuration check |
 | `NUXT_VPS_PROMETHEUS_URL` | `http://127.0.0.1:9090` | Server dashboard collector |
 | `NUXT_VPS_EXPECTED_SERVICES` | `{}`; JSON map of actual `.service` names to `active` or `inactive` | systemd state evaluation |
 | `NITRO_PORT` | Node server runtime port, if overridden | Built Nitro server; verify the actual listening port |
