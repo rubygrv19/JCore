@@ -4,7 +4,7 @@ Audit date: October 14, 2026. Working branch: `development`.
 
 AUD-01 status refreshed October 29, 2026: the current audit reports 0 critical, 0 high, 0 moderate, and 2 low advisories; see the new record below. Historical status updated October 15, 2026: AUD-02 through AUD-05 were fixed and verified locally; reverse proxy/CDN behavior remains a host release check. AUD-06's workflow changes were implemented locally but await a successful GitHub Actions run. AUD-07 and AUD-08 were fixed locally; AUD-09's refactor and desktop check were completed, with mobile visual verification then pending; AUD-10 through AUD-12 remained open; UX-01 remained a recommendation. Historical audit evidence is retained as recorded on October 14.
 
-Status updated October 30, 2026: AUD-06 is fixed and confirmed by successful GitHub Actions run `40829488434`; AUD-09 mobile rendering and AUD-12 cursor/focus behavior are verified at 390px; AUD-10 and AUD-11 are fixed and verified locally. See the remediation records below.
+Status updated October 30, 2026: AUD-06 is fixed and confirmed by successful GitHub Actions run `40829488434`; AUD-09 mobile rendering and AUD-12 cursor/focus behavior are verified at 390px; AUD-10 and AUD-11 are fixed and verified locally. UX-01 is deferred until after public HTTPS/Ubuntu release gates. A fresh probe of `jcore.rubygrv.cloud` still finds no open public HTTP(S) ports. See the remediation records below.
 
 ## Scope and evidence
 
@@ -34,7 +34,7 @@ Priority meanings:
 | 10 | AUD-10 | P3 | Unused demo chart remains in source | Fixed; unused chart removed and build passed |
 | 11 | AUD-11 | P3 | Activity schema title is outdated | Fixed; schema title corrected |
 | 12 | AUD-12 | P3 | Interactive checkbox lacks pointer cursor | Fixed; enabled and disabled cursor states verified |
-| Decision | UX-01 | P3 | Navigation clears collected activity | Recommendation; not an undocumented bug |
+| Decision | UX-01 | P3 | Navigation clears collected activity | Deferred until after public HTTPS/Ubuntu release gates |
 
 ## Findings
 
@@ -225,8 +225,10 @@ Leaving Timeshit currently resets repository state and therefore clears the depe
 
 Recommendation: retain a valid snapshot in Pinia memory while navigating within the application, pause active collection when leaving the view, and provide an explicit resume path when returning. Continue to clear private state on logout or actual account/selection changes. Browser reload persistence and storage of private activity in localStorage are not part of this recommendation.
 
-- [ ] Confirm the desired navigation behavior before implementation.
-- [ ] If approved, update lifecycle tests and the activity contract together.
+Owner decision (October 30, 2026): **Deferred**. Keep the documented clear-on-leave behavior for now. Revisit after the public HTTPS/proxy and Ubuntu operator release gates. No lifecycle implementation in this pass.
+
+- [x] Confirm the desired navigation behavior before implementation. Deferred; current reset-on-leave retained.
+- [ ] If approved later, update lifecycle tests and the activity contract together.
 - [ ] Verify navigation, return, expiry, logout, and account changes.
 
 ## Verified foundation and intentional boundaries

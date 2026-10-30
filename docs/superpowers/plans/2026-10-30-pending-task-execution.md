@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Work on `development`. Preserve every pre-existing uncommitted change.
-- Progress (October 30, 2026): Tasks 1–6 complete in the working tree. Calendar suite green after removing the accidental npm lockfile dual-Vue install; AUD-10/11/12 closed; AUD-06 confirmed by Actions run `40829488434`; AUD-09 mobile verified. Remaining: Task 7 (UX-01 decision), then release gates 8–11.
+- Progress (October 30, 2026): Tasks 1–6 committed and pushed as `a7ec203`. Task 7 (UX-01) deferred by owner until after HTTPS/Ubuntu release gates; current clear-on-leave retained. Remaining: Tasks 8–11.
 - Do not commit, push, publish or deploy unless the owner explicitly asks for that action.
 - Do not reset, stash or discard unrelated work.
 - Keep `pnpm-lock.yaml`; do not introduce npm as the package manager.
@@ -393,9 +393,9 @@ git diff -- docs/project-audit-2026-10-14.md
 - Consumes: current behavior where leaving Timeshit resets repository state and clears activity.
 - Produces: owner decision. If approved, a non-persistent snapshot retained across in-app navigation; no localStorage persistence.
 
-- [ ] **Step 1: Ask the owner for the decision**
+- [x] **Step 1: Ask the owner for the decision**
 
-Question: keep the valid in-memory activity snapshot during in-app navigation, pause active collection on leave, and offer explicit resume on return? Or keep the current reset-on-leave behavior?
+Decision (October 30, 2026): **Defer**. Keep reset-on-leave. Do not implement retention until after Tasks 8–9. Steps 2–6 remain blocked unless the owner later approves UX-01.
 
 - [ ] **Step 2: If approved, write the failing lifecycle test first**
 
@@ -446,9 +446,9 @@ git diff -- app/stores/timeshit-activity.ts app/pages/services/timeshit.vue docs
 - Consumes: real deployment with an approved HTTPS origin and valid certificate.
 - Produces: evidence for TLS, proxy Origin preservation, cache bypass and Secure-cookie behavior. No code change unless a defect appears.
 
-- [ ] **Step 1: Confirm owner approval and target origin**
+- [x] **Step 1: Confirm owner approval and target origin**
 
-Do not change DNS, firewall, proxy or TLS configuration without explicit approval. Record the exact origin.
+Target origin under review: `https://jcore.rubygrv.cloud` (documented example). October 30, 2026 probe: DNS `43.163.109.28`; ports `80`/`443`/`3000`/`8080`/`8443` closed. HTTPS acceptance is blocked until the owner deploys/opens the public listener. Do not change DNS, firewall, proxy or TLS without explicit approval.
 
 - [ ] **Step 2: Check TLS and headers**
 
